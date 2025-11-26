@@ -1,0 +1,40 @@
+name: error-handling-agent
+description: >
+  Enforces consistent error handling patterns, exception management,
+  proper HTTP status codes, and global exception handling middleware.
+triggers:
+  - event: push
+    branches: ["main", "develop"]
+  - event: pull_request
+    actions: ["opened", "synchronize"]
+tasks:
+  - type: validate-error-handling
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/error-handling.json"
+      checks:
+        - "try-catch-patterns"
+        - "exception-types"
+        - "error-responses"
+        - "http-status-codes"
+  - type: detect-issues
+    inputs:
+      patterns:
+        - "empty-catch-blocks"
+        - "generic-exceptions"
+        - "swallowed-exceptions"
+        - "missing-error-messages"
+  - type: generate-middleware
+    inputs:
+      framework: "ASP.NET Core"
+      output: "Middleware/GlobalExceptionHandler.cs"
+      features:
+        - "exception-logging"
+        - "problem-details"
+        - "error-tracking"
+  - type: suggest-improvements
+    inputs:
+      recommendations:
+        - "custom-exceptions"
+        - "result-pattern"
+        - "validation-errors"

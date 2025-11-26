@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "languages": ["en", "tr"],
+  "rules": [
+    {
+      "id": "LOC001",
+      "name": "ResourceFileUsage",
+      "description": "All user-facing strings must be stored in resource files, not hardcoded.",
+      "severity": "error"
+    },
+    {
+      "id": "LOC002",
+      "name": "EnglishDefault",
+      "description": "English must be the default language for resources.",
+      "severity": "warning"
+    },
+    {
+      "id": "LOC003",
+      "name": "TurkishTranslationRequired",
+      "description": "Every English resource string must have a Turkish translation.",
+      "severity": "error"
+    },
+    {
+      "id": "LOC004",
+      "name": "CultureAwareFormatting",
+      "description": "Dates, times, numbers, and currencies must use culture-aware formatting APIs.",
+      "severity": "warning"
+    },
+    {
+      "id": "LOC005",
+      "name": "FallbackLanguage",
+      "description": "If a translation is missing, fallback to English.",
+      "severity": "info"
+    }
+  ],
+  "formatting": {
+    "resourceFileExtension": ".resx",
+    "defaultCulture": "en-US",
+    "supportedCultures": ["en-US", "tr-TR"]
+  }
+}

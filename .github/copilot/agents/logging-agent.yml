@@ -1,0 +1,28 @@
+name: logging-agent
+description: >
+  Ensures consistent logging practices, proper log levels, structured logging,
+  and prevents logging of sensitive data across the application.
+triggers:
+  - event: push
+    branches: ["main", "develop"]
+  - event: pull_request
+    actions: ["opened", "synchronize"]
+tasks:
+  - type: validate-logging
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/logging.json"
+      checks:
+        - "log-level-usage"
+        - "structured-logging"
+        - "sensitive-data-check"
+        - "exception-logging"
+  - type: suggest-improvements
+    inputs:
+      framework: "ASP.NET Core"
+      logger: "ILogger"
+      output: "recommendations.md"
+  - type: generate-logger
+    inputs:
+      pattern: "dependency-injection"
+      template: ".github/copilot/templates/logger-template.cs"

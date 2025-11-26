@@ -1,0 +1,24 @@
+name: localization-agent
+description: >
+  Ensures globalization and localization best practices are followed.
+  Validates resource usage, enforces English default, and requires Turkish translations.
+triggers:
+  - event: pull_request
+    actions: ["opened", "synchronize", "review_requested"]
+tasks:
+  - type: lint
+    inputs:
+      ruleset: ".github/copilot/rules/localization.json"
+  - type: scaffold-resources
+    inputs:
+      languages: ["en", "tr"]
+      output: "Resources/"
+  - type: validate-translations
+    inputs:
+      source: "Resources/*.resx"
+      defaultLanguage: "en"
+      requiredLanguages: ["tr"]
+  - type: globalization-check
+    inputs:
+      source: "src/**/*.cs"
+      rules: ["CultureAwareFormatting"]
