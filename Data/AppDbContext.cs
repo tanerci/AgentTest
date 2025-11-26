@@ -3,13 +3,27 @@ using ProductApi.Models;
 
 namespace ProductApi.Data;
 
+/// <summary>
+/// Database context for the Product API application.
+/// </summary>
 public class AppDbContext : DbContext
 {
+    /// <summary>
+    /// Initializes a new instance of the AppDbContext.
+    /// </summary>
+    /// <param name="options">The options for configuring the database context.</param>
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
 
+    /// <summary>
+    /// Gets or sets the Products entity set.
+    /// </summary>
     public DbSet<Product> Products { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the Users entity set.
+    /// </summary>
     public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
