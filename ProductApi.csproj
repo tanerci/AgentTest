@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Exclude test files that are in a subdirectory but have their own project -->
     <Compile Remove="ProductApi.Tests\**" />
     <EmbeddedResource Remove="ProductApi.Tests\**" />
     <None Remove="ProductApi.Tests\**" />

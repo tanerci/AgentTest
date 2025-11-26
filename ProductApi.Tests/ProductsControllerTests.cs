@@ -8,16 +8,8 @@ using Xunit;
 
 namespace ProductApi.Tests;
 
-public class ProductsControllerTests
+public class ProductsControllerTests : TestBase
 {
-    private AppDbContext GetInMemoryDbContext()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        
-        return new AppDbContext(options);
-    }
 
     [Fact]
     public async Task GetProducts_ReturnsAllProducts()

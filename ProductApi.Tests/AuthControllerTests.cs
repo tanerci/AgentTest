@@ -13,20 +13,10 @@ using Xunit;
 
 namespace ProductApi.Tests;
 
-public class AuthControllerTests
+public class AuthControllerTests : TestBase
 {
-    private AppDbContext GetInMemoryDbContext()
+    private AuthController CreateControllerWithMockHttpContext(AppDbContext context)
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-        
-        return new AppDbContext(options);
-    }
-
-    private AuthController CreateControllerWithMockHttpContext()
-    {
-        var context = GetInMemoryDbContext();
         var controller = new AuthController(context);
         
         // Create mock HttpContext
@@ -59,18 +49,7 @@ public class AuthControllerTests
         });
         await context.SaveChangesAsync();
         
-        var controller = new AuthController(context);
-        var httpContext = Substitute.For<HttpContext>();
-        var authService = Substitute.For<IAuthenticationService>();
-        var serviceProvider = Substitute.For<IServiceProvider>();
-        serviceProvider.GetService(typeof(IAuthenticationService)).Returns(authService);
-        httpContext.RequestServices.Returns(serviceProvider);
-        
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
-        
+        var controller = CreateControllerWithMockHttpContext(context);
         var loginRequest = new LoginRequest 
         { 
             Username = "testuser", 
@@ -138,7 +117,8 @@ public class AuthControllerTests
     public async Task Logout_ReturnsSuccess()
     {
         // Arrange
-        var controller = CreateControllerWithMockHttpContext();
+        var context = GetInMemoryDbContext();
+        var controller = CreateControllerWithMockHttpContext(context);
         
         // Act
         var result = await controller.Logout();
