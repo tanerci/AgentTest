@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using ProductApi.Data;
 
 namespace ProductApi.Tests;
@@ -20,5 +22,15 @@ public abstract class TestBase
             .Options;
         
         return new AppDbContext(options);
+    }
+
+    /// <summary>
+    /// Creates a substitute (mock) logger for testing purposes.
+    /// </summary>
+    /// <typeparam name="T">The type parameter for the logger.</typeparam>
+    /// <returns>A substitute logger instance.</returns>
+    protected ILogger<T> GetMockLogger<T>()
+    {
+        return Substitute.For<ILogger<T>>();
     }
 }

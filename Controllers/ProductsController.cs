@@ -15,14 +15,17 @@ namespace ProductApi.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ILogger<ProductsController> _logger;
 
     /// <summary>
     /// Initializes a new instance of the ProductsController.
     /// </summary>
     /// <param name="context">The database context for product operations.</param>
-    public ProductsController(AppDbContext context)
+    /// <param name="logger">The logger for tracking operations and errors.</param>
+    public ProductsController(AppDbContext context, ILogger<ProductsController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     /// <summary>
@@ -39,10 +42,21 @@ public class ProductsController : ControllerBase
     /// </remarks>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<Product>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
     {
-        var products = await _context.Products.ToListAsync();
-        return Ok(products);
+        try
+        {
+            _logger.LogDebug("Fetching all products");
+            var products = await _context.Products.ToListAsync();
+            _logger.LogInformation("Successfully retrieved {Count} products", products.Count);
+            return Ok(products);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching all products");
+            throw;
+        }
     }
 
     /// <summary>
@@ -62,16 +76,28 @@ public class ProductsController : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
-        var product = await _context.Products.FindAsync(id);
-
-        if (product == null)
+        try
         {
-            return NotFound(new { message = $"Product with ID {id} not found" });
-        }
+            _logger.LogDebug("Fetching product with ID {ProductId}", id);
+            var product = await _context.Products.FindAsync(id);
 
-        return Ok(product);
+            if (product == null)
+            {
+                _logger.LogWarning("Product with ID {ProductId} not found", id);
+                return NotFound(new { message = $"Product with ID {id} not found" });
+            }
+
+            _logger.LogDebug("Successfully retrieved product with ID {ProductId}", id);
+            return Ok(product);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while fetching product with ID {ProductId}", id);
+            throw;
+        }
     }
 
     /// <summary>
@@ -100,24 +126,44 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(Product), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<Product>> CreateProduct([FromBody] ProductCreateDto productDto)
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Invalid model state for creating product: {ValidationErrors}", 
+                string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             return BadRequest(ModelState);
         }
-        var product = new Product
+
+        try
         {
-            Name = productDto.Name,
-            Description = productDto.Description,
-            Price = productDto.Price,
-            Stock = productDto.Stock
-        };
+            _logger.LogInformation("Creating new product: {ProductName}", productDto.Name);
+            
+            var product = new Product
+            {
+                Name = productDto.Name,
+                Description = productDto.Description,
+                Price = productDto.Price,
+                Stock = productDto.Stock
+            };
 
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
 
-        return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+            _logger.LogInformation("Successfully created product with ID {ProductId}", product.Id);
+            return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database error occurred while creating product: {ProductName}", productDto.Name);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occurred while creating product: {ProductName}", productDto.Name);
+            throw;
+        }
     }
 
     /// <summary>
@@ -148,34 +194,59 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductUpdateDto productDto)
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Invalid model state for updating product ID {ProductId}: {ValidationErrors}", 
+                id, string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
             return BadRequest(ModelState);
         }
-        var product = await _context.Products.FindAsync(id);
 
-        if (product == null)
+        try
         {
-            return NotFound(new { message = $"Product with ID {id} not found" });
+            _logger.LogDebug("Updating product with ID {ProductId}", id);
+            var product = await _context.Products.FindAsync(id);
+
+            if (product == null)
+            {
+                _logger.LogWarning("Cannot update - product with ID {ProductId} not found", id);
+                return NotFound(new { message = $"Product with ID {id} not found" });
+            }
+
+            if (productDto.Name != null)
+                product.Name = productDto.Name;
+            
+            if (productDto.Description != null)
+                product.Description = productDto.Description;
+            
+            if (productDto.Price.HasValue)
+                product.Price = productDto.Price.Value;
+            
+            if (productDto.Stock.HasValue)
+                product.Stock = productDto.Stock.Value;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Successfully updated product with ID {ProductId}", id);
+            return Ok(product);
         }
-
-        if (productDto.Name != null)
-            product.Name = productDto.Name;
-        
-        if (productDto.Description != null)
-            product.Description = productDto.Description;
-        
-        if (productDto.Price.HasValue)
-            product.Price = productDto.Price.Value;
-        
-        if (productDto.Stock.HasValue)
-            product.Stock = productDto.Stock.Value;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(product);
+        catch (DbUpdateConcurrencyException ex)
+        {
+            _logger.LogError(ex, "Concurrency error occurred while updating product with ID {ProductId}", id);
+            throw;
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database error occurred while updating product with ID {ProductId}", id);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occurred while updating product with ID {ProductId}", id);
+            throw;
+        }
     }
 
     /// <summary>
@@ -199,18 +270,35 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteProduct(int id)
     {
-        var product = await _context.Products.FindAsync(id);
-
-        if (product == null)
+        try
         {
-            return NotFound(new { message = $"Product with ID {id} not found" });
+            _logger.LogDebug("Attempting to delete product with ID {ProductId}", id);
+            var product = await _context.Products.FindAsync(id);
+
+            if (product == null)
+            {
+                _logger.LogWarning("Cannot delete - product with ID {ProductId} not found", id);
+                return NotFound(new { message = $"Product with ID {id} not found" });
+            }
+
+            _context.Products.Remove(product);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Successfully deleted product with ID {ProductId}", id);
+            return Ok(new { message = "Product deleted successfully" });
         }
-
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { message = "Product deleted successfully" });
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Database error occurred while deleting product with ID {ProductId}", id);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occurred while deleting product with ID {ProductId}", id);
+            throw;
+        }
     }
 }

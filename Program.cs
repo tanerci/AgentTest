@@ -2,9 +2,13 @@ using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using ProductApi.Data;
+using ProductApi.Middleware;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add global exception handler
+builder.Services.AddGlobalExceptionHandler();
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -107,11 +111,26 @@ var app = builder.Build();
 // Seed the database
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    context.Database.EnsureCreated();
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        
+        logger.LogInformation("Initializing database");
+        context.Database.EnsureCreated();
+        logger.LogInformation("Database initialized successfully");
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while initializing the database");
+        throw;
+    }
 }
 
 // Configure the HTTP request pipeline
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

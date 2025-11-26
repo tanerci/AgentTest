@@ -22,7 +22,8 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var controller = new ProductsController(context);
+        var logger = GetMockLogger<ProductsController>();
+        var controller = new ProductsController(context, logger);
 
         // Act
         var result = await controller.GetProducts();
@@ -48,7 +49,8 @@ public class ProductsControllerTests : TestBase
         });
         await context.SaveChangesAsync();
         
-        var controller = new ProductsController(context);
+        var logger = GetMockLogger<ProductsController>();
+        var controller = new ProductsController(context, logger);
 
         // Act
         var result = await controller.GetProduct(1);
@@ -65,7 +67,8 @@ public class ProductsControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var controller = new ProductsController(context);
+        var logger = GetMockLogger<ProductsController>();
+        var controller = new ProductsController(context, logger);
 
         // Act
         var result = await controller.GetProduct(999);
@@ -79,7 +82,8 @@ public class ProductsControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var controller = new ProductsController(context);
+        var logger = GetMockLogger<ProductsController>();
+        var controller = new ProductsController(context, logger);
         var productDto = new ProductCreateDto
         {
             Name = "NewProduct",
@@ -119,7 +123,8 @@ public class ProductsControllerTests : TestBase
         });
         await context.SaveChangesAsync();
         
-        var controller = new ProductsController(context);
+        var logger = GetMockLogger<ProductsController>();
+        var controller = new ProductsController(context, logger);
         var updateDto = new ProductUpdateDto
         {
             Name = "Updated",
@@ -143,7 +148,8 @@ public class ProductsControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var controller = new ProductsController(context);
+        var logger = GetMockLogger<ProductsController>();
+        var controller = new ProductsController(context, logger);
         var updateDto = new ProductUpdateDto { Name = "Updated" };
 
         // Act
@@ -168,7 +174,8 @@ public class ProductsControllerTests : TestBase
         });
         await context.SaveChangesAsync();
         
-        var controller = new ProductsController(context);
+        var logger = GetMockLogger<ProductsController>();
+        var controller = new ProductsController(context, logger);
         var updateDto = new ProductUpdateDto { Stock = 25 };
 
         // Act
@@ -198,7 +205,8 @@ public class ProductsControllerTests : TestBase
         });
         await context.SaveChangesAsync();
         
-        var controller = new ProductsController(context);
+        var logger = GetMockLogger<ProductsController>();
+        var controller = new ProductsController(context, logger);
 
         // Act
         var result = await controller.DeleteProduct(1);
@@ -216,7 +224,8 @@ public class ProductsControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var controller = new ProductsController(context);
+        var logger = GetMockLogger<ProductsController>();
+        var controller = new ProductsController(context, logger);
 
         // Act
         var result = await controller.DeleteProduct(999);

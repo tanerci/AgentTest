@@ -69,6 +69,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         if (!ModelState.IsValid)
@@ -77,37 +78,46 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        try
         {
-            _logger.LogWarning("Failed login attempt for username: {Username} from IP: {IpAddress}", 
-                request.Username, GetClientIpAddress());
-            return Unauthorized(new { message = "Invalid username or password" });
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            {
+                _logger.LogWarning("Failed login attempt for username: {Username} from IP: {IpAddress}", 
+                    request.Username, GetClientIpAddress());
+                return Unauthorized(new { message = "Invalid username or password" });
+            }
+
+            _logger.LogInformation("Successful login for user: {Username} from IP: {IpAddress}", 
+                user.Username, GetClientIpAddress());
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(24)
+            };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity),
+                authProperties);
+
+            return Ok(new { message = "Login successful", username = user.Username });
         }
-
-        _logger.LogInformation("Successful login for user: {Username} from IP: {IpAddress}", 
-            user.Username, GetClientIpAddress());
-
-        var claims = new List<Claim>
+        catch (Exception ex)
         {
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-        };
-
-        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var authProperties = new AuthenticationProperties
-        {
-            IsPersistent = true,
-            ExpiresUtc = DateTimeOffset.UtcNow.AddHours(24)
-        };
-
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(claimsIdentity),
-            authProperties);
-
-        return Ok(new { message = "Login successful", username = user.Username });
+            _logger.LogError(ex, "Unexpected error occurred during login for username: {Username} from IP: {IpAddress}", 
+                request.Username, GetClientIpAddress());
+            throw;
+        }
     }
 
     /// <summary>
@@ -124,10 +134,25 @@ public class AuthController : ControllerBase
     /// </remarks>
     [HttpPost("logout")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return Ok(new { message = "Logout successful" });
+        try
+        {
+            var username = User.Identity?.Name ?? "Unknown";
+            _logger.LogInformation("User {Username} is logging out from IP: {IpAddress}", 
+                username, GetClientIpAddress());
+            
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            
+            _logger.LogInformation("User {Username} successfully logged out", username);
+            return Ok(new { message = "Logout successful" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred during logout from IP: {IpAddress}", GetClientIpAddress());
+            throw;
+        }
     }
 
     /// <summary>
