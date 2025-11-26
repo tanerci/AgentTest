@@ -182,6 +182,17 @@ This application implements security controls aligned with:
 - Microsoft Security Development Lifecycle (SDL) practices
 - Common security best practices for ASP.NET Core applications
 
+## Future Improvements
+
+Consider these enhancements for future releases:
+
+1. **CSP Configuration**: Move Content Security Policy strings from code to configuration for easier updates
+2. **AllowedHosts Refinement**: Use specific domain names and ports in production instead of wildcards
+3. **Password Policies**: Add more complex password requirements (uppercase, lowercase, numbers, special chars)
+4. **Account Lockout**: Implement temporary account lockout after multiple failed login attempts
+5. **Two-Factor Authentication**: Add 2FA support for enhanced security
+6. **API Versioning**: Implement versioning to support future security enhancements without breaking changes
+
 ## Updates
 
 Last security review: 2025-11-26
