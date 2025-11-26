@@ -117,9 +117,9 @@
       "description": "Optimize LINQ queries to execute on database, not in-memory",
       "severity": "warning",
       "badPatterns": [
-        "ToList().Where(",
-        "ToList().Select(",
-        "ToList().OrderBy("
+        "ToList\\(\\)\\.Where\\(",
+        "ToList\\(\\)\\.Select\\(",
+        "ToList\\(\\)\\.OrderBy\\("
       ],
       "recommendation": "Chain LINQ operations before materializing with ToList()"
     }
