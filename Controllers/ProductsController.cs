@@ -15,14 +15,17 @@ namespace ProductApi.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ILogger<ProductsController> _logger;
 
     /// <summary>
     /// Initializes a new instance of the ProductsController.
     /// </summary>
     /// <param name="context">The database context for product operations.</param>
-    public ProductsController(AppDbContext context)
+    /// <param name="logger">The logger for tracking product operations.</param>
+    public ProductsController(AppDbContext context, ILogger<ProductsController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     /// <summary>
@@ -41,7 +44,9 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<Product>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
     {
+        _logger.LogInformation("Retrieving all products");
         var products = await _context.Products.ToListAsync();
+        _logger.LogInformation("Retrieved {Count} products", products.Count);
         return Ok(products);
     }
 
@@ -64,13 +69,16 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
+        _logger.LogInformation("Retrieving product with ID: {ProductId}", id);
         var product = await _context.Products.FindAsync(id);
 
         if (product == null)
         {
+            _logger.LogWarning("Product with ID {ProductId} not found", id);
             return NotFound(new { message = $"Product with ID {id} not found" });
         }
 
+        _logger.LogInformation("Retrieved product: {ProductName} (ID: {ProductId})", product.Name, product.Id);
         return Ok(product);
     }
 
@@ -104,8 +112,11 @@ public class ProductsController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Create product failed: invalid model state");
             return BadRequest(ModelState);
         }
+
+        _logger.LogInformation("Creating new product: {ProductName}", productDto.Name);
         var product = new Product
         {
             Name = productDto.Name,
@@ -117,6 +128,7 @@ public class ProductsController : ControllerBase
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
 
+        _logger.LogInformation("Created product: {ProductName} (ID: {ProductId})", product.Name, product.Id);
         return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
     }
 
@@ -152,12 +164,16 @@ public class ProductsController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Update product failed for ID {ProductId}: invalid model state", id);
             return BadRequest(ModelState);
         }
+
+        _logger.LogInformation("Updating product with ID: {ProductId}", id);
         var product = await _context.Products.FindAsync(id);
 
         if (product == null)
         {
+            _logger.LogWarning("Update failed: Product with ID {ProductId} not found", id);
             return NotFound(new { message = $"Product with ID {id} not found" });
         }
 
@@ -175,6 +191,7 @@ public class ProductsController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        _logger.LogInformation("Updated product: {ProductName} (ID: {ProductId})", product.Name, product.Id);
         return Ok(product);
     }
 
@@ -201,16 +218,20 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteProduct(int id)
     {
+        _logger.LogInformation("Deleting product with ID: {ProductId}", id);
         var product = await _context.Products.FindAsync(id);
 
         if (product == null)
         {
+            _logger.LogWarning("Delete failed: Product with ID {ProductId} not found", id);
             return NotFound(new { message = $"Product with ID {id} not found" });
         }
 
+        var productName = product.Name;
         _context.Products.Remove(product);
         await _context.SaveChangesAsync();
 
+        _logger.LogInformation("Deleted product: {ProductName} (ID: {ProductId})", productName, id);
         return Ok(new { message = "Product deleted successfully" });
     }
 }

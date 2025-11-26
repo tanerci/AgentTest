@@ -126,6 +126,8 @@ public class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Logout()
     {
+        var username = User.Identity?.Name ?? "Unknown";
+        _logger.LogInformation("User logged out: {Username}", username);
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return Ok(new { message = "Logout successful" });
     }
