@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ProductApi.Controllers;
 using ProductApi.Data;
@@ -17,7 +18,8 @@ public class AuthControllerTests : TestBase
 {
     private AuthController CreateControllerWithMockHttpContext(AppDbContext context)
     {
-        var controller = new AuthController(context);
+        var logger = Substitute.For<ILogger<AuthController>>();
+        var controller = new AuthController(context, logger);
         
         // Create mock HttpContext
         var httpContext = Substitute.For<HttpContext>();
@@ -69,7 +71,16 @@ public class AuthControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var controller = new AuthController(context);
+        var logger = Substitute.For<ILogger<AuthController>>();
+        var controller = new AuthController(context, logger);
+        
+        // Add HttpContext mock
+        var httpContext = new DefaultHttpContext();
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+        
         var loginRequest = new LoginRequest 
         { 
             Username = "nonexistent", 
@@ -98,7 +109,16 @@ public class AuthControllerTests : TestBase
         });
         await context.SaveChangesAsync();
         
-        var controller = new AuthController(context);
+        var logger = Substitute.For<ILogger<AuthController>>();
+        var controller = new AuthController(context, logger);
+        
+        // Add HttpContext mock
+        var httpContext = new DefaultHttpContext();
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+        
         var loginRequest = new LoginRequest 
         { 
             Username = "testuser", 
@@ -133,7 +153,8 @@ public class AuthControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var controller = new AuthController(context);
+        var logger = Substitute.For<ILogger<AuthController>>();
+        var controller = new AuthController(context, logger);
         
         var claims = new List<Claim>
         {
@@ -176,7 +197,8 @@ public class AuthControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var controller = new AuthController(context);
+        var logger = Substitute.For<ILogger<AuthController>>();
+        var controller = new AuthController(context, logger);
         
         var httpContext = new DefaultHttpContext();
         

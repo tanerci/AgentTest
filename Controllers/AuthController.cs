@@ -16,14 +16,17 @@ namespace ProductApi.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ILogger<AuthController> _logger;
 
     /// <summary>
     /// Initializes a new instance of the AuthController.
     /// </summary>
     /// <param name="context">The database context for user operations.</param>
-    public AuthController(AppDbContext context)
+    /// <param name="logger">The logger for security event tracking.</param>
+    public AuthController(AppDbContext context, ILogger<AuthController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     /// <summary>
@@ -32,6 +35,7 @@ public class AuthController : ControllerBase
     /// <param name="request">The login credentials containing username and password.</param>
     /// <returns>Success message with username on successful authentication, or unauthorized error.</returns>
     /// <response code="200">Login successful - authentication cookie created.</response>
+    /// <response code="400">Invalid request - validation errors.</response>
     /// <response code="401">Invalid username or password.</response>
     /// <remarks>
     /// Sample request:
@@ -46,15 +50,27 @@ public class AuthController : ControllerBase
     /// </remarks>
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("Login attempt with invalid model state from IP: {IpAddress}", HttpContext.Connection.RemoteIpAddress);
+            return BadRequest(ModelState);
+        }
+
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
+            _logger.LogWarning("Failed login attempt for username: {Username} from IP: {IpAddress}", 
+                request.Username, HttpContext.Connection.RemoteIpAddress);
             return Unauthorized(new { message = "Invalid username or password" });
         }
+
+        _logger.LogInformation("Successful login for user: {Username} from IP: {IpAddress}", 
+            user.Username, HttpContext.Connection.RemoteIpAddress);
 
         var claims = new List<Claim>
         {
