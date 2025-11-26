@@ -1,0 +1,582 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "ProductApi",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/Auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Authenticates a user and creates an authentication cookie.",
+        "description": "Sample request:\n\n    POST /api/auth/login\n    {\n       \"username\": \"admin\",\n       \"password\": \"password123\"\n    }\n    \nThe authentication cookie will be valid for 24 hours.",
+        "requestBody": {
+          "description": "The login credentials containing username and password.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful - authentication cookie created."
+          },
+          "401": {
+            "description": "Invalid username or password.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logs out the current user by clearing the authentication cookie.",
+        "description": "Sample request:\n\n    POST /api/auth/logout\n    \nThis endpoint clears the authentication cookie, logging out the user.",
+        "responses": {
+          "200": {
+            "description": "Logout successful - authentication cookie cleared."
+          }
+        }
+      }
+    },
+    "/api/Auth/status": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Checks the current authentication status of the user.",
+        "description": "Sample request:\n\n    GET /api/auth/status\n    \nReturns { \"authenticated\": true, \"username\": \"admin\" } if logged in,\nor { \"authenticated\": false } if not logged in.",
+        "responses": {
+          "200": {
+            "description": "Returns authentication status and username if logged in."
+          }
+        }
+      }
+    },
+    "/api/Products": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Retrieves all products from the inventory.",
+        "description": "Sample request:\n\n    GET /api/products\n    \nThis endpoint is publicly accessible and does not require authentication.",
+        "responses": {
+          "200": {
+            "description": "Returns the list of all products.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Creates a new product in the inventory.",
+        "description": "Sample request:\n\n    POST /api/products\n    {\n       \"name\": \"Wireless Mouse\",\n       \"description\": \"Ergonomic wireless mouse with USB receiver\",\n       \"price\": 29.99,\n       \"stock\": 50\n    }\n    \nThis endpoint requires authentication. Include the authentication cookie in the request.",
+        "requestBody": {
+          "description": "The product information to create.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created successfully.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Products/{id}": {
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Retrieves a specific product by its ID.",
+        "description": "Sample request:\n\n    GET /api/products/1\n    \nThis endpoint is publicly accessible and does not require authentication.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The unique identifier of the product.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the requested product.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product with the specified ID not found.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Updates an existing product's information.",
+        "description": "Sample request:\n\n    PUT /api/products/1\n    {\n       \"name\": \"Updated Product Name\",\n       \"price\": 149.99\n    }\n    \nAll fields are optional. Only include the fields you want to update.\nThis endpoint requires authentication. Include the authentication cookie in the request.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The unique identifier of the product to update.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "The product fields to update (all fields are optional).",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductUpdateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductUpdateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated successfully.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product with the specified ID not found.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Products"
+        ],
+        "summary": "Deletes a product from the inventory.",
+        "description": "Sample request:\n\n    DELETE /api/products/1\n    \nThis endpoint requires authentication. Include the authentication cookie in the request.\nThis operation is permanent and cannot be undone.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The unique identifier of the product to delete.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product deleted successfully."
+          },
+          "401": {
+            "description": "User is not authenticated.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product with the specified ID not found.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "Gets or sets the username for authentication.",
+            "nullable": true,
+            "example": "admin"
+          },
+          "password": {
+            "type": "string",
+            "description": "Gets or sets the password for authentication.",
+            "nullable": true,
+            "example": "password123"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Request model for user authentication."
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": {}
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Gets or sets the unique identifier for the product.",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "description": "Gets or sets the name of the product.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Gets or sets the description of the product.",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "description": "Gets or sets the price of the product in dollars.",
+            "format": "double"
+          },
+          "stock": {
+            "type": "integer",
+            "description": "Gets or sets the available stock quantity.",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "Represents a product in the inventory."
+      },
+      "ProductCreateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Gets or sets the name of the product.",
+            "nullable": true,
+            "example": "Wireless Mouse"
+          },
+          "description": {
+            "type": "string",
+            "description": "Gets or sets the description of the product.",
+            "nullable": true,
+            "example": "Ergonomic wireless mouse with USB receiver"
+          },
+          "price": {
+            "type": "number",
+            "description": "Gets or sets the price of the product.",
+            "format": "double",
+            "example": 29.99
+          },
+          "stock": {
+            "type": "integer",
+            "description": "Gets or sets the initial stock quantity.",
+            "format": "int32",
+            "example": 50
+          }
+        },
+        "additionalProperties": false,
+        "description": "Data transfer object for creating a new product."
+      },
+      "ProductUpdateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Gets or sets the updated name of the product (optional).",
+            "nullable": true,
+            "example": "Updated Product Name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Gets or sets the updated description of the product (optional).",
+            "nullable": true,
+            "example": "Updated product description"
+          },
+          "price": {
+            "type": "number",
+            "description": "Gets or sets the updated price of the product (optional).",
+            "format": "double",
+            "nullable": true,
+            "example": 149.99
+          },
+          "stock": {
+            "type": "integer",
+            "description": "Gets or sets the updated stock quantity (optional).",
+            "format": "int32",
+            "nullable": true,
+            "example": 25
+          }
+        },
+        "additionalProperties": false,
+        "description": "Data transfer object for updating an existing product.\nAll fields are optional - only include fields you want to update."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Products"
+    }
+  ]
+}
