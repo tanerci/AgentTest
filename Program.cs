@@ -52,8 +52,22 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(
-            builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:5000", "https://localhost:5001" })
+        var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>();
+        
+        // In production, require explicit configuration; in development, use secure defaults
+        if (allowedOrigins == null || allowedOrigins.Length == 0)
+        {
+            if (builder.Environment.IsDevelopment())
+            {
+                allowedOrigins = new[] { "https://localhost:5001" };
+            }
+            else
+            {
+                throw new InvalidOperationException("AllowedOrigins must be configured in production environment");
+            }
+        }
+        
+        policy.WithOrigins(allowedOrigins)
             .AllowCredentials()
             .AllowAnyHeader()
             .AllowAnyMethod();
@@ -114,7 +128,12 @@ app.Use(async (context, next) =>
     context.Response.Headers.Append("X-Frame-Options", "DENY");
     context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
     context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
-    context.Response.Headers.Append("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';");
+    
+    // Use a more restrictive CSP in production, allow unsafe-inline/unsafe-eval only in development for Swagger
+    var csp = app.Environment.IsDevelopment() 
+        ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';" 
+        : "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';";
+    context.Response.Headers.Append("Content-Security-Policy", csp);
     await next();
 });
 
