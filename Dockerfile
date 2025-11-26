@@ -21,7 +21,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
 # Create non-root user for security
-RUN adduser --disabled-password --gecos '' --uid 1000 appuser
+RUN adduser --disabled-password --gecos '' --uid 10001 appuser
 USER appuser
 
 # Copy published application
