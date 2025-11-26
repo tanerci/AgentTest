@@ -1,0 +1,219 @@
+{
+  "version": "1.0",
+  "accessibilityRules": [
+    {
+      "id": "ACC001",
+      "name": "DescriptiveErrorMessages",
+      "description": "Error messages must be clear, descriptive, and actionable",
+      "severity": "error",
+      "requirements": [
+        "Explain what went wrong",
+        "Provide guidance on how to fix it",
+        "Use user-friendly language"
+      ],
+      "examples": {
+        "bad": "Error occurred",
+        "good": "Product name is required. Please provide a name between 1-100 characters."
+      }
+    },
+    {
+      "id": "ACC002",
+      "name": "ConsistentResponseFormat",
+      "description": "Use consistent, predictable response formats across all endpoints",
+      "severity": "error",
+      "recommendation": "Use ProblemDetails (RFC 7807) for errors"
+    },
+    {
+      "id": "ACC003",
+      "name": "LocalizationSupport",
+      "description": "Support multiple languages for error messages and responses",
+      "severity": "warning",
+      "requiredLanguages": ["en", "tr"],
+      "recommendation": "Use resource files (.resx) for all user-facing text"
+    },
+    {
+      "id": "ACC004",
+      "name": "SemanticNaming",
+      "description": "Use clear, semantic names for endpoints, parameters, and responses",
+      "severity": "warning",
+      "badPatterns": [
+        "x, y, z as parameter names",
+        "temp, data as variable names",
+        "DoStuff, ProcessData as method names"
+      ],
+      "recommendation": "Use descriptive names like 'productId', 'customerName', 'CreateOrder'"
+    },
+    {
+      "id": "ACC005",
+      "name": "InclusiveLanguage",
+      "description": "Use inclusive, non-discriminatory language in code and documentation",
+      "severity": "warning",
+      "forbiddenTerms": {
+        "blacklist": "denylist or blocklist",
+        "whitelist": "allowlist or safelist",
+        "master": "primary or main",
+        "slave": "replica or secondary",
+        "dummy": "placeholder or sample",
+        "sanity check": "validation or verification"
+      }
+    },
+    {
+      "id": "ACC006",
+      "name": "HelpfulValidationMessages",
+      "description": "Validation messages should guide users to correct input",
+      "severity": "warning",
+      "requirements": [
+        "Specify the field name",
+        "Explain the constraint",
+        "Provide valid examples if helpful"
+      ],
+      "examples": {
+        "bad": "Invalid input",
+        "good": "Email must be in format: user@example.com"
+      }
+    },
+    {
+      "id": "ACC007",
+      "name": "StatusCodeDescriptions",
+      "description": "Include human-readable descriptions with HTTP status codes",
+      "severity": "info",
+      "recommendation": "Use ProblemDetails 'title' and 'detail' properties"
+    },
+    {
+      "id": "ACC008",
+      "name": "ApiDocumentation",
+      "description": "All public endpoints must have XML documentation",
+      "severity": "warning",
+      "requirements": [
+        "Summary description",
+        "Parameter descriptions",
+        "Response descriptions",
+        "Example requests/responses"
+      ]
+    },
+    {
+      "id": "ACC009",
+      "name": "ConsistentNaming",
+      "description": "Use consistent naming conventions across the API",
+      "severity": "warning",
+      "conventions": {
+        "endpoints": "PascalCase or kebab-case",
+        "properties": "camelCase in JSON",
+        "headers": "kebab-case"
+      }
+    },
+    {
+      "id": "ACC010",
+      "name": "ClearHttpMethods",
+      "description": "Use HTTP methods semantically and consistently",
+      "severity": "error",
+      "semantics": {
+        "GET": "Retrieve data (idempotent, safe)",
+        "POST": "Create new resource",
+        "PUT": "Replace entire resource",
+        "PATCH": "Partial update",
+        "DELETE": "Remove resource"
+      }
+    }
+  ],
+  "errorMessages": {
+    "characteristics": [
+      "Written in plain language",
+      "Free of jargon and technical terms",
+      "Actionable (tell user what to do)",
+      "Specific (not vague)",
+      "Polite and professional",
+      "Localized to user's language"
+    ],
+    "structure": {
+      "type": "Error category (validation, authorization, etc.)",
+      "title": "Short, human-readable summary",
+      "detail": "Specific explanation",
+      "instance": "Request path for context",
+      "errors": "Field-specific validation errors (if applicable)"
+    }
+  },
+  "localization": {
+    "defaultLanguage": "en",
+    "supportedLanguages": ["en", "tr"],
+    "resourceFiles": {
+      "location": "Resources/",
+      "naming": "ErrorMessages.{culture}.resx"
+    },
+    "implementation": [
+      "Use IStringLocalizer<T> for localization",
+      "Accept Accept-Language header",
+      "Fall back to default language if not supported",
+      "Include language in ProblemDetails if relevant"
+    ]
+  },
+  "inclusiveLanguage": {
+    "principle": "Use language that is respectful and inclusive of all people",
+    "guidelines": [
+      "Avoid idioms that may not translate well",
+      "Use gender-neutral terms",
+      "Avoid ableist language",
+      "Use person-first language when appropriate",
+      "Avoid cultural assumptions"
+    ],
+    "alternatives": {
+      "guys": "folks, people, team, everyone",
+      "mankind": "humanity, people, humankind",
+      "man-hours": "person-hours, work-hours"
+    }
+  },
+  "documentation": {
+    "xmlComments": {
+      "required": true,
+      "elements": [
+        "<summary>",
+        "<param>",
+        "<returns>",
+        "<exception>",
+        "<example>"
+      ]
+    },
+    "swagger": {
+      "enableAnnotations": true,
+      "includeXmlComments": true,
+      "provideExamples": true,
+      "describeResponses": true
+    },
+    "readmeAccessibility": {
+      "clearInstructions": true,
+      "codeExamples": true,
+      "errorHandlingSection": true,
+      "localizationInfo": true
+    }
+  },
+  "responseConsistency": {
+    "successFormat": {
+      "structure": "Consistent data envelope",
+      "includeMetadata": "timestamp, requestId if helpful"
+    },
+    "errorFormat": {
+      "standard": "ProblemDetails (RFC 7807)",
+      "structure": {
+        "type": "URI identifying error type",
+        "title": "Human-readable summary",
+        "status": "HTTP status code",
+        "detail": "Explanation",
+        "instance": "URI of specific occurrence"
+      }
+    }
+  },
+  "bestPractices": [
+    "Test API with screen readers if providing UI",
+    "Use semantic HTML if generating HTML responses",
+    "Provide text alternatives for non-text content",
+    "Ensure sufficient color contrast in any UI",
+    "Support keyboard navigation in any interactive elements",
+    "Test with users who have diverse abilities",
+    "Provide clear, consistent error messages",
+    "Support localization from the beginning",
+    "Use inclusive language throughout",
+    "Document accessibility features",
+    "Consider cognitive load in API design",
+    "Make error recovery straightforward"
+  ]
+}

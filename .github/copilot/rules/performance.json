@@ -1,0 +1,190 @@
+{
+  "version": "1.0",
+  "performanceRules": [
+    {
+      "id": "PERF001",
+      "name": "UseAsNoTracking",
+      "description": "Use AsNoTracking() for read-only queries to improve performance",
+      "severity": "warning",
+      "scope": ["Entity Framework queries"],
+      "examples": {
+        "bad": "_context.Products.ToListAsync()",
+        "good": "_context.Products.AsNoTracking().ToListAsync()"
+      },
+      "impact": "Reduces memory usage and improves query performance by 20-30%"
+    },
+    {
+      "id": "PERF002",
+      "name": "AvoidNPlusOneQueries",
+      "description": "Use Include/ThenInclude to avoid N+1 query problems",
+      "severity": "error",
+      "examples": {
+        "bad": "foreach (var product in products) { var category = await _context.Categories.FindAsync(product.CategoryId); }",
+        "good": "var products = await _context.Products.Include(p => p.Category).ToListAsync();"
+      },
+      "impact": "Can reduce database calls from hundreds to single query"
+    },
+    {
+      "id": "PERF003",
+      "name": "AvoidBlockingCalls",
+      "description": "Don't use blocking calls like .Result or .Wait() in async code",
+      "severity": "critical",
+      "forbiddenPatterns": [
+        "\\.Result",
+        "\\.Wait\\(\\)",
+        "\\.GetAwaiter\\(\\).GetResult\\(\\)"
+      ],
+      "examples": {
+        "bad": "var result = asyncMethod().Result;",
+        "good": "var result = await asyncMethod();"
+      },
+      "impact": "Prevents deadlocks and thread pool starvation"
+    },
+    {
+      "id": "PERF004",
+      "name": "AvoidSelectN",
+      "description": "Project only required columns instead of fetching entire entities",
+      "severity": "warning",
+      "examples": {
+        "bad": "var products = await _context.Products.ToListAsync();",
+        "good": "var products = await _context.Products.Select(p => new { p.Id, p.Name }).ToListAsync();"
+      },
+      "recommendation": "Use Select to project only needed properties"
+    },
+    {
+      "id": "PERF005",
+      "name": "UseIAsyncEnumerable",
+      "description": "Use IAsyncEnumerable for streaming large datasets",
+      "severity": "info",
+      "recommendation": "Return IAsyncEnumerable<T> for large result sets"
+    },
+    {
+      "id": "PERF006",
+      "name": "AvoidExpensiveOperationsInLoops",
+      "description": "Don't perform expensive operations inside loops",
+      "severity": "error",
+      "forbiddenPatterns": [
+        "foreach.*await.*SaveChangesAsync",
+        "for.*await.*FindAsync"
+      ],
+      "recommendation": "Batch operations or use AddRange/UpdateRange"
+    },
+    {
+      "id": "PERF007",
+      "name": "UseStringBuilder",
+      "description": "Use StringBuilder for string concatenation in loops",
+      "severity": "warning",
+      "examples": {
+        "bad": "foreach (var item in items) { result += item.ToString(); }",
+        "good": "var sb = new StringBuilder(); foreach (var item in items) { sb.Append(item); }"
+      }
+    },
+    {
+      "id": "PERF008",
+      "name": "ImplementCaching",
+      "description": "Use caching for frequently accessed, infrequently changed data",
+      "severity": "info",
+      "recommendation": "Use IMemoryCache or IDistributedCache for appropriate scenarios"
+    },
+    {
+      "id": "PERF009",
+      "name": "UsePaginatedQueries",
+      "description": "Always paginate large result sets",
+      "severity": "warning",
+      "recommendation": "Use Skip/Take or PagedList for large collections"
+    },
+    {
+      "id": "PERF010",
+      "name": "AvoidSynchronousIO",
+      "description": "Use async I/O operations for file and network operations",
+      "severity": "error",
+      "forbiddenPatterns": [
+        "File\\.ReadAllText\\(",
+        "File\\.WriteAllText\\(",
+        "StreamReader\\.ReadToEnd\\("
+      ]
+    },
+    {
+      "id": "PERF011",
+      "name": "UseCompiledQueries",
+      "description": "Use compiled queries for frequently executed EF queries",
+      "severity": "info",
+      "recommendation": "Use EF.CompileQuery or EF.CompileAsyncQuery"
+    },
+    {
+      "id": "PERF012",
+      "name": "OptimizeLINQ",
+      "description": "Optimize LINQ queries to execute on database, not in-memory",
+      "severity": "warning",
+      "badPatterns": [
+        "ToList\\(\\)\\.Where\\(",
+        "ToList\\(\\)\\.Select\\(",
+        "ToList\\(\\)\\.OrderBy\\("
+      ],
+      "recommendation": "Chain LINQ operations before materializing with ToList()"
+    }
+  ],
+  "entityFramework": {
+    "queryOptimization": {
+      "useAsNoTracking": true,
+      "useProjections": true,
+      "avoidCartesianExplosion": true,
+      "useSplitQuery": true,
+      "useSplitQueryNote": "For large includes",
+      "batchOperations": true
+    },
+    "changeTracking": {
+      "disableForReadOnly": true,
+      "useAttach": true,
+      "useAttachNote": "For updates",
+      "minimizeDetectedChanges": true
+    },
+    "connectionManagement": {
+      "useConnectionPooling": true,
+      "configureMaxPoolSize": true,
+      "enableRetryOnFailure": true
+    }
+  },
+  "async": {
+    "bestPractices": [
+      "Always use async/await for I/O operations",
+      "Never use .Result or .Wait()",
+      "Use ConfigureAwait(false) in libraries",
+      "Return Task directly when possible",
+      "Use ValueTask for hot paths"
+    ]
+  },
+  "caching": {
+    "strategies": {
+      "memory": "For small, frequently accessed data",
+      "distributed": "For multi-instance scenarios",
+      "response": "For HTTP responses",
+      "output": "For razor pages/views"
+    },
+    "considerations": [
+      "Set appropriate expiration times",
+      "Implement cache invalidation strategy",
+      "Monitor cache hit/miss ratios",
+      "Consider memory constraints"
+    ]
+  },
+  "httpClients": {
+    "useHttpClientFactory": true,
+    "reuseConnections": true,
+    "configureTimeout": true,
+    "implementRetryPolicy": true,
+    "useCircuitBreaker": true
+  },
+  "recommendations": [
+    "Profile before optimizing",
+    "Use BenchmarkDotNet for accurate measurements",
+    "Monitor application metrics (response time, memory, CPU)",
+    "Implement database query logging in development",
+    "Use Application Insights or similar APM tools",
+    "Optimize database indexes based on query patterns",
+    "Consider read replicas for read-heavy workloads",
+    "Implement proper pagination for large datasets",
+    "Use response compression for APIs",
+    "Enable HTTP/2 or HTTP/3 when possible"
+  ]
+}

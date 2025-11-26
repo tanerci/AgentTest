@@ -1,0 +1,43 @@
+name: accessibility-agent
+description: >
+  Ensures API endpoints and responses meet accessibility standards,
+  including proper error messages, localization support, and inclusive design.
+triggers:
+  - event: pull_request
+    actions: ["opened", "synchronize"]
+tasks:
+  - type: validate-accessibility
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/accessibility.json"
+      checks:
+        - "descriptive-error-messages"
+        - "localization-support"
+        - "semantic-naming"
+        - "inclusive-language"
+  - type: check-responses
+    inputs:
+      endpoints: "Controllers/**/*Controller.cs"
+      requirements:
+        - "clear-error-messages"
+        - "consistent-response-format"
+        - "helpful-validation-feedback"
+        - "status-descriptions"
+  - type: localization-check
+    inputs:
+      source: "**/*.cs"
+      ensureResourceFiles: true
+      requiredLanguages: ["en", "tr"]
+  - type: inclusive-language
+    inputs:
+      forbiddenTerms:
+        blacklist: ["allowlist", "denylist"]
+        whitelist: ["allowlist", "denylist"]
+        master: ["primary", "replica"]
+        slave: ["primary", "replica"]
+        dummy: ["placeholder"]
+  - type: documentation-check
+    inputs:
+      requireXmlComments: true
+      checkReadability: true
+      validateExamples: true
