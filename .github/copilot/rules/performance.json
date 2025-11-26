@@ -129,12 +129,14 @@
       "useAsNoTracking": true,
       "useProjections": true,
       "avoidCartesianExplosion": true,
-      "useSplitQuery": "For large includes",
+      "useSplitQuery": true,
+      "useSplitQueryNote": "For large includes",
       "batchOperations": true
     },
     "changeTracking": {
       "disableForReadOnly": true,
-      "useAttach": "For updates",
+      "useAttach": true,
+      "useAttachNote": "For updates",
       "minimizeDetectedChanges": true
     },
     "connectionManagement": {
