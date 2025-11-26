@@ -116,7 +116,7 @@
       "name": "OptimizeLINQ",
       "description": "Optimize LINQ queries to execute on database, not in-memory",
       "severity": "warning",
-      "badPatterns": [
+      "forbiddenPatterns": [
         "ToList().Where(",
         "ToList().Select(",
         "ToList().OrderBy("
