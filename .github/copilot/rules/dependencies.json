@@ -1,0 +1,136 @@
+{
+  "version": "1.0",
+  "dependencyRules": [
+    {
+      "id": "DEP001",
+      "name": "NoOutdatedPackages",
+      "description": "Keep packages up to date, no more than 2 major versions behind",
+      "severity": "warning",
+      "threshold": {
+        "majorVersions": 2,
+        "ageInMonths": 12
+      }
+    },
+    {
+      "id": "DEP002",
+      "name": "NoVulnerablePackages",
+      "description": "No packages with known security vulnerabilities",
+      "severity": "critical",
+      "action": "Block PR if critical vulnerabilities found"
+    },
+    {
+      "id": "DEP003",
+      "name": "NoDeprecatedPackages",
+      "description": "Avoid using deprecated or unmaintained packages",
+      "severity": "error",
+      "checkCriteria": [
+        "Package marked deprecated on NuGet",
+        "No updates in 24+ months",
+        "Known successor package exists"
+      ]
+    },
+    {
+      "id": "DEP004",
+      "name": "ConsistentVersioning",
+      "description": "Use consistent package versions across all projects",
+      "severity": "warning",
+      "scope": "Solution-wide"
+    },
+    {
+      "id": "DEP005",
+      "name": "LicenseCompliance",
+      "description": "Verify all packages have compatible licenses",
+      "severity": "error",
+      "allowedLicenses": [
+        "MIT",
+        "Apache-2.0",
+        "BSD-2-Clause",
+        "BSD-3-Clause",
+        "ISC"
+      ],
+      "requireReview": [
+        "GPL",
+        "LGPL",
+        "AGPL"
+      ]
+    },
+    {
+      "id": "DEP006",
+      "name": "MinimizeDependencies",
+      "description": "Avoid unnecessary dependencies that increase attack surface",
+      "severity": "info",
+      "recommendation": "Review if package is really needed"
+    },
+    {
+      "id": "DEP007",
+      "name": "UseOfficialPackages",
+      "description": "Prefer official Microsoft or trusted vendor packages",
+      "severity": "warning",
+      "trustedPublishers": [
+        "Microsoft",
+        "NuGet",
+        "ASP.NET"
+      ]
+    },
+    {
+      "id": "DEP008",
+      "name": "NoPreReleaseInProduction",
+      "description": "Don't use pre-release packages in production code",
+      "severity": "error",
+      "allowedBranches": ["develop", "feature/*"]
+    }
+  ],
+  "updateStrategy": {
+    "frequency": "weekly",
+    "grouping": {
+      "securityUpdates": "immediate",
+      "majorUpdates": "manual-review",
+      "minorUpdates": "automated",
+      "patchUpdates": "automated"
+    },
+    "testing": {
+      "runTests": true,
+      "requirePassing": true,
+      "requireCodeReview": "For major updates"
+    }
+  },
+  "vulnerabilityScanning": {
+    "databases": [
+      "National Vulnerability Database (NVD)",
+      "GitHub Advisory Database",
+      "NuGet Advisory Database"
+    ],
+    "severityThresholds": {
+      "critical": "Block deployment",
+      "high": "Require fix within 7 days",
+      "medium": "Require fix within 30 days",
+      "low": "Advisory only"
+    }
+  },
+  "monitoredPackages": {
+    "framework": [
+      "Microsoft.AspNetCore.*",
+      "Microsoft.EntityFrameworkCore.*",
+      "Microsoft.Extensions.*"
+    ],
+    "security": [
+      "Microsoft.AspNetCore.Authentication.*",
+      "BCrypt.Net-Next"
+    ],
+    "testing": [
+      "xunit",
+      "NSubstitute",
+      "Microsoft.AspNetCore.Mvc.Testing"
+    ]
+  },
+  "recommendations": [
+    "Enable Dependabot or Renovate for automated dependency updates",
+    "Review dependency updates in batches to reduce noise",
+    "Test thoroughly after major version updates",
+    "Keep a changelog of dependency updates",
+    "Monitor package download statistics and community activity",
+    "Consider alternatives before adding new dependencies",
+    "Use Central Package Management for multi-project solutions",
+    "Document reasons for using specific package versions"
+  ]
+}

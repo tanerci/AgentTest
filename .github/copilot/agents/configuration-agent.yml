@@ -1,0 +1,49 @@
+name: configuration-agent
+description: >
+  Validates application configuration files for consistency, security,
+  and best practices. Detects hardcoded secrets and missing settings.
+triggers:
+  - event: push
+    branches: ["main", "develop"]
+  - event: pull_request
+    actions: ["opened", "synchronize"]
+    paths:
+      - "appsettings*.json"
+      - "*.config"
+      - "web.config"
+tasks:
+  - type: validate-configuration
+    inputs:
+      source: "appsettings*.json"
+      ruleset: ".github/copilot/rules/configuration.json"
+      checks:
+        - "required-settings"
+        - "hardcoded-secrets"
+        - "environment-variables"
+        - "connection-strings"
+  - type: secret-detection
+    inputs:
+      patterns:
+        - "api-keys"
+        - "passwords"
+        - "connection-strings-with-credentials"
+        - "private-keys"
+        - "tokens"
+      severity: "critical"
+  - type: consistency-check
+    inputs:
+      files:
+        - "appsettings.json"
+        - "appsettings.Development.json"
+        - "appsettings.Production.json"
+      ensureCommonKeys: true
+  - type: generate-schema
+    inputs:
+      output: "appsettings.schema.json"
+      includeDescriptions: true
+  - type: suggest-improvements
+    inputs:
+      recommendations:
+        - "use-user-secrets"
+        - "use-key-vault"
+        - "environment-specific-settings"

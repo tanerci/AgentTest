@@ -1,0 +1,185 @@
+{
+  "version": "1.0",
+  "configurationRules": [
+    {
+      "id": "CFG001",
+      "name": "NoHardcodedSecrets",
+      "description": "Never hardcode secrets, passwords, or API keys in configuration files",
+      "severity": "critical",
+      "forbiddenPatterns": [
+        "\"Password\"\\s*:\\s*\"[^{]",
+        "\"ApiKey\"\\s*:\\s*\"[^{]",
+        "\"Secret\"\\s*:\\s*\"[^{]",
+        "\"ConnectionString\".*Password=(?!\\{)",
+        "\"Token\"\\s*:\\s*\"[^{]"
+      ],
+      "recommendation": "Use User Secrets, Environment Variables, or Azure Key Vault"
+    },
+    {
+      "id": "CFG002",
+      "name": "UseEnvironmentVariables",
+      "description": "Use environment-specific settings via environment variables",
+      "severity": "warning",
+      "examples": {
+        "bad": "\"ApiUrl\": \"https://api.production.com\"",
+        "good": "\"ApiUrl\": \"%API_URL%\" or read from IConfiguration"
+      }
+    },
+    {
+      "id": "CFG003",
+      "name": "RequiredSettings",
+      "description": "Ensure all required configuration settings are present",
+      "severity": "error",
+      "requiredSections": [
+        "Logging",
+        "AllowedHosts"
+      ],
+      "recommendedSections": [
+        "ConnectionStrings",
+        "Authentication",
+        "Cors"
+      ]
+    },
+    {
+      "id": "CFG004",
+      "name": "ConsistentStructure",
+      "description": "Maintain consistent configuration structure across environments",
+      "severity": "warning",
+      "environments": [
+        "Development",
+        "Staging",
+        "Production"
+      ],
+      "recommendation": "Same keys should exist in all environment configs"
+    },
+    {
+      "id": "CFG005",
+      "name": "ValidJsonSyntax",
+      "description": "Configuration files must be valid JSON",
+      "severity": "critical",
+      "checks": [
+        "Valid JSON syntax",
+        "No trailing commas",
+        "Proper escaping"
+      ]
+    },
+    {
+      "id": "CFG006",
+      "name": "SecureConnectionStrings",
+      "description": "Connection strings should not contain credentials in source control",
+      "severity": "critical",
+      "recommendation": "Use integrated security or reference from secure storage"
+    },
+    {
+      "id": "CFG007",
+      "name": "LoggingConfiguration",
+      "description": "Configure appropriate logging levels per environment",
+      "severity": "warning",
+      "recommended": {
+        "Development": "Debug",
+        "Staging": "Information",
+        "Production": "Warning"
+      }
+    },
+    {
+      "id": "CFG008",
+      "name": "CorsConfiguration",
+      "description": "CORS settings should be restrictive in production",
+      "severity": "error",
+      "production": {
+        "AllowAnyOrigin": false,
+        "SpecificOrigins": true
+      }
+    },
+    {
+      "id": "CFG009",
+      "name": "UseUserSecrets",
+      "description": "Use User Secrets for local development sensitive data",
+      "severity": "info",
+      "recommendation": "dotnet user-secrets init and dotnet user-secrets set"
+    },
+    {
+      "id": "CFG010",
+      "name": "EnvironmentValidation",
+      "description": "Validate configuration on application startup",
+      "severity": "warning",
+      "recommendation": "Use IOptions validation or custom validation"
+    }
+  ],
+  "environmentSpecific": {
+    "Development": {
+      "allowHttp": true,
+      "detailedErrors": true,
+      "developerExceptionPage": true,
+      "sensitiveDataLogging": true
+    },
+    "Production": {
+      "allowHttp": false,
+      "detailedErrors": false,
+      "developerExceptionPage": false,
+      "sensitiveDataLogging": false,
+      "requireHttps": true,
+      "useHsts": true
+    }
+  },
+  "secretManagement": {
+    "development": {
+      "method": "User Secrets",
+      "command": "dotnet user-secrets set \"Key\" \"Value\""
+    },
+    "staging": {
+      "method": "Environment Variables",
+      "source": "CI/CD pipeline"
+    },
+    "production": {
+      "method": "Azure Key Vault / AWS Secrets Manager",
+      "recommendation": "Use managed identity for authentication"
+    }
+  },
+  "requiredSections": {
+    "Logging": {
+      "required": true,
+      "structure": {
+        "LogLevel": {
+          "Default": "Information",
+          "Microsoft.AspNetCore": "Warning"
+        }
+      }
+    },
+    "AllowedHosts": {
+      "required": true,
+      "production": "Specific domains only"
+    },
+    "ConnectionStrings": {
+      "required": false,
+      "securityNote": "Never commit with actual credentials"
+    }
+  },
+  "validationChecks": [
+    "JSON syntax validity",
+    "Required keys presence",
+    "Value type correctness",
+    "Connection string format",
+    "URL format validation",
+    "Port number ranges",
+    "Timeout values reasonability"
+  ],
+  "bestPractices": [
+    "Use strongly-typed configuration classes with IOptions<T>",
+    "Validate configuration on startup",
+    "Use different configuration files per environment",
+    "Never commit secrets to source control",
+    "Use configuration providers hierarchy (appsettings -> env vars -> key vault)",
+    "Document all configuration options",
+    "Use JSON schema for configuration validation",
+    "Implement configuration change detection and reloading",
+    "Use Azure App Configuration for centralized config management",
+    "Encrypt sensitive sections in web.config if using .NET Framework"
+  ],
+  "tooling": {
+    "userSecrets": "dotnet user-secrets",
+    "azureKeyVault": "Azure.Extensions.AspNetCore.Configuration.Secrets",
+    "environmentVariables": "Process environment or docker compose",
+    "configValidation": "IValidateOptions<T> or DataAnnotations"
+  }
+}

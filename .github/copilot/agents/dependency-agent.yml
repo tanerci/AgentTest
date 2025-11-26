@@ -1,0 +1,37 @@
+name: dependency-agent
+description: >
+  Monitors NuGet packages for outdated or vulnerable versions,
+  suggests upgrades, and can generate automated update PRs.
+triggers:
+  - event: schedule
+    cron: "0 9 * * MON"  # Weekly on Monday at 9 AM
+  - event: pull_request
+    actions: ["opened"]
+tasks:
+  - type: scan-dependencies
+    inputs:
+      source: "**/*.csproj"
+      ruleset: ".github/copilot/rules/dependencies.json"
+      checks:
+        - "outdated-packages"
+        - "security-vulnerabilities"
+        - "deprecated-packages"
+        - "license-compliance"
+  - type: vulnerability-check
+    inputs:
+      databases:
+        - "NVD"
+        - "GitHub Advisory"
+        - "NuGet Advisory"
+      severity: ["critical", "high", "medium"]
+  - type: suggest-upgrades
+    inputs:
+      strategy: "conservative"
+      respectSemver: true
+      breakingChangeWarnings: true
+  - type: generate-pr
+    inputs:
+      autoMerge: false
+      requireApproval: true
+      groupUpdates: true
+      title: "chore: Update dependencies"

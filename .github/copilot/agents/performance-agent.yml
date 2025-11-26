@@ -1,0 +1,40 @@
+name: performance-agent
+description: >
+  Detects performance bottlenecks, inefficient queries, blocking calls,
+  and suggests optimizations for better application performance.
+triggers:
+  - event: pull_request
+    actions: ["opened", "synchronize"]
+  - event: push
+    branches: ["main", "develop"]
+tasks:
+  - type: performance-analysis
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/performance.json"
+      checks:
+        - "inefficient-linq"
+        - "nested-loops"
+        - "blocking-async-calls"
+        - "n-plus-one-queries"
+  - type: detect-issues
+    inputs:
+      patterns:
+        - "synchronous-io"
+        - "missing-asnotracking"
+        - "expensive-operations-in-loops"
+        - "large-object-allocation"
+        - "string-concatenation-loops"
+  - type: suggest-optimizations
+    inputs:
+      framework: "ASP.NET Core"
+      orm: "Entity Framework Core"
+      recommendations:
+        - "async-await-patterns"
+        - "caching-strategies"
+        - "query-optimization"
+        - "connection-pooling"
+  - type: generate-benchmarks
+    inputs:
+      output: "Benchmarks/"
+      framework: "BenchmarkDotNet"

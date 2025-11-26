@@ -109,6 +109,77 @@ This directory contains configuration files for GitHub Copilot agents that autom
 
 ---
 
+### 8. Performance Agent (`performance-agent.yml`)
+**Purpose:** Detects performance bottlenecks, inefficient queries, blocking calls, and suggests optimizations.
+
+**Triggers:**
+- Pull request opened or synchronized
+- Push events on `main` and `develop` branches
+
+**Tasks:**
+- Detect inefficient LINQ queries
+- Identify N+1 query problems
+- Find blocking async calls (.Result, .Wait())
+- Check for AsNoTracking in read-only queries
+- Suggest caching strategies
+- Generate performance benchmarks
+- Optimize database query patterns
+
+---
+
+### 9. Dependency Agent (`dependency-agent.yml`)
+**Purpose:** Monitors NuGet packages for outdated or vulnerable versions and suggests upgrades.
+
+**Triggers:**
+- Weekly schedule (Monday at 9 AM)
+- Pull request opened
+
+**Tasks:**
+- Scan for outdated packages
+- Check security vulnerabilities
+- Detect deprecated packages
+- Validate license compliance
+- Suggest version upgrades
+- Generate automated update PRs
+- Group related updates
+
+---
+
+### 10. Configuration Agent (`configuration-agent.yml`)
+**Purpose:** Validates application configuration files for consistency, security, and best practices.
+
+**Triggers:**
+- Push events on `main` and `develop` branches
+- Pull requests affecting configuration files
+
+**Tasks:**
+- Detect hardcoded secrets
+- Validate required settings
+- Check environment-specific configurations
+- Ensure consistency across appsettings files
+- Suggest User Secrets or Key Vault usage
+- Generate configuration schema
+- Validate JSON syntax
+
+---
+
+### 11. Accessibility Agent (`accessibility-agent.yml`)
+**Purpose:** Ensures API endpoints and responses meet accessibility standards with clear messaging and localization.
+
+**Triggers:**
+- Pull request opened or synchronized
+
+**Tasks:**
+- Validate descriptive error messages
+- Check localization support (en, tr)
+- Ensure inclusive language usage
+- Validate semantic naming conventions
+- Check API documentation completeness
+- Ensure consistent response formats
+- Verify helpful validation feedback
+
+---
+
 ## Configuration Files
 
 ### Rules
