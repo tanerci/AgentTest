@@ -80,6 +80,7 @@ public class ProductsController : ControllerBase
     /// <param name="productDto">The product information to create.</param>
     /// <returns>The newly created product.</returns>
     /// <response code="201">Product created successfully.</response>
+    /// <response code="400">Invalid request - validation errors.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <remarks>
     /// Sample request:
@@ -97,9 +98,14 @@ public class ProductsController : ControllerBase
     [Authorize]
     [HttpPost]
     [ProducesResponseType(typeof(Product), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<Product>> CreateProduct([FromBody] ProductCreateDto productDto)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
         var product = new Product
         {
             Name = productDto.Name,
@@ -121,6 +127,7 @@ public class ProductsController : ControllerBase
     /// <param name="productDto">The product fields to update (all fields are optional).</param>
     /// <returns>The updated product.</returns>
     /// <response code="200">Product updated successfully.</response>
+    /// <response code="400">Invalid request - validation errors.</response>
     /// <response code="401">User is not authenticated.</response>
     /// <response code="404">Product with the specified ID not found.</response>
     /// <remarks>
@@ -138,10 +145,15 @@ public class ProductsController : ControllerBase
     [Authorize]
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductUpdateDto productDto)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
         var product = await _context.Products.FindAsync(id);
 
         if (product == null)
