@@ -1,0 +1,21 @@
+name: cicd-agent
+description: >
+  Generates and updates GitHub Actions workflows for build, test, and deploy pipelines.
+triggers:
+  - event: push
+    branches: ["main"]
+tasks:
+  - type: generate-workflow
+    inputs:
+      template: ".github/copilot/templates/workflow.yml"
+      output: ".github/workflows/build-test-deploy.yml"
+  - type: validate-workflow
+    inputs:
+      command: "dotnet build --configuration Release"
+  - type: optimize-pipeline
+    inputs:
+      cache: true
+      parallel: true
+      artifacts:
+        - "bin/Release"
+        - "test-results"

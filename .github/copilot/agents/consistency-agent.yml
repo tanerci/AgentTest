@@ -1,0 +1,25 @@
+name: consistency-agent
+description: >
+  Enforces naming conventions, DRY principles, and consistent error handling.
+triggers:
+  - event: pull_request_review
+tasks:
+  - type: lint
+    inputs:
+      ruleset: ".github/copilot/rules/csharp-style.json"
+      source: "**/*.cs"
+  - type: refactor
+    inputs:
+      patterns:
+        - "duplicate-methods"
+        - "inconsistent-naming"
+        - "missing-error-handling"
+        - "magic-numbers"
+        - "long-methods"
+  - type: validate
+    inputs:
+      framework: "ASP.NET Core"
+      conventions:
+        - "controller-naming"
+        - "dto-naming"
+        - "async-suffix"

@@ -1,0 +1,120 @@
+{
+  "version": "1.0",
+  "securityRules": [
+    {
+      "id": "SEC001",
+      "name": "RequireAuthorization",
+      "description": "Controllers with sensitive operations must have authorization",
+      "severity": "critical",
+      "check": "authorize-attribute",
+      "scope": ["Controllers"]
+    },
+    {
+      "id": "SEC002",
+      "name": "SqlInjectionPrevention",
+      "description": "Use parameterized queries or ORM to prevent SQL injection",
+      "severity": "critical",
+      "patterns": [
+        "string.Concat.*SELECT",
+        "string.Format.*INSERT",
+        "\\$\".*WHERE.*\\{.*\\}\""
+      ]
+    },
+    {
+      "id": "SEC003",
+      "name": "XssProtection",
+      "description": "Sanitize user input to prevent XSS attacks",
+      "severity": "high",
+      "check": "input-validation",
+      "scope": ["Controllers", "Models"]
+    },
+    {
+      "id": "SEC004",
+      "name": "SecureCookies",
+      "description": "Cookies must be HttpOnly, Secure, and SameSite",
+      "severity": "high",
+      "requiredSettings": {
+        "HttpOnly": true,
+        "Secure": true,
+        "SameSite": "Strict"
+      }
+    },
+    {
+      "id": "SEC005",
+      "name": "PasswordHashing",
+      "description": "Passwords must be hashed using secure algorithms (BCrypt, PBKDF2, Argon2)",
+      "severity": "critical",
+      "allowedLibraries": [
+        "BCrypt.Net",
+        "Microsoft.AspNetCore.Identity"
+      ]
+    },
+    {
+      "id": "SEC006",
+      "name": "SensitiveDataLogging",
+      "description": "Avoid logging sensitive data (passwords, tokens, PII)",
+      "severity": "high",
+      "forbiddenPatterns": [
+        "Log.*password",
+        "Log.*token",
+        "Log.*ssn",
+        "Log.*creditcard"
+      ]
+    },
+    {
+      "id": "SEC007",
+      "name": "CorsConfiguration",
+      "description": "CORS policy should be restrictive and not allow all origins",
+      "severity": "medium",
+      "check": "cors-policy",
+      "forbiddenSettings": {
+        "AllowAnyOrigin": true,
+        "AllowCredentials": true
+      }
+    },
+    {
+      "id": "SEC008",
+      "name": "RateLimiting",
+      "description": "API endpoints should have rate limiting to prevent abuse",
+      "severity": "medium",
+      "recommendation": "EnableRateLimiting"
+    },
+    {
+      "id": "SEC009",
+      "name": "InsecureDeserialization",
+      "description": "Avoid deserializing untrusted data without validation",
+      "severity": "critical",
+      "check": "deserialization-security"
+    },
+    {
+      "id": "SEC010",
+      "name": "ApiKeyProtection",
+      "description": "API keys and secrets should not be hardcoded",
+      "severity": "critical",
+      "forbiddenPatterns": [
+        "apikey\\s*=\\s*[\"']",
+        "password\\s*=\\s*[\"']",
+        "secret\\s*=\\s*[\"']",
+        "connectionstring\\s*=\\s*[\"'].*password"
+      ]
+    }
+  ],
+  "middleware": {
+    "required": [
+      "Authentication",
+      "Authorization",
+      "Https"
+    ],
+    "recommended": [
+      "RateLimiter",
+      "Cors",
+      "Hsts",
+      "SecurityHeaders"
+    ]
+  },
+  "vulnerabilityScanning": {
+    "dependencies": true,
+    "codeAnalysis": true,
+    "secretScanning": true
+  }
+}

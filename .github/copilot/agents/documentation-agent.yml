@@ -1,0 +1,16 @@
+name: documentation-agent
+description: >
+  Keeps API documentation up to date by generating XML comments, Swagger/OpenAPI specs,
+  and refreshing README.md when endpoints change.
+triggers:
+  - event: push
+    branches: ["main", "develop"]
+tasks:
+  - type: generate-docs
+    inputs:
+      source: "**/*.cs"
+      output: "docs/api"
+  - type: update-readme
+    inputs:
+      template: "docs/templates/readme.md"
+      output: "README.md"

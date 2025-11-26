@@ -1,0 +1,33 @@
+name: security-agent
+description: >
+  Scans for missing authentication/authorization and suggests middleware improvements.
+triggers:
+  - event: push
+    branches: ["main", "develop"]
+  - event: pull_request
+    actions: ["opened", "synchronize"]
+tasks:
+  - type: security-scan
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/security.json"
+      checks:
+        - "sql-injection"
+        - "xss-vulnerabilities"
+        - "insecure-deserialization"
+        - "weak-cryptography"
+  - type: auth-check
+    inputs:
+      endpoints: "Controllers/**/*Controller.cs"
+      verify:
+        - "authorize-attribute"
+        - "authentication-scheme"
+        - "cookie-security"
+  - type: suggest-middleware
+    inputs:
+      framework: "ASP.NET Core"
+      output: "Middleware/SecurityMiddleware.cs"
+      features:
+        - "rate-limiting"
+        - "cors-policy"
+        - "csrf-protection"
