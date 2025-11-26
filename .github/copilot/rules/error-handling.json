@@ -1,75 +1,282 @@
 {
-  "version": "1.1",
+  "version": "2.0",
+  "philosophy": "Use Result<T> pattern for expected failures. Reserve exceptions for truly exceptional, unrecoverable situations. Let the global exception handler catch any unhandled errors to avoid double catch overhead.",
+  "performanceNote": "Throwing and catching exceptions is ~1000x slower than returning Result<T>. Never use exceptions for flow control.",
   "errorHandlingRules": [
     {
       "id": "ERR001",
       "name": "UseResultPattern",
       "description": "Prefer Result<T> for expected failures instead of throwing exceptions.",
       "severity": "critical",
-      "recommendation": "Return Result<T> with Success/Failure instead of try-catch for domain logic."
+      "recommendation": "Return Result<T> with Success/Failure instead of try-catch for domain logic.",
+      "examples": {
+        "bad": "if (!found) throw new NotFoundException(\"Product not found\");",
+        "good": "if (!found) return Result<Product>.Failure(\"Product not found\", ErrorType.NotFound);"
+      },
+      "useCases": [
+        "Validation failures",
+        "Business rule violations",
+        "Not found scenarios",
+        "Conflict states",
+        "Insufficient permissions (expected)",
+        "Duplicate entries"
+      ],
+      "performance": "Near zero overhead - single object allocation"
     },
     {
       "id": "ERR002",
-      "name": "NoEmptyCatchBlocks",
-      "description": "Catch blocks must not be empty or only contain comments.",
-      "severity": "error"
+      "name": "ExceptionsForExceptionalOnly",
+      "description": "Only throw exceptions for truly exceptional, unrecoverable situations.",
+      "severity": "critical",
+      "throwExceptionsFor": [
+        "Infrastructure failures (database down, network unreachable)",
+        "Configuration errors (missing required settings)",
+        "Programming errors (null reference, index out of range)",
+        "System resource exhaustion (out of memory)",
+        "External service failures (timeout, unavailable)"
+      ],
+      "neverThrowFor": [
+        "Validation failures - use Result.ValidationError()",
+        "Business logic failures - use Result.Failure()",
+        "User input errors - use Result.ValidationError()",
+        "Expected not found - use Result.NotFound()",
+        "Conflict situations - use Result.Conflict()"
+      ],
+      "rationale": "Exception throw/catch has significant performance overhead. Let infrastructure exceptions bubble to global handler."
     },
     {
       "id": "ERR003",
-      "name": "AvoidGenericExceptions",
-      "description": "Catch specific exceptions only in global handler or infrastructure boundaries.",
-      "severity": "warning"
+      "name": "NoTryCatchInBusinessLogic",
+      "description": "Avoid try-catch in business logic; let global handler catch infrastructure exceptions.",
+      "severity": "error",
+      "examples": {
+        "bad": "try { var product = await _context.Products.FindAsync(id); } catch (DbException ex) { _logger.LogError(ex, \"Error\"); return null; }",
+        "good": "var product = await _context.Products.FindAsync(id); // Let DbException bubble to global handler"
+      },
+      "rationale": "Catching and rethrowing adds overhead. Let exceptions bubble once to global handler for centralized logging.",
+      "exceptionsWhenAllowed": [
+        "Specific retry logic for transient failures",
+        "Resource cleanup (though using/finally preferred)",
+        "Graceful degradation with fallback behavior"
+      ]
     },
     {
       "id": "ERR004",
       "name": "GlobalExceptionHandlerOnly",
       "description": "Unhandled exceptions should be caught only by global middleware.",
       "severity": "critical",
-      "recommendation": "Do not wrap every method in try-catch; rely on middleware."
+      "recommendation": "Do not wrap every method in try-catch; rely on middleware for consistent exception handling.",
+      "benefits": [
+        "Single point of logging",
+        "Consistent error responses",
+        "No double-catch performance penalty",
+        "Centralized monitoring"
+      ]
     },
     {
       "id": "ERR005",
-      "name": "ReturnProblemDetails",
-      "description": "Use RFC 7807 ProblemDetails for error responses.",
-      "severity": "error"
+      "name": "NoEmptyCatchBlocks",
+      "description": "Catch blocks must not be empty - they swallow errors silently.",
+      "severity": "critical",
+      "examples": {
+        "bad": "try { await DoWork(); } catch { }",
+        "good": "Don't catch if you can't handle it - let it bubble to global handler"
+      },
+      "pattern": "catch\\s*\\([^)]*\\)\\s*\\{\\s*\\}"
     },
     {
       "id": "ERR006",
-      "name": "ProperHttpStatusCodes",
-      "description": "Map Result failures and exceptions to appropriate HTTP status codes.",
+      "name": "MapResultToHttpResponse",
+      "description": "Map Result errors to appropriate HTTP status codes in controllers.",
       "severity": "error",
-      "statusCodes": {
-        "400": "Bad Request - Validation failed",
-        "401": "Unauthorized",
-        "403": "Forbidden",
-        "404": "Not Found",
-        "409": "Conflict",
-        "422": "Unprocessable Entity",
-        "500": "Internal Server Error"
-      }
+      "mapping": {
+        "Success": "200 OK or 201 Created",
+        "NotFound": "404 Not Found",
+        "ValidationError": "400 Bad Request",
+        "Conflict": "409 Conflict",
+        "Unauthorized": "401 Unauthorized",
+        "Forbidden": "403 Forbidden",
+        "BusinessRuleViolation": "422 Unprocessable Entity"
+      },
+      "examples": {
+        "pattern": "return result.IsSuccess ? Ok(result.Value) : result.ToProblemDetails();"
+      },
+      "recommendation": "Create extension methods to map Result<T> to ActionResult easily"
     },
     {
       "id": "ERR007",
+      "name": "ReturnProblemDetails",
+      "description": "Use RFC 7807 ProblemDetails for all error responses.",
+      "severity": "error",
+      "implementation": "Both Result failures and global exception handler should return ProblemDetails",
+      "examples": {
+        "bad": "return BadRequest(\"Invalid input\");",
+        "good": "return Problem(statusCode: 400, title: \"Validation Error\", detail: error.Message, extensions: errors);"
+      }
+    },
+    {
+      "id": "ERR008",
       "name": "NoSensitiveDataInErrors",
-      "description": "Never expose sensitive data in error responses.",
-      "severity": "critical"
+      "description": "Never expose sensitive data or detailed stack traces in production error responses.",
+      "severity": "critical",
+      "forbiddenInProduction": [
+        "Database connection strings",
+        "Stack traces (dev only)",
+        "Internal file paths",
+        "API keys or secrets",
+        "SQL queries",
+        "Internal system details"
+      ],
+      "allowed": [
+        "User-friendly error messages",
+        "Validation error details",
+        "Trace ID for support",
+        "HTTP status codes"
+      ]
+    },
+    {
+      "id": "ERR009",
+      "name": "ValidateEarlyReturnFast",
+      "description": "Validate inputs at the API boundary and return Result immediately.",
+      "severity": "error",
+      "pattern": "if (!ModelState.IsValid) return ValidationProblem(ModelState);",
+      "recommendation": "Use FluentValidation or DataAnnotations, return 400 with field-level errors as Result"
+    },
+    {
+      "id": "ERR010",
+      "name": "NoExceptionForFlowControl",
+      "description": "Never use exceptions for normal program flow or business logic.",
+      "severity": "critical",
+      "examples": {
+        "bad": "try { var user = users.First(x => x.Id == id); } catch (InvalidOperationException) { return null; }",
+        "good": "var user = users.FirstOrDefault(x => x.Id == id); return user != null ? Result.Success(user) : Result.NotFound();"
+      },
+      "rationale": "Exceptions are 1000x slower than normal flow control. Use null checks, TryParse, FirstOrDefault, etc."
     }
   ],
+  "resultPatternStructure": {
+    "basic": {
+      "IsSuccess": "bool - indicates if operation succeeded",
+      "IsFailure": "bool - computed property (!IsSuccess)",
+      "Value": "T - the success value (only when IsSuccess)",
+      "Error": "Error object with code, message, details"
+    },
+    "errorObject": {
+      "Code": "string - error type code (NotFound, Validation, Conflict, etc.)",
+      "Message": "string - user-friendly error message",
+      "Details": "Dictionary<string, string[]> - field-level validation errors (optional)"
+    },
+    "staticFactories": [
+      "Result<T>.Success(T value)",
+      "Result<T>.Failure(string message, ErrorType type)",
+      "Result<T>.NotFound(string message)",
+      "Result<T>.ValidationError(Dictionary<string, string[]> errors)",
+      "Result<T>.Conflict(string message)"
+    ]
+  },
   "globalExceptionHandler": {
     "required": true,
+    "purpose": "Catch-all for unhandled infrastructure and unexpected errors only",
+    "responsibility": [
+      "Log all unhandled exceptions with full context",
+      "Return consistent ProblemDetails response",
+      "Map exception types to appropriate HTTP status codes",
+      "Hide sensitive information in production",
+      "Include trace ID for debugging"
+    ],
+    "doNotHandle": [
+      "Business logic errors (use Result pattern)",
+      "Validation errors (handle at API boundary with Result)",
+      "Expected not found scenarios (use Result.NotFound)",
+      "Conflict scenarios (use Result.Conflict)"
+    ],
     "features": {
       "logAllExceptions": true,
       "useProblemDetails": true,
       "includeTraceId": true,
-      "environmentAware": true
+      "environmentAware": true,
+      "performanceOptimized": "Only runs on unhandled exceptions"
+    },
+    "responseStructure": {
+      "development": {
+        "includeStackTrace": true,
+        "includeExceptionType": true,
+        "verboseMessages": true,
+        "includeInnerExceptions": true
+      },
+      "production": {
+        "includeStackTrace": false,
+        "includeExceptionType": false,
+        "genericMessages": true,
+        "sanitizeDetails": true,
+        "onlyTraceId": true
+      }
     }
   },
+  "performanceComparison": {
+    "exceptionThrowCatch": {
+      "cost": "~1000x slower than normal return",
+      "stackTraceCost": "Expensive to capture and format",
+      "when": "Only for truly exceptional situations"
+    },
+    "resultPattern": {
+      "cost": "Single object allocation - negligible overhead",
+      "performance": "Near zero performance impact",
+      "when": "All expected failure scenarios"
+    },
+    "recommendation": "Use Result for any predictable failure. Exceptions add significant overhead to both success and failure paths."
+  },
   "bestPractices": [
-    "Use Result<T> for domain and validation errors.",
-    "Reserve exceptions for truly exceptional cases.",
-    "Let unhandled exceptions bubble to global middleware.",
-    "Log all exceptions centrally with context.",
-    "Return consistent ProblemDetails responses.",
-    "Map Result failures to appropriate HTTP status codes."
-  ]
+    "ALWAYS use Result<T> for expected failures (validation, not found, conflicts, business rules)",
+    "NEVER throw exceptions for business logic or flow control",
+    "Let infrastructure exceptions bubble to global handler (no try-catch in business logic)",
+    "Don't catch and rethrow - adds overhead and complexity",
+    "Validate inputs at API boundary and return Result immediately",
+    "Map Result errors to HTTP status codes using extension methods",
+    "Return ProblemDetails for both Result failures and unhandled exceptions",
+    "Log exceptions only once in global handler, not throughout the call stack",
+    "Use specific error types in Result (NotFound, Validation, Conflict) for semantic mapping",
+    "Measure performance - exceptions can kill throughput under load",
+    "Test error paths as thoroughly as success paths",
+    "Create Result extension methods for common patterns (.ToActionResult(), .ToProblemDetails())"
+  ],
+  "antiPatterns": [
+    "DON'T: throw new NotFoundException() → USE: return Result.NotFound(\"Product not found\")",
+    "DON'T: throw new ValidationException() → USE: return Result.ValidationError(errors)",
+    "DON'T: try { ... } catch (DbException) { return BadRequest(); } → USE: Let global handler catch it",
+    "DON'T: Catch, log, and rethrow → USE: Log once in global handler",
+    "DON'T: Use exceptions for control flow → USE: Result pattern or null checks",
+    "DON'T: Empty catch blocks → USE: Remove try-catch entirely",
+    "DON'T: Catch generic Exception in business logic → USE: Let it bubble",
+    "DON'T: throw ex; → USE: throw; (if you must rethrow)"
+  ],
+  "implementationFlow": {
+    "controller": {
+      "responsibility": "Accept request, validate, call service, map Result to HTTP response",
+      "errorHandling": "Map Result<T> to ActionResult using ToActionResult() or match pattern",
+      "noTryCatch": "Don't wrap service calls in try-catch"
+    },
+    "service": {
+      "responsibility": "Business logic, return Result<T> for all operations",
+      "errorHandling": "Return Result.Success or Result.Failure based on business rules",
+      "noTryCatch": "Let infrastructure exceptions bubble"
+    },
+    "repository": {
+      "responsibility": "Data access",
+      "errorHandling": "Let EF/database exceptions bubble to global handler",
+      "noTryCatch": "Don't catch DbUpdateException, SqlException, etc."
+    },
+    "globalHandler": {
+      "responsibility": "Catch unhandled exceptions, log, return ProblemDetails",
+      "handles": "Infrastructure failures, unexpected errors, programming errors"
+    }
+  },
+  "exampleCodeFlow": {
+    "step1": "Controller receives request → validates ModelState",
+    "step2": "If invalid → return ValidationProblem (400)",
+    "step3": "Call service → var result = await _service.GetProductAsync(id)",
+    "step4": "If result.IsSuccess → return Ok(result.Value)",
+    "step5": "If result.IsFailure → return result.ToActionResult() // Maps to 404, 400, 409, etc.",
+    "step6": "If DbException occurs in service → bubbles to global handler → logged, returns 500 ProblemDetails"
+  }
 }
