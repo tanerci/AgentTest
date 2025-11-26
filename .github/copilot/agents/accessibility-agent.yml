@@ -31,13 +31,11 @@ tasks:
   - type: inclusive-language
     inputs:
       forbiddenTerms:
-        - "blacklist/whitelist"
-        - "master/slave"
-        - "dummy"
-      suggestedAlternatives:
-        - "allowlist/denylist"
-        - "primary/replica"
-        - "placeholder"
+        blacklist: ["allowlist", "denylist"]
+        whitelist: ["allowlist", "denylist"]
+        master: ["primary", "replica"]
+        slave: ["primary", "replica"]
+        dummy: ["placeholder"]
   - type: documentation-check
     inputs:
       requireXmlComments: true
