@@ -131,8 +131,11 @@ public class ProductsController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            _logger.LogWarning("Invalid model state for creating product: {ValidationErrors}", 
-                string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+            if (_logger.IsEnabled(LogLevel.Warning))
+            {
+                _logger.LogWarning("Invalid model state for creating product: {ValidationErrors}", 
+                    string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+            }
             return BadRequest(ModelState);
         }
 
@@ -199,8 +202,11 @@ public class ProductsController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            _logger.LogWarning("Invalid model state for updating product ID {ProductId}: {ValidationErrors}", 
-                id, string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+            if (_logger.IsEnabled(LogLevel.Warning))
+            {
+                _logger.LogWarning("Invalid model state for updating product ID {ProductId}: {ValidationErrors}", 
+                    id, string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)));
+            }
             return BadRequest(ModelState);
         }
 

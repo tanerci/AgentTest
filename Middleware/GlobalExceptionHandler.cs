@@ -50,7 +50,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         {
             Status = statusCode,
             Title = title,
-            Detail = _environment.IsDevelopment() ? detail : "An error occurred processing your request.",
+            Detail = _environment.IsDevelopment() ? detail : "An error occurred processing your request. Please refer to the trace ID for details.",
             Instance = httpContext.Request.Path,
             Extensions =
             {
