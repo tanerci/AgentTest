@@ -49,8 +49,8 @@ public class AuthControllerTests
     public async Task Login_WithValidCredentials_ReturnsSuccess()
     {
         // Arrange
-        var context = GetInMemoryDbContext();
         var passwordHash = BCrypt.Net.BCrypt.HashPassword("password123");
+        var context = GetInMemoryDbContext();
         context.Users.Add(new User 
         { 
             Id = 1, 
@@ -59,13 +59,17 @@ public class AuthControllerTests
         });
         await context.SaveChangesAsync();
         
-        var controller = CreateControllerWithMockHttpContext();
-        controller.ControllerContext.HttpContext = Substitute.For<HttpContext>();
-        
+        var controller = new AuthController(context);
+        var httpContext = Substitute.For<HttpContext>();
         var authService = Substitute.For<IAuthenticationService>();
         var serviceProvider = Substitute.For<IServiceProvider>();
         serviceProvider.GetService(typeof(IAuthenticationService)).Returns(authService);
-        controller.ControllerContext.HttpContext.RequestServices.Returns(serviceProvider);
+        httpContext.RequestServices.Returns(serviceProvider);
+        
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
         
         var loginRequest = new LoginRequest 
         { 
@@ -73,20 +77,8 @@ public class AuthControllerTests
             Password = "password123" 
         };
 
-        // Mock the database context for this specific test
-        var testContext = GetInMemoryDbContext();
-        testContext.Users.Add(new User 
-        { 
-            Id = 1, 
-            Username = "testuser", 
-            PasswordHash = passwordHash 
-        });
-        await testContext.SaveChangesAsync();
-        var testController = new AuthController(testContext);
-        testController.ControllerContext = controller.ControllerContext;
-
         // Act
-        var result = await testController.Login(loginRequest);
+        var result = await controller.Login(loginRequest);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);

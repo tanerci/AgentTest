@@ -16,7 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="ProductApi.Tests/**" />
+    <Compile Remove="ProductApi.Tests\**" />
+    <EmbeddedResource Remove="ProductApi.Tests\**" />
+    <None Remove="ProductApi.Tests\**" />
   </ItemGroup>
 
 </Project>
