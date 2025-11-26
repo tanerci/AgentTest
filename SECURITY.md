@@ -119,10 +119,11 @@ Authentication events are logged for security monitoring:
    ]
    ```
 
-2. **Configure AllowedHosts** if needed:
+2. **Configure AllowedHosts** for production (currently set to localhost:* for development):
    ```json
    "AllowedHosts": "yourdomain.com;www.yourdomain.com"
    ```
+   Note: Replace with your actual domain names and avoid wildcards in production.
 
 3. **Set up reverse proxy** with proper headers:
    - Ensure `X-Forwarded-For` header is set correctly

@@ -30,6 +30,23 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Gets the real client IP address, checking X-Forwarded-For header if behind a proxy.
+    /// </summary>
+    private string GetClientIpAddress()
+    {
+        // Check X-Forwarded-For header first (for proxy/load balancer scenarios)
+        var forwardedFor = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(forwardedFor))
+        {
+            // X-Forwarded-For can contain multiple IPs, take the first one (original client)
+            return forwardedFor.Split(',')[0].Trim();
+        }
+
+        // Fallback to direct connection IP
+        return HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+    }
+
+    /// <summary>
     /// Authenticates a user and creates an authentication cookie.
     /// </summary>
     /// <param name="request">The login credentials containing username and password.</param>
@@ -56,7 +73,7 @@ public class AuthController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            _logger.LogWarning("Login attempt with invalid model state from IP: {IpAddress}", HttpContext.Connection.RemoteIpAddress);
+            _logger.LogWarning("Login attempt with invalid model state from IP: {IpAddress}", GetClientIpAddress());
             return BadRequest(ModelState);
         }
 
@@ -65,12 +82,12 @@ public class AuthController : ControllerBase
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             _logger.LogWarning("Failed login attempt for username: {Username} from IP: {IpAddress}", 
-                request.Username, HttpContext.Connection.RemoteIpAddress);
+                request.Username, GetClientIpAddress());
             return Unauthorized(new { message = "Invalid username or password" });
         }
 
         _logger.LogInformation("Successful login for user: {Username} from IP: {IpAddress}", 
-            user.Username, HttpContext.Connection.RemoteIpAddress);
+            user.Username, GetClientIpAddress());
 
         var claims = new List<Claim>
         {
