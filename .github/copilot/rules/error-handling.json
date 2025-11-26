@@ -1,199 +1,75 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "errorHandlingRules": [
     {
       "id": "ERR001",
-      "name": "NoEmptyCatchBlocks",
-      "description": "Catch blocks must not be empty or only contain comments",
+      "name": "UseResultPattern",
+      "description": "Prefer Result<T> for expected failures instead of throwing exceptions.",
       "severity": "critical",
-      "examples": {
-        "bad": "try { } catch { }",
-        "good": "try { } catch (Exception ex) { logger.LogError(ex, \"Error\"); }"
-      },
-      "pattern": "catch\\s*\\([^)]*\\)\\s*\\{\\s*\\}"
+      "recommendation": "Return Result<T> with Success/Failure instead of try-catch for domain logic."
     },
     {
       "id": "ERR002",
-      "name": "AvoidGenericExceptions",
-      "description": "Catch specific exceptions rather than generic Exception",
-      "severity": "warning",
-      "exceptions": ["top-level handlers", "framework code"],
-      "recommendation": "Catch specific exceptions (IOException, SqlException, etc.)"
+      "name": "NoEmptyCatchBlocks",
+      "description": "Catch blocks must not be empty or only contain comments.",
+      "severity": "error"
     },
     {
       "id": "ERR003",
-      "name": "ProperExceptionRethrow",
-      "description": "Use 'throw;' instead of 'throw ex;' to preserve stack trace",
-      "severity": "error",
-      "examples": {
-        "bad": "catch (Exception ex) { throw ex; }",
-        "good": "catch (Exception ex) { logger.LogError(ex, \"Error\"); throw; }"
-      }
+      "name": "AvoidGenericExceptions",
+      "description": "Catch specific exceptions only in global handler or infrastructure boundaries.",
+      "severity": "warning"
     },
     {
       "id": "ERR004",
-      "name": "LogBeforeThrow",
-      "description": "Always log exceptions before rethrowing",
-      "severity": "warning",
-      "recommendation": "Use logger.LogError(exception, message) before throw"
+      "name": "GlobalExceptionHandlerOnly",
+      "description": "Unhandled exceptions should be caught only by global middleware.",
+      "severity": "critical",
+      "recommendation": "Do not wrap every method in try-catch; rely on middleware."
     },
     {
       "id": "ERR005",
-      "name": "UseCustomExceptions",
-      "description": "Create domain-specific exceptions for business logic errors",
-      "severity": "info",
-      "examples": [
-        "ProductNotFoundException",
-        "InsufficientStockException",
-        "UnauthorizedAccessException"
-      ],
-      "recommendation": "Inherit from Exception with proper constructors"
+      "name": "ReturnProblemDetails",
+      "description": "Use RFC 7807 ProblemDetails for error responses.",
+      "severity": "error"
     },
     {
       "id": "ERR006",
       "name": "ProperHttpStatusCodes",
-      "description": "Return appropriate HTTP status codes for different error types",
+      "description": "Map Result failures and exceptions to appropriate HTTP status codes.",
       "severity": "error",
       "statusCodes": {
-        "400": "Bad Request - Invalid input",
-        "401": "Unauthorized - Not authenticated",
-        "403": "Forbidden - Not authorized",
-        "404": "Not Found - Resource doesn't exist",
-        "409": "Conflict - Resource state conflict",
-        "422": "Unprocessable Entity - Validation failed",
-        "500": "Internal Server Error - Unexpected error"
+        "400": "Bad Request - Validation failed",
+        "401": "Unauthorized",
+        "403": "Forbidden",
+        "404": "Not Found",
+        "409": "Conflict",
+        "422": "Unprocessable Entity",
+        "500": "Internal Server Error"
       }
     },
     {
       "id": "ERR007",
-      "name": "UseGlobalExceptionHandler",
-      "description": "Implement global exception handling middleware",
-      "severity": "critical",
-      "recommendation": "Create middleware to handle unhandled exceptions consistently",
-      "requiredFeatures": [
-        "Exception logging",
-        "ProblemDetails response",
-        "Status code mapping",
-        "Development vs Production responses"
-      ]
-    },
-    {
-      "id": "ERR008",
-      "name": "ReturnProblemDetails",
-      "description": "Use RFC 7807 ProblemDetails for error responses",
-      "severity": "error",
-      "examples": {
-        "bad": "return StatusCode(500, \"Error occurred\");",
-        "good": "return Problem(statusCode: 500, title: \"Internal Error\", detail: message);"
-      }
-    },
-    {
-      "id": "ERR009",
-      "name": "ValidateInputs",
-      "description": "Validate inputs early and return clear validation errors",
-      "severity": "warning",
-      "recommendation": "Use ModelState validation or FluentValidation"
-    },
-    {
-      "id": "ERR010",
       "name": "NoSensitiveDataInErrors",
-      "description": "Never expose sensitive data or stack traces in production errors",
-      "severity": "critical",
-      "forbiddenInProduction": [
-        "Database connection strings",
-        "Stack traces",
-        "Internal file paths",
-        "API keys or secrets"
-      ]
-    },
-    {
-      "id": "ERR011",
-      "name": "HandleAsyncExceptions",
-      "description": "Properly handle exceptions in async methods",
-      "severity": "error",
-      "recommendation": "Use try-catch in async methods, not on Task result"
-    },
-    {
-      "id": "ERR012",
-      "name": "UseResultPattern",
-      "description": "Consider Result pattern for expected failures instead of exceptions",
-      "severity": "info",
-      "recommendation": "Return Result<T> for operations that can fail expectedly"
+      "description": "Never expose sensitive data in error responses.",
+      "severity": "critical"
     }
   ],
-  "exceptionCategories": {
-    "infrastructure": {
-      "types": ["DbException", "IOException", "HttpRequestException"],
-      "handling": "Log, retry if appropriate, return 500 or 503"
-    },
-    "validation": {
-      "types": ["ValidationException", "ArgumentException"],
-      "handling": "Return 400 with validation details"
-    },
-    "authorization": {
-      "types": ["UnauthorizedException", "ForbiddenException"],
-      "handling": "Return 401 or 403 without details"
-    },
-    "notFound": {
-      "types": ["NotFoundException", "KeyNotFoundException"],
-      "handling": "Return 404 with resource info"
-    },
-    "conflict": {
-      "types": ["DbUpdateConcurrencyException", "ConflictException"],
-      "handling": "Return 409 with conflict details"
-    }
-  },
   "globalExceptionHandler": {
     "required": true,
     "features": {
       "logAllExceptions": true,
       "useProblemDetails": true,
       "includeTraceId": true,
-      "environmentAware": true,
-      "customExceptionMapping": true
-    },
-    "responseStructure": {
-      "development": {
-        "includeStackTrace": true,
-        "includeExceptionType": true,
-        "verboseMessages": true
-      },
-      "production": {
-        "includeStackTrace": false,
-        "includeExceptionType": false,
-        "genericMessages": true
-      }
+      "environmentAware": true
     }
   },
   "bestPractices": [
-    "Create custom exception classes for domain-specific errors",
-    "Use middleware for global exception handling",
-    "Log all exceptions with appropriate context",
-    "Return consistent error response format (ProblemDetails)",
-    "Map exceptions to appropriate HTTP status codes",
-    "Don't expose sensitive information in error messages",
-    "Use async exception handling patterns correctly",
-    "Validate inputs at the API boundary",
-    "Consider Result pattern for expected failures",
-    "Implement retry policies for transient failures",
-    "Use circuit breaker for external dependencies",
-    "Add correlation IDs for tracing errors across services"
-  ],
-  "middleware": {
-    "order": [
-      "ExceptionHandler (first)",
-      "HSTS",
-      "HTTPS Redirection",
-      "Static Files",
-      "Routing",
-      "Authentication",
-      "Authorization",
-      "Endpoints"
-    ],
-    "configuration": {
-      "useExceptionHandler": true,
-      "useDeveloperExceptionPage": "Development only",
-      "customMiddleware": "GlobalExceptionHandler"
-    }
-  }
+    "Use Result<T> for domain and validation errors.",
+    "Reserve exceptions for truly exceptional cases.",
+    "Let unhandled exceptions bubble to global middleware.",
+    "Log all exceptions centrally with context.",
+    "Return consistent ProblemDetails responses.",
+    "Map Result failures to appropriate HTTP status codes."
+  ]
 }

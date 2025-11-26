@@ -1,7 +1,8 @@
 name: error-handling-agent
 description: >
-  Enforces consistent error handling patterns, exception management,
-  proper HTTP status codes, and global exception handling middleware.
+  Enforces consistent error handling patterns using the Result<T> pattern
+  for expected failures, proper HTTP status codes, and a global exception
+  handler for unhandled errors.
 triggers:
   - event: push
     branches: ["main", "develop"]
@@ -13,7 +14,7 @@ tasks:
       source: "**/*.cs"
       ruleset: ".github/copilot/rules/error-handling.json"
       checks:
-        - "try-catch-patterns"
+        - "result-pattern-usage"
         - "exception-types"
         - "error-responses"
         - "http-status-codes"
@@ -32,9 +33,10 @@ tasks:
         - "exception-logging"
         - "problem-details"
         - "error-tracking"
+        - "trace-id"
   - type: suggest-improvements
     inputs:
       recommendations:
-        - "custom-exceptions"
-        - "result-pattern"
+        - "use-result-pattern"
+        - "map-domain-errors-to-http"
         - "validation-errors"
