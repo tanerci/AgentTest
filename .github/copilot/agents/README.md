@@ -75,6 +75,40 @@ This directory contains configuration files for GitHub Copilot agents that autom
 
 ---
 
+### 6. Logging Agent (`logging-agent.yml`)
+**Purpose:** Ensures consistent logging practices, proper log levels, structured logging, and prevents logging of sensitive data.
+
+**Triggers:**
+- Push events on `main` and `develop` branches
+- Pull request opened or synchronized
+
+**Tasks:**
+- Validate structured logging usage
+- Check appropriate log levels
+- Detect sensitive data in logs
+- Ensure proper exception logging
+- Suggest ILogger dependency injection
+- Generate logger implementation templates
+
+---
+
+### 7. Error Handling Agent (`error-handling-agent.yml`)
+**Purpose:** Enforces consistent error handling patterns, exception management, proper HTTP status codes, and global exception handling.
+
+**Triggers:**
+- Push events on `main` and `develop` branches
+- Pull request opened or synchronized
+
+**Tasks:**
+- Detect empty catch blocks
+- Validate exception handling patterns
+- Check proper HTTP status code usage
+- Ensure ProblemDetails responses
+- Generate global exception handler middleware
+- Suggest custom exception classes
+
+---
+
 ## Configuration Files
 
 ### Rules

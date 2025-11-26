@@ -1,0 +1,149 @@
+{
+  "version": "1.0",
+  "loggingRules": [
+    {
+      "id": "LOG001",
+      "name": "UseStructuredLogging",
+      "description": "Use structured logging with message templates instead of string interpolation",
+      "severity": "error",
+      "examples": {
+        "bad": "logger.LogInformation($\"User {userId} logged in\");",
+        "good": "logger.LogInformation(\"User {UserId} logged in\", userId);"
+      },
+      "pattern": "LogInformation\\(\\$\"",
+      "recommendation": "Use message templates with parameters"
+    },
+    {
+      "id": "LOG002",
+      "name": "ProperLogLevels",
+      "description": "Use appropriate log levels based on severity",
+      "severity": "warning",
+      "logLevels": {
+        "Trace": "Very detailed logs for development debugging",
+        "Debug": "Internal system events, not visible in production",
+        "Information": "General flow of the application",
+        "Warning": "Abnormal or unexpected events that don't cause failure",
+        "Error": "Errors and exceptions that can be handled",
+        "Critical": "Failures requiring immediate attention"
+      }
+    },
+    {
+      "id": "LOG003",
+      "name": "NoSensitiveDataLogging",
+      "description": "Never log sensitive information like passwords, tokens, or PII",
+      "severity": "critical",
+      "forbiddenPatterns": [
+        "Log.*password",
+        "Log.*token",
+        "Log.*apikey",
+        "Log.*secret",
+        "Log.*ssn",
+        "Log.*creditcard",
+        "Log.*email.*password"
+      ],
+      "recommendation": "Mask or exclude sensitive data from logs"
+    },
+    {
+      "id": "LOG004",
+      "name": "LogExceptionsCorrectly",
+      "description": "Always pass exceptions as the first parameter to preserve stack traces",
+      "severity": "error",
+      "examples": {
+        "bad": "logger.LogError(\"Error occurred: \" + ex.Message);",
+        "good": "logger.LogError(ex, \"Error occurred during {Operation}\", operation);"
+      },
+      "recommendation": "Use LogError(exception, message, args) overload"
+    },
+    {
+      "id": "LOG005",
+      "name": "ConsistentEventIds",
+      "description": "Use EventId for categorizing log entries",
+      "severity": "info",
+      "recommendation": "Define EventId constants for different operations"
+    },
+    {
+      "id": "LOG006",
+      "name": "AvoidLoggingInLoops",
+      "description": "Avoid excessive logging within loops, use aggregated logging",
+      "severity": "warning",
+      "recommendation": "Log summary information after loop completion"
+    },
+    {
+      "id": "LOG007",
+      "name": "UseLoggerDI",
+      "description": "Inject ILogger through dependency injection, not static logging",
+      "severity": "error",
+      "examples": {
+        "bad": "var logger = LoggerFactory.Create(...);",
+        "good": "public MyClass(ILogger<MyClass> logger)"
+      }
+    },
+    {
+      "id": "LOG008",
+      "name": "LogMethodEntry",
+      "description": "Log method entry for important operations with relevant context",
+      "severity": "info",
+      "scope": ["Controllers", "Services"],
+      "recommendation": "Use LogDebug or LogInformation for method entry"
+    },
+    {
+      "id": "LOG009",
+      "name": "LogPerformanceMetrics",
+      "description": "Log execution time for critical operations",
+      "severity": "info",
+      "recommendation": "Use Stopwatch or ILogger BeginScope for timing"
+    },
+    {
+      "id": "LOG010",
+      "name": "ContextualLogging",
+      "description": "Include correlation IDs and user context in logs",
+      "severity": "warning",
+      "recommendation": "Use LoggerScope to add contextual information"
+    }
+  ],
+  "logLevelGuidelines": {
+    "Trace": {
+      "usage": "Development only",
+      "examples": ["Variable values", "Detailed flow"]
+    },
+    "Debug": {
+      "usage": "Troubleshooting",
+      "examples": ["Query parameters", "Processing steps"]
+    },
+    "Information": {
+      "usage": "Normal operations",
+      "examples": ["Request started", "User logged in", "Order created"]
+    },
+    "Warning": {
+      "usage": "Unexpected but handled",
+      "examples": ["Retry attempt", "Fallback used", "Deprecated API call"]
+    },
+    "Error": {
+      "usage": "Recoverable errors",
+      "examples": ["Failed API call", "Validation error", "Database timeout"]
+    },
+    "Critical": {
+      "usage": "System failures",
+      "examples": ["Database down", "Out of memory", "Configuration missing"]
+    }
+  },
+  "structuredLogging": {
+    "propertyNaming": "PascalCase",
+    "maxParameters": 10,
+    "requireMessageTemplate": true,
+    "avoidStringConcat": true
+  },
+  "performance": {
+    "enableConditionalLogging": true,
+    "useLoggerMessage": true,
+    "avoidBoxing": true
+  },
+  "recommendations": [
+    "Use ILogger<T> for better categorization",
+    "Configure log sinks appropriately (Console, File, Application Insights)",
+    "Use scopes for correlation across operations",
+    "Implement custom log enrichers for user/tenant context",
+    "Set appropriate log levels per environment (appsettings.json)",
+    "Consider using Serilog or NLog for advanced scenarios"
+  ]
+}
