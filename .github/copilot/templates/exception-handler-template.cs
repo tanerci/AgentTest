@@ -64,7 +64,7 @@ public class GlobalExceptionHandler : IExceptionHandler
     {
         return exception switch
         {
-            ArgumentException or ArgumentNullException 
+            ArgumentException 
                 => (400, "Bad Request", exception.Message),
             
             UnauthorizedAccessException 
