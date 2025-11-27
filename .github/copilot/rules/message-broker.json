@@ -1,0 +1,220 @@
+{
+  "name": "Message Broker Reliability Rules",
+  "version": "1.0",
+  "description": "Message broker reliability patterns for Azure Service Bus, RabbitMQ, Kafka, and other messaging systems",
+  "rules": [
+    {
+      "id": "MSG-001",
+      "category": "Durable Queues",
+      "severity": "error",
+      "title": "Queues and topics must be durable",
+      "description": "All queues and topics must be configured as durable to survive broker restarts",
+      "rationale": "Non-durable queues lose messages on broker restart, causing data loss.",
+      "examples": {
+        "bad": [
+          "// Azure Service Bus\nawait managementClient.CreateQueueAsync(new QueueDescription(queueName) { EnableBatchedOperations = true })",
+          "// RabbitMQ\nchannel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: true, arguments: null)"
+        ],
+        "good": [
+          "// Azure Service Bus\nawait managementClient.CreateQueueAsync(new QueueDescription(queueName) { RequiresDuplicateDetection = true, DuplicateDetectionHistoryTimeWindow = TimeSpan.FromMinutes(10) })",
+          "// RabbitMQ\nchannel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null)"
+        ]
+      },
+      "platforms": {
+        "AzureServiceBus": "Always durable by default",
+        "RabbitMQ": "Set durable: true",
+        "Kafka": "Replication factor >= 2"
+      }
+    },
+    {
+      "id": "MSG-002",
+      "category": "Dead Letter Queue",
+      "severity": "error",
+      "title": "Dead letter queue (DLQ) must be configured",
+      "description": "Every queue must have a dead letter queue for poison messages and max delivery attempts",
+      "rationale": "DLQs prevent poison messages from blocking queue processing indefinitely.",
+      "examples": {
+        "good": [
+          "// Azure Service Bus\nvar queueDescription = new QueueDescription(queueName) { EnableDeadLetteringOnMessageExpiration = true, MaxDeliveryCount = 5 };",
+          "// RabbitMQ with x-dead-letter-exchange\nvar args = new Dictionary<string, object> { { \"x-dead-letter-exchange\", \"dlx\" }, { \"x-dead-letter-routing-key\", \"dlq\" } };\nchannel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: args);"
+        ]
+      },
+      "configuration": {
+        "maxDeliveryCount": "3-10",
+        "dlqRetentionPeriod": "7-30 days",
+        "alertOnDlqMessages": true
+      }
+    },
+    {
+      "id": "MSG-003",
+      "category": "Retry Policies",
+      "severity": "error",
+      "title": "Exponential backoff for message retries",
+      "description": "Message processing failures must use exponential backoff with jitter",
+      "rationale": "Prevents overwhelming downstream services and broker with retry storms.",
+      "examples": {
+        "bad": [
+          "// Fixed delay retry\nfor (int i = 0; i < 5; i++) { await ProcessMessage(message); await Task.Delay(1000); }"
+        ],
+        "good": [
+          "// Exponential backoff with jitter\nvar delay = TimeSpan.FromSeconds(Math.Pow(2, retryAttempt) + Random.Shared.Next(0, 1000) / 1000.0);\nawait Task.Delay(delay);\nawait ProcessMessage(message);"
+        ]
+      },
+      "backoffStrategy": {
+        "initialDelay": "1-5 seconds",
+        "maxDelay": "300-600 seconds",
+        "multiplier": "2-3",
+        "jitter": "±20-30%"
+      }
+    },
+    {
+      "id": "MSG-004",
+      "category": "Poison Message Handling",
+      "severity": "error",
+      "title": "Implement poison message detection and handling",
+      "description": "Detect and isolate messages that repeatedly fail processing",
+      "rationale": "Poison messages can block queue processing. Must be detected and moved to DLQ.",
+      "examples": {
+        "good": [
+          "if (message.DeliveryCount > maxRetries) { await deadLetterQueue.SendAsync(message); return; }",
+          "try { await ProcessMessage(message); } catch (PoisonMessageException ex) { await message.DeadLetterAsync(ex.Reason); }"
+        ]
+      },
+      "checks": [
+        "Track delivery count per message",
+        "Move to DLQ after max attempts",
+        "Log poison message details",
+        "Alert on poison message threshold"
+      ]
+    },
+    {
+      "id": "MSG-005",
+      "category": "Idempotency",
+      "severity": "error",
+      "title": "Message processing must be idempotent",
+      "description": "Handlers must safely handle duplicate message delivery (at-least-once semantics)",
+      "rationale": "Message brokers typically guarantee at-least-once delivery, requiring idempotent handlers.",
+      "examples": {
+        "bad": [
+          "// Non-idempotent\npublic async Task Handle(OrderCreatedEvent evt) { await db.Orders.AddAsync(new Order { Id = evt.OrderId }); await db.SaveChangesAsync(); }"
+        ],
+        "good": [
+          "// Idempotent with duplicate detection\npublic async Task Handle(OrderCreatedEvent evt) { var existing = await db.Orders.FindAsync(evt.OrderId); if (existing != null) return; await db.Orders.AddAsync(new Order { Id = evt.OrderId }); await db.SaveChangesAsync(); }",
+          "// Using message deduplication\nvar messageId = message.MessageId; if (await deduplicationStore.ExistsAsync(messageId)) return; await ProcessMessage(message); await deduplicationStore.SetAsync(messageId, TimeSpan.FromMinutes(10));"
+        ]
+      },
+      "strategies": [
+        "Check for existing records",
+        "Use idempotency keys",
+        "Maintain deduplication cache",
+        "Use database constraints"
+      ]
+    },
+    {
+      "id": "MSG-006",
+      "category": "Partitioning",
+      "severity": "warning",
+      "title": "Use partition keys for ordered processing",
+      "description": "Messages requiring ordered processing must use consistent partition keys",
+      "rationale": "Partitioning ensures message ordering within a partition while enabling parallel processing.",
+      "examples": {
+        "good": [
+          "// Azure Service Bus\nawait sender.SendMessageAsync(new ServiceBusMessage(body) { SessionId = customerId });",
+          "// Kafka\nawait producer.ProduceAsync(topic, new Message<string, string> { Key = customerId, Value = payload });"
+        ]
+      },
+      "bestPractices": [
+        "Use entity ID as partition key",
+        "Balance partition distribution",
+        "Monitor partition lag",
+        "Avoid hot partitions"
+      ]
+    },
+    {
+      "id": "MSG-007",
+      "category": "Consumer Configuration",
+      "severity": "warning",
+      "title": "Configure consumer concurrency and prefetch",
+      "description": "Set appropriate concurrency limits and prefetch counts for consumers",
+      "rationale": "Prevents resource exhaustion and optimizes throughput.",
+      "examples": {
+        "good": [
+          "// Azure Service Bus\nvar options = new ServiceBusProcessorOptions { MaxConcurrentCalls = 10, PrefetchCount = 20, AutoCompleteMessages = false };",
+          "// RabbitMQ\nchannel.BasicQos(prefetchSize: 0, prefetchCount: 10, global: false);"
+        ]
+      },
+      "recommendations": {
+        "maxConcurrentCalls": "5-20 (based on CPU cores)",
+        "prefetchCount": "10-50 (2-5x concurrency)",
+        "batchSize": "10-100 for batch processing"
+      }
+    },
+    {
+      "id": "MSG-008",
+      "category": "Naming and Versioning",
+      "severity": "info",
+      "title": "Use consistent naming and versioning for topics/queues",
+      "description": "Follow naming conventions and include version information in message schemas",
+      "rationale": "Enables schema evolution and prevents breaking changes.",
+      "examples": {
+        "good": [
+          "// Topic naming: domain.entity.action.version\n\"sales.order.created.v1\"",
+          "// Queue naming: service.purpose\n\"order-service.order-processing\"",
+          "// Message with version\npublic class OrderCreatedEvent { public string SchemaVersion { get; set; } = \"1.0\"; }"
+        ]
+      },
+      "conventions": {
+        "topicNaming": "{domain}.{entity}.{action}.v{version}",
+        "queueNaming": "{service}.{purpose}",
+        "dlqNaming": "{original-queue}-dlq"
+      }
+    },
+    {
+      "id": "MSG-009",
+      "category": "Timeouts",
+      "severity": "error",
+      "title": "Set processing timeouts for message handlers",
+      "description": "Message processing must have explicit timeouts to prevent indefinite blocking",
+      "rationale": "Prevents long-running messages from holding resources indefinitely.",
+      "examples": {
+        "good": [
+          "var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));\nawait ProcessMessageAsync(message, cts.Token);",
+          "var options = new ServiceBusProcessorOptions { MaxAutoLockRenewalDuration = TimeSpan.FromMinutes(5) };"
+        ]
+      },
+      "recommendations": {
+        "lightweightProcessing": "30-60 seconds",
+        "standardProcessing": "2-5 minutes",
+        "heavyProcessing": "5-15 minutes"
+      }
+    },
+    {
+      "id": "MSG-010",
+      "category": "Telemetry",
+      "severity": "info",
+      "title": "Track message processing metrics",
+      "description": "Monitor queue depth, processing time, failures, and DLQ size",
+      "rationale": "Enables proactive detection of issues and optimization opportunities.",
+      "metrics": [
+        "Messages processed per second",
+        "Average processing time",
+        "Queue depth",
+        "DLQ message count",
+        "Retry count distribution",
+        "Consumer lag"
+      ]
+    }
+  ],
+  "bestPractices": [
+    "Use transactional outbox pattern for reliable message publishing",
+    "Implement correlation IDs for distributed tracing",
+    "Use message schemas with versioning",
+    "Separate command and event topics",
+    "Monitor consumer group lag"
+  ],
+  "platforms": {
+    "AzureServiceBus": "Requires Azure.Messaging.ServiceBus >= 7.0.0",
+    "RabbitMQ": "Requires RabbitMQ.Client >= 6.0.0",
+    "Kafka": "Requires Confluent.Kafka >= 2.0.0"
+  }
+}

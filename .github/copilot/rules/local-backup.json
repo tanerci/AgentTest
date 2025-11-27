@@ -1,0 +1,268 @@
+{
+  "name": "Local Backup and Recovery Rules",
+  "version": "1.0",
+  "description": "On-premises and hybrid backup strategies including snapshots, encryption, air-gap, and restore validation",
+  "rules": [
+    {
+      "id": "LOCAL-BACKUP-001",
+      "category": "Backup Coverage",
+      "severity": "error",
+      "title": "All critical data sources must have automated backups",
+      "description": "Databases, file systems, configurations, and application data must be backed up",
+      "rationale": "Comprehensive coverage prevents data loss from any single point of failure.",
+      "coverage": {
+        "databases": ["SQL Server", "PostgreSQL", "MySQL", "MongoDB"],
+        "fileSystems": ["Application directories", "User data", "Logs"],
+        "configuration": ["Application configs", "Environment variables", "Secrets"],
+        "volumes": ["Docker volumes", "VM disks"]
+      },
+      "examples": {
+        "sqlServer": [
+          "-- Full backup daily\nBACKUP DATABASE [MyDatabase] TO DISK = 'C:\\Backups\\MyDatabase_Full.bak' WITH COMPRESSION, INIT;",
+          "-- Differential backup every 6 hours\nBACKUP DATABASE [MyDatabase] TO DISK = 'C:\\Backups\\MyDatabase_Diff.bak' WITH DIFFERENTIAL, COMPRESSION;",
+          "-- Transaction log backup every hour\nBACKUP LOG [MyDatabase] TO DISK = 'C:\\Backups\\MyDatabase_Log.trn' WITH COMPRESSION;"
+        ],
+        "fileSystem": [
+          "# PowerShell file backup with robocopy\n$Source = 'C:\\Data'\n$Destination = '\\\\BackupServer\\Backups\\Data'\n$LogFile = 'C:\\Logs\\backup.log'\nrobocopy $Source $Destination /MIR /R:3 /W:10 /LOG:$LogFile /XD 'temp' 'cache'"
+        ]
+      }
+    },
+    {
+      "id": "LOCAL-BACKUP-002",
+      "category": "Backup Frequency",
+      "severity": "error",
+      "title": "Backup frequency must align with RPO requirements",
+      "description": "Schedule full, differential, and incremental backups based on data criticality",
+      "rationale": "Determines maximum acceptable data loss window.",
+      "schedules": {
+        "critical": {
+          "full": "Daily",
+          "differential": "Every 4-6 hours",
+          "incremental": "Hourly or continuous",
+          "transactionLog": "Every 15-30 minutes"
+        },
+        "important": {
+          "full": "Daily",
+          "differential": "Every 12 hours",
+          "incremental": "Every 6 hours"
+        },
+        "standard": {
+          "full": "Weekly",
+          "differential": "Daily"
+        }
+      },
+      "examples": {
+        "windowsTaskScheduler": [
+          "# PowerShell script scheduled in Task Scheduler\n$Trigger = New-ScheduledTaskTrigger -Daily -At 2:00AM\n$Action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument '-File C:\\Scripts\\FullBackup.ps1'\n$Principal = New-ScheduledTaskPrincipal -UserId 'SYSTEM' -RunLevel Highest\nRegister-ScheduledTask -TaskName 'DailyFullBackup' -Trigger $Trigger -Action $Action -Principal $Principal"
+        ]
+      }
+    },
+    {
+      "id": "LOCAL-BACKUP-003",
+      "category": "Encryption",
+      "severity": "error",
+      "title": "Backups must be encrypted at rest with strong algorithms",
+      "description": "Use AES-256 or higher for backup encryption with secure key management",
+      "rationale": "Protects sensitive data in backups from unauthorized access if media is compromised.",
+      "requirements": {
+        "algorithm": "AES-256 minimum",
+        "keyManagement": "Separate from backup storage",
+        "keyRotation": "Annual minimum",
+        "keyBackup": "Offline secure storage"
+      },
+      "examples": {
+        "sqlServer": [
+          "-- Backup with encryption\nBACKUP DATABASE [MyDatabase]\nTO DISK = 'C:\\Backups\\MyDatabase_Encrypted.bak'\nWITH COMPRESSION,\n  ENCRYPTION (\n    ALGORITHM = AES_256,\n    SERVER CERTIFICATE = BackupCertificate\n  );"
+        ],
+        "7zip": [
+          "# Encrypt files with 7-Zip\n& 'C:\\Program Files\\7-Zip\\7z.exe' a -p$Password -mhe=on -t7z 'backup.7z' 'C:\\Data\\*'"
+        ],
+        "bitLocker": [
+          "# Encrypt backup volume with BitLocker\nEnable-BitLocker -MountPoint 'D:' -EncryptionMethod 'Aes256' -UsedSpaceOnly -RecoveryPasswordProtector"
+        ]
+      }
+    },
+    {
+      "id": "LOCAL-BACKUP-004",
+      "category": "Offsite and Air-Gap",
+      "severity": "error",
+      "title": "Implement 3-2-1 backup strategy with offsite and air-gap copies",
+      "description": "Maintain 3 copies on 2 different media with 1 offsite and air-gapped",
+      "rationale": "Protects against local disasters, ransomware, and simultaneous failures.",
+      "strategy": {
+        "3copies": "Original + 2 backups",
+        "2media": "Disk + Tape or Disk + Cloud or Disk + Removable",
+        "1offsite": "Geographic separation (different building/city)",
+        "airGap": "Disconnected from network (tape, removable drives, immutable storage)"
+      },
+      "examples": {
+        "implementation": [
+          "Primary: Production server",
+          "Copy 1: Local NAS (on-site, connected)",
+          "Copy 2: Tape library (on-site, air-gapped after backup)",
+          "Copy 3: Cloud storage or remote site (offsite)"
+        ]
+      },
+      "airGapPractices": [
+        "Physically disconnect media after backup",
+        "Store tapes/drives in fireproof safe",
+        "Rotate media offsite weekly",
+        "Use write-once media (WORM) for immutability"
+      ]
+    },
+    {
+      "id": "LOCAL-BACKUP-005",
+      "category": "Restore Scripts",
+      "severity": "error",
+      "title": "Maintain tested restore scripts for all backup types",
+      "description": "Automated restore procedures must exist and be tested quarterly",
+      "rationale": "Reduces RTO and eliminates errors during critical recovery situations.",
+      "scriptRequirements": [
+        "Parameterized for flexibility",
+        "Idempotent execution",
+        "Validation checks before/after",
+        "Progress logging",
+        "Rollback capability",
+        "Documentation and comments"
+      ],
+      "examples": {
+        "sqlServer": [
+          "# PowerShell SQL restore script\nparam(\n  [string]$BackupFile = 'C:\\Backups\\MyDatabase_Full.bak',\n  [string]$DatabaseName = 'MyDatabase',\n  [switch]$NoRecovery\n)\n\n$SqlInstance = 'localhost'\n$RestoreQuery = @\"\nRESTORE DATABASE [$DatabaseName]\nFROM DISK = '$BackupFile'\nWITH REPLACE, CHECKSUM,\n  MOVE '${DatabaseName}_Data' TO 'D:\\Data\\$DatabaseName.mdf',\n  MOVE '${DatabaseName}_Log' TO 'E:\\Log\\${DatabaseName}_log.ldf'\n\"@\n\nif ($NoRecovery) { $RestoreQuery += ', NORECOVERY' }\n\nInvoke-Sqlcmd -ServerInstance $SqlInstance -Query $RestoreQuery -QueryTimeout 0\nWrite-Host \"Restore completed successfully\" -ForegroundColor Green\n\"@"
+        ],
+        "fileSystem": [
+          "# Restore from backup with verification\n$BackupPath = '\\\\BackupServer\\Backups\\Data'\n$RestorePath = 'C:\\Data'\n$LogFile = 'C:\\Logs\\restore.log'\n\nrobocopy $BackupPath $RestorePath /MIR /R:3 /W:10 /LOG:$LogFile\n\n# Verify restore integrity\n$BackupHash = Get-FileHash -Path \"$BackupPath\\checksum.txt\"\n$RestoreHash = Get-FileHash -Path \"$RestorePath\\checksum.txt\"\n\nif ($BackupHash.Hash -eq $RestoreHash.Hash) {\n  Write-Host \"Restore verified successfully\"\n} else {\n  Write-Error \"Restore verification failed - hash mismatch\"\n}"
+        ]
+      }
+    },
+    {
+      "id": "LOCAL-BACKUP-006",
+      "category": "Integrity Validation",
+      "severity": "error",
+      "title": "Validate backup integrity with checksums and test restores",
+      "description": "Generate checksums during backup and verify during restore or periodic validation",
+      "rationale": "Ensures backups are not corrupted and can be successfully restored.",
+      "validation": {
+        "checksums": "SHA-256 or higher",
+        "frequency": "Every backup",
+        "testRestores": "Monthly minimum",
+        "corruption Detection": "Automated scanning"
+      },
+      "examples": {
+        "sqlServer": [
+          "-- Backup with checksum verification\nBACKUP DATABASE [MyDatabase]\nTO DISK = 'C:\\Backups\\MyDatabase.bak'\nWITH COMPRESSION, CHECKSUM;\n\n-- Verify backup integrity\nRESTORE VERIFYONLY\nFROM DISK = 'C:\\Backups\\MyDatabase.bak'\nWITH CHECKSUM;"
+        ],
+        "fileBackup": [
+          "# Generate checksums during backup\n$Files = Get-ChildItem -Path 'C:\\Data' -Recurse -File\n$Checksums = $Files | Get-FileHash -Algorithm SHA256\n$Checksums | Export-Csv -Path 'C:\\Backups\\checksums.csv' -NoTypeInformation\n\n# Verify checksums\n$OriginalChecksums = Import-Csv 'C:\\Backups\\checksums.csv'\nforeach ($file in $OriginalChecksums) {\n  $current = Get-FileHash -Path $file.Path -Algorithm SHA256\n  if ($current.Hash -ne $file.Hash) {\n    Write-Error \"Checksum mismatch for $($file.Path)\"\n  }\n}"
+        ]
+      }
+    },
+    {
+      "id": "LOCAL-BACKUP-007",
+      "category": "Retention Policy",
+      "severity": "error",
+      "title": "Define and enforce backup retention policies",
+      "description": "Retain backups according to compliance requirements with automated purging of old backups",
+      "rationale": "Balances storage costs with recovery needs and regulatory compliance.",
+      "retentionSchedule": {
+        "daily": "7-30 days",
+        "weekly": "4-12 weeks",
+        "monthly": "12 months",
+        "yearly": "7 years (compliance)",
+        "archive": "Long-term cold storage"
+      },
+      "examples": {
+        "purgeScript": [
+          "# PowerShell retention policy script\n$BackupPath = 'C:\\Backups'\n$DailyRetention = 30\n$WeeklyRetention = 90\n$MonthlyRetention = 365\n\n# Delete daily backups older than 30 days\nGet-ChildItem -Path \"$BackupPath\\Daily\" -Filter '*.bak' |\n  Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-$DailyRetention) } |\n  Remove-Item -Force\n\n# Keep only Sunday backups in weekly folder\nGet-ChildItem -Path \"$BackupPath\\Weekly\" -Filter '*.bak' |\n  Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-$WeeklyRetention) } |\n  Remove-Item -Force"
+        ]
+      }
+    },
+    {
+      "id": "LOCAL-BACKUP-008",
+      "category": "Volume Snapshots",
+      "severity": "warning",
+      "title": "Use volume snapshots for application-consistent backups",
+      "description": "Leverage VSS (Volume Shadow Copy Service) or LVM snapshots for consistent point-in-time copies",
+      "rationale": "Ensures database and application files are in consistent state during backup.",
+      "technologies": {
+        "windows": "VSS (Volume Shadow Copy Service)",
+        "linux": "LVM snapshots",
+        "vmware": "VMware snapshots",
+        "hyperV": "Hyper-V checkpoints"
+      },
+      "examples": {
+        "vss": [
+          "# Create VSS snapshot with PowerShell\n$Volume = 'C:\\'\n$Shadow = (Get-WmiObject -List Win32_ShadowCopy).Create($Volume, 'ClientAccessible')\n$ShadowID = $Shadow.ShadowID\n\n# Mount snapshot\n$Device = (Get-WmiObject Win32_ShadowCopy | Where-Object { $_.ID -eq $ShadowID }).DeviceObject\nNew-PSDrive -Name 'Shadow' -PSProvider FileSystem -Root \"$Device\\\"\n\n# Backup from snapshot\nrobocopy 'Shadow:\\Data' 'D:\\Backups\\Data' /MIR\n\n# Cleanup\nRemove-PSDrive -Name 'Shadow'\n(Get-WmiObject Win32_ShadowCopy | Where-Object { $_.ID -eq $ShadowID }).Delete()"
+        ]
+      }
+    },
+    {
+      "id": "LOCAL-BACKUP-009",
+      "category": "Backup Monitoring",
+      "severity": "error",
+      "title": "Monitor backup job success and alert on failures",
+      "description": "Implement automated monitoring and alerting for backup failures, long-running jobs, and storage capacity",
+      "rationale": "Enables rapid response to backup issues before data loss occurs.",
+      "monitoring": [
+        "Backup job completion status",
+        "Backup duration trending",
+        "Backup size anomalies",
+        "Storage capacity warnings",
+        "Failed checksum validations",
+        "Missed backup schedules"
+      ],
+      "examples": {
+        "emailAlert": [
+          "# PowerShell backup script with email notification\nparam([string]$To = 'admin@company.com')\n\ntry {\n  # Perform backup\n  Backup-SqlDatabase -ServerInstance 'localhost' -Database 'MyDB' -BackupFile 'C:\\Backups\\MyDB.bak'\n  \n  $Subject = \"Backup Success: MyDB\"\n  $Body = \"Backup completed at $(Get-Date)\"\n} catch {\n  $Subject = \"BACKUP FAILURE: MyDB\"\n  $Body = \"Backup failed: $($_.Exception.Message)\"\n} finally {\n  Send-MailMessage -To $To -Subject $Subject -Body $Body -SmtpServer 'smtp.company.com'\n}"
+        ]
+      }
+    },
+    {
+      "id": "LOCAL-BACKUP-010",
+      "category": "Documentation",
+      "severity": "warning",
+      "title": "Maintain comprehensive backup and recovery documentation",
+      "description": "Document backup architecture, schedules, restore procedures, and contact information",
+      "rationale": "Enables anyone to perform recovery during incidents, reducing dependency on specific personnel.",
+      "documentation": [
+        "Backup topology diagram",
+        "Backup schedule matrix",
+        "Restore procedures (step-by-step)",
+        "Encryption key locations and access procedures",
+        "Offsite media rotation schedule",
+        "Emergency contact list",
+        "RPO/RTO targets per system",
+        "Test restore results and dates"
+      ],
+      "template": {
+        "sections": [
+          "Overview and scope",
+          "Backup architecture",
+          "Schedules and retention",
+          "Encryption and security",
+          "Restore procedures",
+          "Testing and validation",
+          "Monitoring and alerts",
+          "Contacts and escalation"
+        ]
+      }
+    }
+  ],
+  "bestPractices": [
+    "Implement 3-2-1-1-0 strategy (3 copies, 2 media, 1 offsite, 1 air-gap, 0 errors)",
+    "Automate backup jobs with task schedulers",
+    "Use transaction log backups for point-in-time recovery",
+    "Test restores monthly, not just backups",
+    "Rotate offsite media weekly",
+    "Monitor backup storage capacity proactively",
+    "Document and test disaster recovery procedures",
+    "Use immutable or append-only storage for ransomware protection",
+    "Implement backup encryption and key management",
+    "Perform annual disaster recovery drills"
+  ],
+  "tools": {
+    "windows": ["Windows Server Backup", "Veeam", "Acronis", "Robocopy", "7-Zip"],
+    "database": ["SQL Server Agent Jobs", "pg_dump", "mysqldump", "mongodump"],
+    "storage": ["Synology", "QNAP", "TrueNAS", "FreeNAS"],
+    "enterprise": ["Veritas NetBackup", "Commvault", "IBM Spectrum Protect"]
+  }
+}

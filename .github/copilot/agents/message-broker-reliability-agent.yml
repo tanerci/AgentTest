@@ -1,0 +1,64 @@
+name: message-broker-reliability-agent
+description: >
+  Enforces message broker reliability patterns including durable queues/topics,
+  dead letter queues (DLQ), retry policies, partitioning strategies, consumer
+  concurrency limits, and exponential backoff for Azure Service Bus, RabbitMQ, Kafka, etc.
+triggers:
+  - event: push
+    branches: ["main", "develop"]
+  - event: pull_request
+    actions: ["opened", "synchronize"]
+tasks:
+  - type: validate-queue-configuration
+    inputs:
+      source: "**/*.cs"
+      configFiles: ["appsettings*.json"]
+      ruleset: ".github/copilot/rules/message-broker.json"
+      checks:
+        - "durable-queues"
+        - "dlq-configuration"
+        - "max-delivery-attempts"
+        - "poison-message-handling"
+  - type: check-retry-policies
+    inputs:
+      validate:
+        - "exponential-backoff"
+        - "max-retry-count"
+        - "retry-delay-configuration"
+        - "idempotent-message-processing"
+  - type: validate-partitioning
+    inputs:
+      checks:
+        - "partition-key-strategy"
+        - "partition-count"
+        - "ordered-processing"
+        - "consumer-group-config"
+  - type: check-consumer-configuration
+    inputs:
+      validate:
+        - "concurrency-limits"
+        - "prefetch-count"
+        - "batch-size"
+        - "processing-timeout"
+  - type: validate-naming-versioning
+    inputs:
+      checks:
+        - "consistent-naming-convention"
+        - "topic-queue-naming"
+        - "message-schema-versioning"
+        - "backwards-compatibility"
+  - type: detect-issues
+    inputs:
+      patterns:
+        - "missing-dlq"
+        - "unbounded-retries"
+        - "no-poison-message-handling"
+        - "missing-idempotency-check"
+        - "synchronous-message-processing"
+  - type: suggest-improvements
+    inputs:
+      recommendations:
+        - "message-deduplication"
+        - "saga-pattern"
+        - "outbox-pattern"
+        - "telemetry-tracking"

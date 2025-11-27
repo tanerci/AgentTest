@@ -1,0 +1,66 @@
+name: azure-backup-recovery-agent
+description: >
+  Validates Azure backup policies for Blob Storage, Azure Files, Azure SQL Database,
+  retention policies, geo-redundancy configuration, and automated restore runbooks.
+  Ensures recovery point objectives (RPO) are met.
+triggers:
+  - event: schedule
+    cron: "0 10 * * MON"  # Weekly on Monday at 10 AM
+  - event: push
+    branches: ["main"]
+    paths:
+      - "infrastructure/**"
+      - "*.bicep"
+      - "*.tf"
+tasks:
+  - type: validate-backup-policies
+    inputs:
+      resources: ["Azure Blob", "Azure Files", "Azure SQL", "Cosmos DB"]
+      ruleset: ".github/copilot/rules/azure-backup.json"
+      checks:
+        - "backup-policy-exists"
+        - "retention-period-met"
+        - "backup-frequency"
+        - "geo-redundancy-enabled"
+  - type: check-geo-redundancy
+    inputs:
+      validate:
+        - "ra-grs-configured"
+        - "zone-redundant-storage"
+        - "cross-region-replication"
+        - "secondary-region-access"
+  - type: validate-restore-runbooks
+    inputs:
+      checks:
+        - "runbook-exists"
+        - "runbook-tested-recently"
+        - "automated-restore-scripts"
+        - "restore-documentation"
+        - "recovery-time-objective"
+  - type: test-recovery-points
+    inputs:
+      validate:
+        - "recovery-point-currency"
+        - "point-in-time-restore"
+        - "backup-integrity"
+        - "restore-validation"
+  - type: check-drill-schedule
+    inputs:
+      requirements:
+        - "quarterly-drill-minimum"
+        - "drill-results-documented"
+        - "rpo-rto-validated"
+        - "incident-response-plan"
+  - type: validate-encryption
+    inputs:
+      checks:
+        - "encryption-at-rest"
+        - "encryption-in-transit"
+        - "key-vault-integration"
+        - "managed-identity-usage"
+  - type: generate-reports
+    inputs:
+      output:
+        - "backup-coverage-report.md"
+        - "recovery-test-results.md"
+        - "compliance-status.md"

@@ -1,0 +1,187 @@
+{
+  "name": "Resiliency Rules",
+  "version": "1.0",
+  "description": "Runtime resiliency patterns for .NET distributed systems using Polly",
+  "rules": [
+    {
+      "id": "RES-001",
+      "category": "Retry Policies",
+      "severity": "error",
+      "title": "HTTP clients must have retry policies",
+      "description": "All HttpClient instances must be configured with Polly retry policies for transient failures",
+      "rationale": "Network failures are common in distributed systems. Retry policies improve reliability by handling transient failures automatically.",
+      "examples": {
+        "bad": [
+          "services.AddHttpClient<MyService>()",
+          "var client = new HttpClient()"
+        ],
+        "good": [
+          "services.AddHttpClient<MyService>().AddPolicyHandler(GetRetryPolicy())",
+          "services.AddHttpClient<MyService>().AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))))"
+        ]
+      },
+      "checks": [
+        "AddPolicyHandler presence",
+        "AddTransientHttpErrorPolicy presence",
+        "Retry count between 2-5",
+        "Exponential backoff configured"
+      ]
+    },
+    {
+      "id": "RES-002",
+      "category": "Circuit Breaker",
+      "severity": "warning",
+      "title": "Circuit breaker required for external dependencies",
+      "description": "External service calls must implement circuit breaker pattern to prevent cascading failures",
+      "rationale": "Circuit breakers prevent overwhelming failing services and allow them time to recover.",
+      "examples": {
+        "good": [
+          "services.AddHttpClient<MyService>().AddPolicyHandler(GetCircuitBreakerPolicy())",
+          "var circuitBreaker = Policy.Handle<HttpRequestException>().CircuitBreakerAsync(5, TimeSpan.FromMinutes(1))"
+        ]
+      },
+      "thresholds": {
+        "failureThreshold": "3-10 failures",
+        "breakDuration": "30-300 seconds",
+        "samplingDuration": "30-60 seconds"
+      }
+    },
+    {
+      "id": "RES-003",
+      "category": "Timeout Policies",
+      "severity": "error",
+      "title": "All external calls must have timeouts",
+      "description": "Every external HTTP call, database query, or message must have an explicit timeout",
+      "rationale": "Prevents indefinite hangs and resource exhaustion. Enables faster failure detection.",
+      "examples": {
+        "bad": [
+          "await httpClient.GetAsync(url)",
+          "await dbContext.Products.ToListAsync()"
+        ],
+        "good": [
+          "await httpClient.GetAsync(url, cancellationToken)",
+          "var timeout = Policy.TimeoutAsync(TimeSpan.FromSeconds(30))",
+          "await dbContext.Products.ToListAsync(new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token)"
+        ]
+      },
+      "recommendedTimeouts": {
+        "httpRead": "10-30 seconds",
+        "httpWrite": "30-60 seconds",
+        "databaseQuery": "5-15 seconds",
+        "messageProcessing": "30-300 seconds"
+      }
+    },
+    {
+      "id": "RES-004",
+      "category": "Idempotency",
+      "severity": "error",
+      "title": "Retries only on idempotent operations",
+      "description": "Retry policies must only be applied to idempotent operations (GET, PUT with idempotency keys)",
+      "rationale": "Retrying non-idempotent operations (POST without idempotency keys) can cause duplicate side effects.",
+      "examples": {
+        "bad": [
+          "// POST without idempotency key being retried\nvar retryPolicy = Policy.HandleResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode).RetryAsync(3);\nawait retryPolicy.ExecuteAsync(() => httpClient.PostAsync(url, content));"
+        ],
+        "good": [
+          "// POST with idempotency key\nvar request = new HttpRequestMessage(HttpMethod.Post, url);\nrequest.Headers.Add(\"Idempotency-Key\", Guid.NewGuid().ToString());\nawait retryPolicy.ExecuteAsync(() => httpClient.SendAsync(request));",
+          "// GET is naturally idempotent\nawait retryPolicy.ExecuteAsync(() => httpClient.GetAsync(url));"
+        ]
+      },
+      "checks": [
+        "POST/PATCH requests have idempotency keys",
+        "Non-idempotent operations excluded from retry",
+        "Duplicate detection implemented"
+      ]
+    },
+    {
+      "id": "RES-005",
+      "category": "Bulkhead Isolation",
+      "severity": "warning",
+      "title": "Resource isolation for critical paths",
+      "description": "Implement bulkhead isolation to prevent resource exhaustion from affecting all operations",
+      "rationale": "Isolates failures to specific subsystems, preventing cascading failures across the application.",
+      "examples": {
+        "good": [
+          "var bulkhead = Policy.BulkheadAsync(10, 20);",
+          "services.AddHttpClient<CriticalService>().AddPolicyHandler(GetBulkheadPolicy())"
+        ]
+      },
+      "thresholds": {
+        "maxParallelization": "10-100",
+        "maxQueuingActions": "20-200"
+      }
+    },
+    {
+      "id": "RES-006",
+      "category": "Fallback Handlers",
+      "severity": "warning",
+      "title": "Fallback strategies for critical paths",
+      "description": "Critical operations should have fallback handlers for graceful degradation",
+      "rationale": "Provides alternative behavior when primary path fails, improving user experience.",
+      "examples": {
+        "good": [
+          "var fallback = Policy<Product>.Handle<Exception>().FallbackAsync(GetCachedProduct());",
+          "var policy = Policy.Handle<Exception>().FallbackAsync(async ct => await GetDefaultResponse(), OnFallbackAsync);"
+        ]
+      },
+      "strategies": [
+        "Return cached data",
+        "Return default values",
+        "Use secondary service",
+        "Degrade functionality gracefully"
+      ]
+    },
+    {
+      "id": "RES-007",
+      "category": "Policy Composition",
+      "severity": "info",
+      "title": "Combine policies using PolicyWrap",
+      "description": "Use PolicyWrap to combine multiple resilience policies (retry + circuit breaker + timeout)",
+      "rationale": "Layered policies provide comprehensive resilience with proper ordering.",
+      "examples": {
+        "good": [
+          "var policyWrap = Policy.WrapAsync(fallback, circuitBreaker, retry, timeout);",
+          "services.AddHttpClient<MyService>().AddPolicyHandler(GetRetryPolicy()).AddPolicyHandler(GetCircuitBreakerPolicy()).AddPolicyHandler(GetTimeoutPolicy());"
+        ]
+      },
+      "recommendedOrder": [
+        "Timeout (innermost)",
+        "Retry",
+        "Circuit Breaker",
+        "Fallback (outermost)"
+      ]
+    },
+    {
+      "id": "RES-008",
+      "category": "Telemetry",
+      "severity": "info",
+      "title": "Integrate telemetry with resilience policies",
+      "description": "Log and track policy executions (retries, circuit breaks, timeouts, fallbacks)",
+      "rationale": "Visibility into resilience behavior enables monitoring, alerting, and optimization.",
+      "examples": {
+        "good": [
+          "var retry = Policy.Handle<Exception>().WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), onRetry: (exception, timeSpan, retryCount, context) => { logger.LogWarning($\"Retry {retryCount} after {timeSpan.TotalSeconds}s\"); });",
+          "var circuitBreaker = Policy.Handle<Exception>().CircuitBreakerAsync(5, TimeSpan.FromMinutes(1), onBreak: (ex, duration) => logger.LogError($\"Circuit broken for {duration.TotalSeconds}s\"), onReset: () => logger.LogInformation(\"Circuit reset\"));"
+        ]
+      },
+      "metrics": [
+        "Retry attempts count",
+        "Circuit breaker state changes",
+        "Timeout occurrences",
+        "Fallback invocations",
+        "Policy execution duration"
+      ]
+    }
+  ],
+  "bestPractices": [
+    "Use PolicyRegistry for centralized policy management",
+    "Apply jitter to retry delays to prevent thundering herd",
+    "Test resilience policies with chaos engineering",
+    "Monitor policy effectiveness with metrics",
+    "Document resilience strategies in architecture docs"
+  ],
+  "dependencies": [
+    "Polly (>= 8.0.0)",
+    "Microsoft.Extensions.Http.Polly"
+  ]
+}
