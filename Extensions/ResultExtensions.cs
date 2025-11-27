@@ -20,7 +20,7 @@ public static class ResultExtensions
     }
 
     /// <summary>
-    /// Converts a Result<T> to an ActionResult<T> with appropriate HTTP status code.
+    /// Converts a Result of T to an ActionResult of T with appropriate HTTP status code.
     /// </summary>
     public static ActionResult<T> ToActionResult<T>(this Result<T> result)
     {

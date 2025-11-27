@@ -28,13 +28,44 @@ public class ProductsControllerTests : TestBase
         var localizer = GetMockLocalizer();
         var controller = new ProductsController(context, logger, localizer);
 
-        // Act
+        // Act - default pagination returns paginated response
         var result = await controller.GetProducts();
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var products = Assert.IsAssignableFrom<IEnumerable<Product>>(okResult.Value);
-        Assert.Equal(2, products.Count());
+        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        Assert.Equal(2, paginatedResponse.Items.Count());
+        Assert.Equal(2, paginatedResponse.TotalCount);
+    }
+
+    [Fact]
+    public async Task GetProducts_WithPagination_ReturnsPaginatedResponse()
+    {
+        // Arrange
+        var context = GetInMemoryDbContext();
+        context.Products.AddRange(
+            new Product { Id = 1, Name = "Product1", Description = "Desc1", Price = 10.0m, Stock = 5 },
+            new Product { Id = 2, Name = "Product2", Description = "Desc2", Price = 20.0m, Stock = 10 },
+            new Product { Id = 3, Name = "Product3", Description = "Desc3", Price = 30.0m, Stock = 15 }
+        );
+        await context.SaveChangesAsync();
+        
+        var logger = Substitute.For<ILogger<ProductsController>>();
+        var controller = new ProductsController(context, logger);
+
+        // Act - with pagination parameters
+        var result = await controller.GetProducts(1, 2);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        Assert.Equal(2, paginatedResponse.Items.Count());
+        Assert.Equal(1, paginatedResponse.Page);
+        Assert.Equal(2, paginatedResponse.PageSize);
+        Assert.Equal(3, paginatedResponse.TotalCount);
+        Assert.Equal(2, paginatedResponse.TotalPages);
+        Assert.True(paginatedResponse.HasNextPage);
+        Assert.False(paginatedResponse.HasPreviousPage);
     }
 
     [Fact]

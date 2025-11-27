@@ -34,25 +34,53 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
-    /// Retrieves all products from the inventory.
+    /// Retrieves products from the inventory with optional pagination.
     /// </summary>
-    /// <returns>A list of all products.</returns>
-    /// <response code="200">Returns the list of all products.</response>
+    /// <param name="page">The page number (1-based). Default is 1.</param>
+    /// <param name="pageSize">The number of items per page (1-100). Default is 10.</param>
+    /// <returns>A paginated response containing products and pagination metadata.</returns>
+    /// <response code="200">Returns the paginated list of products.</response>
     /// <remarks>
     /// Sample request:
     /// 
     ///     GET /api/products
+    ///     GET /api/products?page=1&amp;pageSize=10
     ///     
     /// This endpoint is publicly accessible and does not require authentication.
+    /// Returns a paginated response with items, page, pageSize, totalCount, and totalPages.
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<Product>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+    [ProducesResponseType(typeof(PaginatedResponse<Product>), StatusCodes.Status200OK)]
+    [ResponseCache(Duration = 60, VaryByQueryKeys = ["page", "pageSize"])]
+    public async Task<ActionResult<PaginatedResponse<Product>>> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        _logger.LogInformation("Retrieving all products");
-        var products = await _context.Products.ToListAsync();
-        _logger.LogInformation("Retrieved {Count} products", products.Count);
-        return Ok(products);
+        _logger.LogInformation("Retrieving products (page: {Page}, pageSize: {PageSize})", page, pageSize);
+        
+        // Validate and clamp pagination parameters
+        var validPage = Math.Max(1, page);
+        var validPageSize = Math.Clamp(pageSize, 1, 100);
+        
+        // Use AsNoTracking for read-only queries to improve performance
+        var query = _context.Products.AsNoTracking();
+        
+        var totalCount = await query.CountAsync();
+        var products = await query
+            .OrderBy(p => p.Id)
+            .Skip((validPage - 1) * validPageSize)
+            .Take(validPageSize)
+            .ToListAsync();
+        
+        var response = new PaginatedResponse<Product>
+        {
+            Items = products,
+            Page = validPage,
+            PageSize = validPageSize,
+            TotalCount = totalCount
+        };
+        
+        _logger.LogInformation("Retrieved {Count} products (page {Page} of {TotalPages})", 
+            products.Count, validPage, response.TotalPages);
+        return Ok(response);
     }
 
     /// <summary>
@@ -72,10 +100,15 @@ public class ProductsController : ControllerBase
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ResponseCache(Duration = 60)]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
         _logger.LogInformation("Retrieving product with ID: {ProductId}", id);
-        var product = await _context.Products.FindAsync(id);
+        
+        // Use AsNoTracking for read-only queries to improve performance
+        var product = await _context.Products
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id);
 
         if (product == null)
         {
