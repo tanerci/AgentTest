@@ -3,6 +3,7 @@ using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using ProductApi.Common;
 using ProductApi.Data;
 using System.Reflection;
 
@@ -15,6 +16,8 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 builder.Services.AddControllers()
     .AddDataAnnotationsLocalization();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // Configure Swagger/OpenAPI with XML documentation
 builder.Services.AddSwaggerGen(options =>
@@ -134,6 +137,8 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 });
 
 // Configure the HTTP request pipeline
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
