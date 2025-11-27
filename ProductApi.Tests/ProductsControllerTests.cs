@@ -27,13 +27,43 @@ public class ProductsControllerTests : TestBase
         var logger = Substitute.For<ILogger<ProductsController>>();
         var controller = new ProductsController(context, logger);
 
-        // Act
-        var result = await controller.GetProducts();
+        // Act - no pagination parameters returns all products
+        var result = await controller.GetProducts(null, null);
 
         // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var okResult = Assert.IsType<OkObjectResult>(result);
         var products = Assert.IsAssignableFrom<IEnumerable<Product>>(okResult.Value);
         Assert.Equal(2, products.Count());
+    }
+
+    [Fact]
+    public async Task GetProducts_WithPagination_ReturnsPaginatedResponse()
+    {
+        // Arrange
+        var context = GetInMemoryDbContext();
+        context.Products.AddRange(
+            new Product { Id = 1, Name = "Product1", Description = "Desc1", Price = 10.0m, Stock = 5 },
+            new Product { Id = 2, Name = "Product2", Description = "Desc2", Price = 20.0m, Stock = 10 },
+            new Product { Id = 3, Name = "Product3", Description = "Desc3", Price = 30.0m, Stock = 15 }
+        );
+        await context.SaveChangesAsync();
+        
+        var logger = Substitute.For<ILogger<ProductsController>>();
+        var controller = new ProductsController(context, logger);
+
+        // Act - with pagination parameters
+        var result = await controller.GetProducts(1, 2);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        Assert.Equal(2, paginatedResponse.Items.Count());
+        Assert.Equal(1, paginatedResponse.Page);
+        Assert.Equal(2, paginatedResponse.PageSize);
+        Assert.Equal(3, paginatedResponse.TotalCount);
+        Assert.Equal(2, paginatedResponse.TotalPages);
+        Assert.True(paginatedResponse.HasNextPage);
+        Assert.False(paginatedResponse.HasPreviousPage);
     }
 
     [Fact]

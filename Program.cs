@@ -47,6 +47,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization();
 
+// Add response caching for improved performance
+builder.Services.AddResponseCaching();
+
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -139,6 +142,7 @@ app.Use(async (context, next) =>
 });
 
 app.UseHttpsRedirection();
+app.UseResponseCaching();
 app.UseIpRateLimiting();
 app.UseCors();
 app.UseAuthentication();
