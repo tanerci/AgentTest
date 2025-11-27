@@ -27,13 +27,14 @@ public class ProductsControllerTests : TestBase
         var logger = Substitute.For<ILogger<ProductsController>>();
         var controller = new ProductsController(context, logger);
 
-        // Act - no pagination parameters returns all products
-        var result = await controller.GetProducts(null, null);
+        // Act - default pagination returns paginated response
+        var result = await controller.GetProducts();
 
         // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
-        var products = Assert.IsAssignableFrom<IEnumerable<Product>>(okResult.Value);
-        Assert.Equal(2, products.Count());
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        Assert.Equal(2, paginatedResponse.Items.Count());
+        Assert.Equal(2, paginatedResponse.TotalCount);
     }
 
     [Fact]
@@ -55,7 +56,7 @@ public class ProductsControllerTests : TestBase
         var result = await controller.GetProducts(1, 2);
 
         // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
         var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
         Assert.Equal(1, paginatedResponse.Page);

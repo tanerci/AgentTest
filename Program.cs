@@ -142,8 +142,8 @@ app.Use(async (context, next) =>
 });
 
 app.UseHttpsRedirection();
-app.UseResponseCaching();
 app.UseIpRateLimiting();
+app.UseResponseCaching();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -31,10 +31,10 @@ public class ProductsController : ControllerBase
     /// <summary>
     /// Retrieves products from the inventory with optional pagination.
     /// </summary>
-    /// <param name="page">The page number (1-based). If not specified, returns all products.</param>
+    /// <param name="page">The page number (1-based). Default is 1.</param>
     /// <param name="pageSize">The number of items per page (1-100). Default is 10.</param>
-    /// <returns>A list of products or a paginated response.</returns>
-    /// <response code="200">Returns the list of products.</response>
+    /// <returns>A paginated response containing products and pagination metadata.</returns>
+    /// <response code="200">Returns the paginated list of products.</response>
     /// <remarks>
     /// Sample request:
     /// 
@@ -42,30 +42,21 @@ public class ProductsController : ControllerBase
     ///     GET /api/products?page=1&amp;pageSize=10
     ///     
     /// This endpoint is publicly accessible and does not require authentication.
-    /// When pagination parameters are provided, returns a paginated response with metadata.
+    /// Returns a paginated response with items, page, pageSize, totalCount, and totalPages.
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<Product>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(PaginatedResponse<Product>), StatusCodes.Status200OK)]
     [ResponseCache(Duration = 60, VaryByQueryKeys = ["page", "pageSize"])]
-    public async Task<IActionResult> GetProducts([FromQuery] int? page, [FromQuery] int? pageSize)
+    public async Task<ActionResult<PaginatedResponse<Product>>> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         _logger.LogInformation("Retrieving products (page: {Page}, pageSize: {PageSize})", page, pageSize);
         
+        // Validate and clamp pagination parameters
+        var validPage = Math.Max(1, page);
+        var validPageSize = Math.Clamp(pageSize, 1, 100);
+        
         // Use AsNoTracking for read-only queries to improve performance
         var query = _context.Products.AsNoTracking();
-        
-        // If no pagination parameters, return all products (backward compatible)
-        if (!page.HasValue)
-        {
-            var allProducts = await query.ToListAsync();
-            _logger.LogInformation("Retrieved {Count} products", allProducts.Count);
-            return Ok(allProducts);
-        }
-        
-        // Validate and clamp pagination parameters
-        var validPage = Math.Max(1, page.Value);
-        var validPageSize = Math.Clamp(pageSize ?? 10, 1, 100);
         
         var totalCount = await query.CountAsync();
         var products = await query
