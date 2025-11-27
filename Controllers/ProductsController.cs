@@ -84,6 +84,111 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
+    /// Searches and filters products based on specified criteria with pagination.
+    /// </summary>
+    /// <param name="searchTerm">Optional search term to filter by product name or description.</param>
+    /// <param name="minPrice">Optional minimum price filter.</param>
+    /// <param name="maxPrice">Optional maximum price filter.</param>
+    /// <param name="minStock">Optional minimum stock quantity filter.</param>
+    /// <param name="maxStock">Optional maximum stock quantity filter.</param>
+    /// <param name="page">The page number (1-based). Default is 1.</param>
+    /// <param name="pageSize">The number of items per page (1-100). Default is 10.</param>
+    /// <returns>A paginated response containing filtered products and pagination metadata.</returns>
+    /// <response code="200">Returns the paginated list of filtered products.</response>
+    /// <remarks>
+    /// Sample requests:
+    /// 
+    ///     GET /api/products/filter?searchTerm=mouse
+    ///     GET /api/products/filter?minPrice=50&amp;maxPrice=200
+    ///     GET /api/products/filter?minStock=10
+    ///     GET /api/products/filter?searchTerm=laptop&amp;minPrice=500&amp;page=1&amp;pageSize=20
+    ///     
+    /// This endpoint is publicly accessible and does not require authentication.
+    /// All filter parameters are optional and can be combined.
+    /// Search term performs case-insensitive partial matching on name and description.
+    /// </remarks>
+    [HttpGet("filter")]
+    [ProducesResponseType(typeof(PaginatedResponse<Product>), StatusCodes.Status200OK)]
+    [ResponseCache(Duration = 30, VaryByQueryKeys = ["searchTerm", "minPrice", "maxPrice", "minStock", "maxStock", "page", "pageSize"])]
+    public async Task<ActionResult<PaginatedResponse<Product>>> FilterProducts(
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] int? minStock = null,
+        [FromQuery] int? maxStock = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        _logger.LogInformation(
+            "Filtering products - SearchTerm: {SearchTerm}, MinPrice: {MinPrice}, MaxPrice: {MaxPrice}, MinStock: {MinStock}, MaxStock: {MaxStock}, Page: {Page}, PageSize: {PageSize}",
+            searchTerm ?? "none", minPrice?.ToString() ?? "none", maxPrice?.ToString() ?? "none", 
+            minStock?.ToString() ?? "none", maxStock?.ToString() ?? "none", page, pageSize);
+        
+        // Validate and clamp pagination parameters
+        var validPage = Math.Max(1, page);
+        var validPageSize = Math.Clamp(pageSize, 1, 100);
+        
+        // Build the query with filters
+        IQueryable<Product> query = _context.Products.AsNoTracking();
+        
+        // Apply search term filter (case-insensitive partial match on name and description)
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var lowerSearchTerm = searchTerm.ToLower();
+            query = query.Where(p => 
+                p.Name.ToLower().Contains(lowerSearchTerm) || 
+                p.Description.ToLower().Contains(lowerSearchTerm));
+        }
+        
+        // Apply price range filters
+        if (minPrice.HasValue)
+        {
+            query = query.Where(p => p.Price >= minPrice.Value);
+        }
+        
+        if (maxPrice.HasValue)
+        {
+            query = query.Where(p => p.Price <= maxPrice.Value);
+        }
+        
+        // Apply stock range filters
+        if (minStock.HasValue)
+        {
+            query = query.Where(p => p.Stock >= minStock.Value);
+        }
+        
+        if (maxStock.HasValue)
+        {
+            query = query.Where(p => p.Stock <= maxStock.Value);
+        }
+        
+        // Get total count after filters
+        var totalCount = await query.CountAsync();
+        
+        // Apply pagination and ordering
+        var products = await query
+            .OrderBy(p => p.Name)
+            .ThenBy(p => p.Id)
+            .Skip((validPage - 1) * validPageSize)
+            .Take(validPageSize)
+            .ToListAsync();
+        
+        var response = new PaginatedResponse<Product>
+        {
+            Items = products,
+            Page = validPage,
+            PageSize = validPageSize,
+            TotalCount = totalCount
+        };
+        
+        _logger.LogInformation(
+            "Retrieved {Count} filtered products (page {Page} of {TotalPages}, total matching: {TotalCount})", 
+            products.Count, validPage, response.TotalPages, totalCount);
+        
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Retrieves a specific product by its ID.
     /// </summary>
     /// <param name="id">The unique identifier of the product.</param>
