@@ -1,0 +1,252 @@
+{
+  "name": "Health Probes Rules",
+  "version": "1.0",
+  "description": "Health check and readiness probe patterns for containerized .NET applications",
+  "rules": [
+    {
+      "id": "HEALTH-001",
+      "category": "Liveness Endpoint",
+      "severity": "error",
+      "title": "Application must expose a liveness endpoint",
+      "description": "Every service must have a /health/live endpoint for liveness probes",
+      "rationale": "Liveness probes detect when the application is hung and needs to be restarted.",
+      "examples": {
+        "good": [
+          "// Program.cs\napp.MapHealthChecks(\"/health/live\", new HealthCheckOptions { Predicate = _ => false });",
+          "builder.Services.AddHealthChecks();"
+        ]
+      },
+      "configuration": {
+        "path": "/health/live or /healthz",
+        "expectedStatus": 200,
+        "lightweight": "Must be fast (<100ms)",
+        "noDependencies": "Should not check external dependencies"
+      }
+    },
+    {
+      "id": "HEALTH-002",
+      "category": "Readiness Endpoint",
+      "severity": "error",
+      "title": "Application must expose a readiness endpoint",
+      "description": "Every service must have a /health/ready endpoint that checks all dependencies",
+      "rationale": "Readiness probes prevent traffic routing to instances that cannot handle requests.",
+      "examples": {
+        "good": [
+          "// Program.cs\napp.MapHealthChecks(\"/health/ready\", new HealthCheckOptions { Predicate = check => check.Tags.Contains(\"ready\") });",
+          "builder.Services.AddHealthChecks().AddDbContextCheck<AppDbContext>(\"database\", tags: new[] { \"ready\" }).AddUrlGroup(new Uri(\"https://api.example.com/health\"), \"external-api\", tags: new[] { \"ready\" });"
+        ]
+      },
+      "configuration": {
+        "path": "/health/ready or /ready",
+        "checkDependencies": ["Database", "External APIs", "Message broker", "Cache"],
+        "timeout": "5-10 seconds per check",
+        "failFast": true
+      }
+    },
+    {
+      "id": "HEALTH-003",
+      "category": "Startup Probe",
+      "severity": "warning",
+      "title": "Slow-starting applications should have startup probes",
+      "description": "Applications with slow startup should use /health/startup to prevent premature restarts",
+      "rationale": "Startup probes give more time for initialization without killing the container.",
+      "examples": {
+        "good": [
+          "// Program.cs\napp.MapHealthChecks(\"/health/startup\", new HealthCheckOptions { Predicate = check => check.Tags.Contains(\"startup\") });",
+          "builder.Services.AddHealthChecks().AddCheck(\"startup-warmup\", () => isWarmedUp ? HealthCheckResult.Healthy() : HealthCheckResult.Unhealthy(), tags: new[] { \"startup\" });"
+        ]
+      },
+      "kubernetesExample": {
+        "startupProbe": {
+          "httpGet": {
+            "path": "/health/startup",
+            "port": 8080
+          },
+          "initialDelaySeconds": 0,
+          "periodSeconds": 10,
+          "failureThreshold": 30,
+          "timeoutSeconds": 3
+        }
+      }
+    },
+    {
+      "id": "HEALTH-004",
+      "category": "Health Check Implementation",
+      "severity": "error",
+      "title": "Health checks must be lightweight and timeout quickly",
+      "description": "Individual health checks should complete in <1 second and have explicit timeouts",
+      "rationale": "Slow health checks can cause probe timeouts and false negatives.",
+      "examples": {
+        "bad": [
+          "// No timeout, expensive query\npublic class DbHealthCheck : IHealthCheck { public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken) { var products = await dbContext.Products.ToListAsync(); return HealthCheckResult.Healthy(); } }"
+        ],
+        "good": [
+          "// With timeout and simple query\npublic class DbHealthCheck : IHealthCheck { public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken) { using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken); cts.CancelAfter(TimeSpan.FromSeconds(3)); try { await dbContext.Database.CanConnectAsync(cts.Token); return HealthCheckResult.Healthy(); } catch (Exception ex) { return HealthCheckResult.Unhealthy(ex.Message); } } }"
+        ]
+      },
+      "bestPractices": [
+        "Use CancellationToken with timeout",
+        "Avoid expensive queries",
+        "Test connectivity, not data integrity",
+        "Return descriptive failure messages"
+      ]
+    },
+    {
+      "id": "HEALTH-005",
+      "category": "Dependency Checks",
+      "severity": "warning",
+      "title": "Readiness checks must validate all critical dependencies",
+      "description": "Check database, external APIs, message brokers, and cache in readiness probe",
+      "rationale": "Prevents routing traffic to instances with failed dependencies.",
+      "examples": {
+        "good": [
+          "builder.Services.AddHealthChecks().AddDbContextCheck<AppDbContext>(\"database\", tags: new[] { \"ready\" }).AddRedis(Configuration[\"Redis:ConnectionString\"], \"redis\", tags: new[] { \"ready\" }).AddAzureServiceBusTopic(Configuration[\"ServiceBus:ConnectionString\"], \"orders\", \"servicebus\", tags: new[] { \"ready\" });"
+        ]
+      },
+      "dependencies": {
+        "database": "AddDbContextCheck or AddSqlServer",
+        "cache": "AddRedis or AddDistributedCache",
+        "messageBroker": "AddAzureServiceBus or AddRabbitMQ",
+        "externalAPI": "AddUrlGroup with timeout"
+      }
+    },
+    {
+      "id": "HEALTH-006",
+      "category": "Graceful Shutdown",
+      "severity": "error",
+      "title": "Implement graceful shutdown with request draining",
+      "description": "Application must handle SIGTERM, stop accepting requests, and drain in-flight work",
+      "rationale": "Prevents connection errors and data loss during deployments/scaling.",
+      "examples": {
+        "good": [
+          "// Program.cs\nvar app = builder.Build();\nvar lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();\nlifetime.ApplicationStopping.Register(() => { logger.LogInformation(\"Stopping, draining requests...\"); Thread.Sleep(5000); // Allow time for load balancer to remove instance });\nawait app.RunAsync();"
+        ]
+      },
+      "steps": [
+        "Receive SIGTERM signal",
+        "Stop health check endpoints (return 503)",
+        "Wait for load balancer to detect unhealthy",
+        "Stop accepting new requests",
+        "Drain in-flight requests (timeout)",
+        "Close connections gracefully",
+        "Exit process"
+      ],
+      "configuration": {
+        "drainTimeout": "10-30 seconds",
+        "shutdownTimeout": "30-60 seconds"
+      }
+    },
+    {
+      "id": "HEALTH-007",
+      "category": "Kubernetes Configuration",
+      "severity": "warning",
+      "title": "Kubernetes probes must align with health endpoints",
+      "description": "Deployment manifests must correctly reference health check paths and configure thresholds",
+      "rationale": "Misconfigured probes cause unnecessary restarts or mask failures.",
+      "examples": {
+        "good": [
+          "apiVersion: apps/v1\nkind: Deployment\nspec:\n  template:\n    spec:\n      containers:\n      - name: api\n        livenessProbe:\n          httpGet:\n            path: /health/live\n            port: 8080\n          initialDelaySeconds: 10\n          periodSeconds: 10\n          timeoutSeconds: 3\n          failureThreshold: 3\n        readinessProbe:\n          httpGet:\n            path: /health/ready\n            port: 8080\n          initialDelaySeconds: 5\n          periodSeconds: 5\n          timeoutSeconds: 3\n          failureThreshold: 3\n        startupProbe:\n          httpGet:\n            path: /health/startup\n            port: 8080\n          periodSeconds: 10\n          failureThreshold: 30"
+        ]
+      },
+      "recommendations": {
+        "liveness": {
+          "initialDelaySeconds": "10-30",
+          "periodSeconds": "10-30",
+          "timeoutSeconds": "1-5",
+          "failureThreshold": "3-5"
+        },
+        "readiness": {
+          "initialDelaySeconds": "5-15",
+          "periodSeconds": "5-10",
+          "timeoutSeconds": "3-5",
+          "failureThreshold": "2-3"
+        },
+        "startup": {
+          "initialDelaySeconds": "0",
+          "periodSeconds": "10",
+          "failureThreshold": "30-60",
+          "timeoutSeconds": "3-5"
+        }
+      }
+    },
+    {
+      "id": "HEALTH-008",
+      "category": "Azure App Service",
+      "severity": "warning",
+      "title": "Configure Azure App Service health check path",
+      "description": "Set health check path in App Service configuration to enable automatic restarts",
+      "rationale": "App Service can automatically restart unhealthy instances.",
+      "examples": {
+        "good": [
+          "# Azure CLI\naz webapp config set --resource-group myRG --name myApp --health-check-path /health/ready",
+          "# Bicep\nresource webApp 'Microsoft.Web/sites@2022-03-01' = {\n  properties: {\n    siteConfig: {\n      healthCheckPath: '/health/ready'\n    }\n  }\n}"
+        ]
+      },
+      "configuration": {
+        "path": "/health/ready",
+        "interval": "Every 60 seconds",
+        "unhealthyThreshold": "10 consecutive failures",
+        "action": "Automatic restart"
+      }
+    },
+    {
+      "id": "HEALTH-009",
+      "category": "Response Format",
+      "severity": "info",
+      "title": "Use standard health check response format",
+      "description": "Health check responses should follow standard format with status and details",
+      "rationale": "Consistent format enables better monitoring and debugging.",
+      "examples": {
+        "good": [
+          "// Detailed response\napp.MapHealthChecks(\"/health/ready\", new HealthCheckOptions { ResponseWriter = async (context, report) => { context.Response.ContentType = \"application/json\"; var result = JsonSerializer.Serialize(new { status = report.Status.ToString(), checks = report.Entries.Select(e => new { name = e.Key, status = e.Value.Status.ToString(), duration = e.Value.Duration.TotalMilliseconds, exception = e.Value.Exception?.Message }) }); await context.Response.WriteAsync(result); } });"
+        ]
+      },
+      "standardFormat": {
+        "status": "Healthy | Degraded | Unhealthy",
+        "totalDuration": "Total check duration in ms",
+        "checks": [
+          {
+            "name": "database",
+            "status": "Healthy",
+            "duration": "25ms",
+            "data": {}
+          }
+        ]
+      }
+    },
+    {
+      "id": "HEALTH-010",
+      "category": "Telemetry",
+      "severity": "info",
+      "title": "Log health check failures with context",
+      "description": "Failed health checks should log detailed error information",
+      "rationale": "Enables faster diagnosis of health check failures.",
+      "examples": {
+        "good": [
+          "public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken) { try { await dependency.PingAsync(cancellationToken); return HealthCheckResult.Healthy(); } catch (Exception ex) { logger.LogError(ex, \"Health check failed for {HealthCheckName}\", context.Registration.Name); return HealthCheckResult.Unhealthy(ex.Message, ex); } }"
+        ]
+      },
+      "metrics": [
+        "Health check duration",
+        "Health check status transitions",
+        "Failure reasons",
+        "Dependency availability %"
+      ]
+    }
+  ],
+  "bestPractices": [
+    "Separate liveness and readiness concerns",
+    "Use startup probes for slow-starting apps",
+    "Keep liveness checks simple (no dependencies)",
+    "Include all critical dependencies in readiness",
+    "Test graceful shutdown in staging",
+    "Monitor health check metrics in production"
+  ],
+  "dependencies": [
+    "Microsoft.Extensions.Diagnostics.HealthChecks (built-in)",
+    "AspNetCore.HealthChecks.UI.Client (optional, for detailed responses)",
+    "AspNetCore.HealthChecks.SqlServer (for SQL health checks)",
+    "AspNetCore.HealthChecks.Redis (for Redis health checks)",
+    "AspNetCore.HealthChecks.AzureServiceBus (for Service Bus checks)"
+  ]
+}

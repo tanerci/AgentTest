@@ -3,7 +3,7 @@ description: >
   Scans for missing authentication/authorization and suggests middleware improvements.
 triggers:
   - event: push
-    branches: ["main", "develop"]
+    branches: ["master", "main", "develop"]
   - event: pull_request
     actions: ["opened", "synchronize"]
 tasks:

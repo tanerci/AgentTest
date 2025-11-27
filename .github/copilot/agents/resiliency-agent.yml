@@ -1,0 +1,57 @@
+name: resiliency-agent
+description: >
+  Enforces runtime resiliency patterns including retries, circuit breakers, timeouts,
+  bulkhead isolation, and fallback paths across HTTP clients, message handlers, and data access.
+  Ensures Polly policies are properly configured with sensible thresholds.
+triggers:
+  - event: push
+    branches: ["master", "main", "develop"]
+  - event: pull_request
+    actions: ["opened", "synchronize"]
+tasks:
+  - type: validate-resiliency-policies
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/resiliency.json"
+      checks:
+        - "retry-policies"
+        - "circuit-breaker-configuration"
+        - "timeout-policies"
+        - "bulkhead-isolation"
+        - "fallback-handlers"
+  - type: check-http-clients
+    inputs:
+      source: "**/*HttpClient*.cs"
+      requirements:
+        - "polly-retry-policy"
+        - "timeout-configuration"
+        - "circuit-breaker"
+        - "idempotent-operations"
+  - type: validate-idempotency
+    inputs:
+      operations: ["POST", "PUT", "PATCH"]
+      checks:
+        - "idempotency-keys"
+        - "no-retry-on-non-idempotent"
+        - "duplicate-detection"
+  - type: analyze-thresholds
+    inputs:
+      validate:
+        - "retry-attempts-reasonable"
+        - "circuit-breaker-thresholds"
+        - "timeout-values"
+        - "backoff-strategies"
+  - type: detect-issues
+    inputs:
+      patterns:
+        - "missing-retry-policy"
+        - "unbounded-retries"
+        - "no-timeout"
+        - "missing-fallback-critical-path"
+  - type: suggest-improvements
+    inputs:
+      framework: "Polly"
+      recommendations:
+        - "combine-policies"
+        - "policy-registry"
+        - "telemetry-integration"

@@ -3,7 +3,7 @@ description: >
   Generates and updates GitHub Actions workflows for build, test, and deploy pipelines.
 triggers:
   - event: push
-    branches: ["main"]
+    branches: ["master", "main"]
 tasks:
   - type: generate-workflow
     inputs:

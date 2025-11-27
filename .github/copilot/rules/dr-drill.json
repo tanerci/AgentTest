@@ -1,0 +1,315 @@
+{
+  "name": "Disaster Recovery Drill Rules",
+  "version": "1.0",
+  "description": "Disaster recovery testing, validation, and continuous improvement procedures",
+  "rules": [
+    {
+      "id": "DR-DRILL-001",
+      "category": "Drill Schedule",
+      "severity": "error",
+      "title": "Scheduled DR drills must be performed at defined intervals",
+      "description": "Conduct quarterly full DR drills, monthly partial drills, and annual tabletop exercises minimum",
+      "rationale": "Regular testing ensures DR procedures work and teams know their roles during real incidents.",
+      "schedule": {
+        "full": "Quarterly (full failover and recovery)",
+        "partial": "Monthly (component-level recovery)",
+        "tabletop": "Monthly (scenario walkthrough, no execution)",
+        "annual": "Full-scale disaster simulation with executive participation"
+      },
+      "drillTypes": {
+        "full": {
+          "description": "Complete failover to DR site/region with actual data restoration",
+          "scope": "All critical systems",
+          "duration": "4-8 hours",
+          "participants": "IT ops, DevOps, application teams, management"
+        },
+        "partial": {
+          "description": "Single system or component recovery test",
+          "scope": "One application or database",
+          "duration": "1-2 hours",
+          "participants": "Specific system owners"
+        },
+        "tabletop": {
+          "description": "Scenario discussion without actual failover",
+          "scope": "Review procedures, roles, and decision-making",
+          "duration": "1-2 hours",
+          "participants": "Cross-functional team + management"
+        }
+      }
+    },
+    {
+      "id": "DR-DRILL-002",
+      "category": "RPO/RTO Validation",
+      "severity": "error",
+      "title": "Measure and validate RPO/RTO targets during drills",
+      "description": "Document actual recovery point and recovery time achieved versus targets",
+      "rationale": "Validates that backup/recovery strategy meets business requirements.",
+      "measurements": {
+        "RPO": {
+          "definition": "Maximum acceptable data loss (time between last backup and failure)",
+          "measurement": "Compare recovered data timestamp to failure timestamp",
+          "example": "Database recovered to 14:30, failure at 14:45 = 15 min RPO (target: 1 hour ✓)"
+        },
+        "RTO": {
+          "definition": "Maximum acceptable downtime (time to restore service)",
+          "measurement": "Time from drill start to service operational",
+          "example": "Drill started 15:00, service operational 16:30 = 90 min RTO (target: 2 hours ✓)"
+        }
+      },
+      "documentation": {
+        "required": [
+          "Failure/drill start timestamp",
+          "Last successful backup timestamp",
+          "Recovery start timestamp",
+          "Service operational timestamp",
+          "Actual RPO achieved",
+          "Actual RTO achieved",
+          "Target vs. actual comparison",
+          "Gaps identified"
+        ]
+      }
+    },
+    {
+      "id": "DR-DRILL-003",
+      "category": "Automated Restore Verification",
+      "severity": "error",
+      "title": "Automated runbooks must execute successfully during drills",
+      "description": "All recovery runbooks and automation scripts must be tested and validated in DR drills",
+      "rationale": "Ensures automation works under stress and reduces manual errors during real disasters.",
+      "validation": {
+        "executionSuccess": "Runbook completes without errors",
+        "dataIntegrity": "Restored data validated for completeness and consistency",
+        "applicationFunctional": "Application passes smoke tests post-recovery",
+        "performanceAcceptable": "Response times meet SLA",
+        "rollbackCapable": "Can revert to primary if needed"
+      },
+      "examples": {
+        "azureFailover": [
+          "# Azure SQL Database failover script\n$ResourceGroup = 'myRG'\n$ServerName = 'myserver'\n$FailoverGroup = 'my-failover-group'\n\n# Initiate failover to secondary\nWrite-Host \"Starting failover to secondary region...\"\nInvoke-AzSqlDatabaseFailoverGroupSwitch -ResourceGroupName $ResourceGroup -ServerName \"$ServerName-secondary\" -FailoverGroupName $FailoverGroup\n\n# Verify secondary is now primary\n$Status = Get-AzSqlDatabaseFailoverGroup -ResourceGroupName $ResourceGroup -ServerName \"$ServerName-secondary\" -FailoverGroupName $FailoverGroup\nif ($Status.ReplicationRole -eq 'Primary') {\n  Write-Host \"Failover successful. Secondary is now primary.\" -ForegroundColor Green\n} else {\n  Write-Error \"Failover failed. Manual intervention required.\"\n}"
+        ],
+        "localRestore": [
+          "# Local SQL Server restore runbook\nparam(\n  [string]$BackupPath = '\\\\BackupServer\\SQL\\MyDB_Full.bak',\n  [string]$DatabaseName = 'MyDatabase',\n  [string]$ServerInstance = 'DR-SQL-01'\n)\n\n# Restore database\nRestore-SqlDatabase -ServerInstance $ServerInstance -Database $DatabaseName -BackupFile $BackupPath -ReplaceDatabase\n\n# Verify restore\n$RowCount = Invoke-Sqlcmd -ServerInstance $ServerInstance -Database $DatabaseName -Query 'SELECT COUNT(*) as cnt FROM sys.tables'\nif ($RowCount.cnt -gt 0) {\n  Write-Host \"Database restored successfully with $($RowCount.cnt) tables\" -ForegroundColor Green\n} else {\n  Write-Error \"Database restore verification failed\"\n}"
+        ]
+      }
+    },
+    {
+      "id": "DR-DRILL-004",
+      "category": "Evidence Collection",
+      "severity": "error",
+      "title": "Capture comprehensive evidence during DR drills",
+      "description": "Document all activities, timestamps, issues, and outcomes with screenshots and logs",
+      "rationale": "Provides audit trail for compliance and enables post-drill analysis and improvement.",
+      "evidence": {
+        "required": [
+          "Drill plan and objectives",
+          "Participant list and roles",
+          "Start/end timestamps for each phase",
+          "Screenshots of systems before/during/after",
+          "Log files from restore operations",
+          "Data validation results",
+          "Application functionality tests",
+          "Issues encountered and resolutions",
+          "Communication logs",
+          "Post-drill survey responses"
+        ]
+      },
+      "storage": {
+        "location": "Secure, version-controlled repository",
+        "retention": "7 years minimum (compliance)",
+        "format": "PDF report + raw artifacts (logs, screenshots)",
+        "access": "Auditors, management, DR team"
+      }
+    },
+    {
+      "id": "DR-DRILL-005",
+      "category": "Drill Documentation",
+      "severity": "error",
+      "title": "Maintain detailed DR drill plans and procedures",
+      "description": "Document drill scope, objectives, roles, success criteria, and step-by-step procedures",
+      "rationale": "Ensures consistent, repeatable drills and clear understanding of expectations.",
+      "drillPlan": {
+        "sections": [
+          "Executive summary and objectives",
+          "Scope (systems, data, teams involved)",
+          "Roles and responsibilities",
+          "Communication plan",
+          "Pre-drill checklist",
+          "Detailed recovery procedures",
+          "Success criteria and validation",
+          "Rollback procedures",
+          "Post-drill activities"
+        ]
+      },
+      "rolesResponsibilities": {
+        "drillCoordinator": "Oversees entire drill, timekeeping, evidence collection",
+        "technicalLead": "Executes restore procedures, troubleshoots issues",
+        "applicationOwners": "Validate application functionality post-restore",
+        "communicationsLead": "Manages stakeholder notifications",
+        "observer": "Independent observer for audit/compliance"
+      }
+    },
+    {
+      "id": "DR-DRILL-006",
+      "category": "Post-Drill Report",
+      "severity": "error",
+      "title": "Generate comprehensive post-drill report within 48 hours",
+      "description": "Document drill results, lessons learned, action items, and recommendations",
+      "rationale": "Drives continuous improvement and demonstrates due diligence for audits.",
+      "reportSections": {
+        "executiveSummary": "High-level results, RPO/RTO achieved, major findings",
+        "drillOverview": "Date, participants, scope, objectives",
+        "timeline": "Detailed timeline of activities with timestamps",
+        "rpoRtoAnalysis": "Target vs. actual with charts",
+        "successesFailures": "What worked well, what failed, root causes",
+        "dataIntegrity": "Validation results, any data loss or corruption",
+        "issuesEncountered": "Problems, workarounds, resolution time",
+        "lessonsLearned": "Key takeaways and insights",
+        "actionItems": "Specific improvements with owners and deadlines",
+        "recommendations": "Strategic changes to DR strategy"
+      },
+      "distribution": {
+        "immediate": ["DR team", "Management", "Application owners"],
+        "archive": ["Audit team", "Compliance", "SharePoint/Confluence"]
+      }
+    },
+    {
+      "id": "DR-DRILL-007",
+      "category": "Runbook Currency",
+      "severity": "error",
+      "title": "DR runbooks must be updated after infrastructure changes",
+      "description": "Validate runbook accuracy after any system architecture, configuration, or dependency change",
+      "rationale": "Outdated runbooks cause delays and errors during real disasters.",
+      "updateTriggers": [
+        "New application deployment",
+        "Infrastructure changes (servers, networks, storage)",
+        "Dependency changes (databases, APIs, services)",
+        "Contact/escalation changes",
+        "Post-drill improvements"
+      ],
+      "validation": {
+        "afterChanges": "Re-test affected runbooks within 1 week of change",
+        "quarterly": "Full review of all runbooks",
+        "versionControl": "Use Git or SharePoint with version history",
+        "approvalRequired": "DR team lead must approve changes"
+      }
+    },
+    {
+      "id": "DR-DRILL-008",
+      "category": "Communication Testing",
+      "severity": "warning",
+      "title": "Test communication and notification systems during drills",
+      "description": "Validate that all stakeholders are notified correctly and communication channels work",
+      "rationale": "Effective communication is critical during disasters to coordinate response.",
+      "communicationAspects": {
+        "notificationSystem": "Automated alerts via email, SMS, PagerDuty",
+        "statusPage": "Public status page updates for customers",
+        "stakeholderAlerts": "Executives, customers, partners informed",
+        "escalationChain": "On-call rotation and escalation procedures tested",
+        "chatOps": "Slack/Teams incident channels activated",
+        "conferencing": "Bridge lines or video calls for coordination"
+      },
+      "examples": {
+        "template": [
+          "Subject: [DRILL] Disaster Recovery Exercise - Do Not Escalate\n\nThis is a SCHEDULED DISASTER RECOVERY DRILL.\n\nScenario: Primary datacenter failure\nStart: 2025-01-15 10:00 UTC\nExpected Duration: 4 hours\nImpact: None (drill only)\n\nActions:\n- DR team: Follow runbooks for Azure region failover\n- App teams: Validate application functionality post-failover\n- Comms: Prepare customer status updates\n\nBridge: https://meet.company.com/dr-drill\nStatus: https://status.company.com/drill"
+        ]
+      }
+    },
+    {
+      "id": "DR-DRILL-009",
+      "category": "Compliance Validation",
+      "severity": "warning",
+      "title": "Validate compliance requirements during DR drills",
+      "description": "Ensure DR procedures meet regulatory requirements (GDPR, HIPAA, SOC 2, etc.)",
+      "rationale": "Demonstrates regulatory compliance and preparedness for audits.",
+      "complianceChecks": {
+        "auditTrail": "Complete evidence of drill activities",
+        "dataRetention": "Recovery validates retention policy compliance",
+        "encryption": "Data encrypted at rest and in transit during recovery",
+        "accessControls": "Only authorized personnel accessed systems",
+        "incidentResponse": "Procedures align with incident response plan",
+        "businessContinuity": "RTO/RPO targets meet contractual SLAs"
+      },
+      "frameworks": {
+        "SOC2": "Availability commitment - DR capability demonstrated",
+        "ISO27001": "A.17.1 Business continuity planning",
+        "HIPAA": "§164.308(a)(7) Contingency plan",
+        "GDPR": "Article 32 - Security of processing"
+      }
+    },
+    {
+      "id": "DR-DRILL-010",
+      "category": "Continuous Improvement",
+      "severity": "error",
+      "title": "Track and implement action items from DR drills",
+      "description": "Assign owners and deadlines for all improvement actions, track to completion",
+      "rationale": "Drills only improve DR readiness if findings are acted upon.",
+      "actionItemManagement": {
+        "capture": "Document during drill in shared doc",
+        "prioritize": "Critical, High, Medium, Low based on impact",
+        "assign": "Owner identified with deadline",
+        "track": "Use Jira, Azure DevOps, or similar",
+        "verify": "Validate completion in next drill",
+        "metrics": "% of action items completed on time"
+      },
+      "examples": {
+        "actionItem": {
+          "id": "DR-ACTION-2025-Q1-001",
+          "title": "Update SQL restore script to use AAD authentication",
+          "description": "Current script uses SQL authentication which failed during drill due to expired password",
+          "priority": "High",
+          "owner": "Jane Smith",
+          "deadline": "2025-02-15",
+          "status": "In Progress",
+          "validation": "Re-test in February partial drill"
+        }
+      }
+    }
+  ],
+  "bestPractices": [
+    "Treat drills like real disasters (no special prep)",
+    "Include surprise elements to test adaptability",
+    "Rotate drill scenarios (regional outage, ransomware, data corruption)",
+    "Involve management in annual drills",
+    "Test during business hours occasionally (simulate real outage impact)",
+    "Document everything - video recording optional",
+    "Celebrate successes and learn from failures",
+    "Share lessons learned across teams",
+    "Integrate DR drill schedule into team calendars",
+    "Budget time for post-drill improvements"
+  ],
+  "drillScenarios": [
+    {
+      "name": "Primary region failure",
+      "description": "Azure primary region becomes unavailable",
+      "scope": "Failover to secondary region",
+      "complexity": "High"
+    },
+    {
+      "name": "Ransomware attack",
+      "description": "Database encrypted by ransomware",
+      "scope": "Restore from immutable backups",
+      "complexity": "Medium"
+    },
+    {
+      "name": "Data corruption",
+      "description": "Application bug corrupts data",
+      "scope": "Point-in-time restore",
+      "complexity": "Medium"
+    },
+    {
+      "name": "Complete datacenter loss",
+      "description": "On-premises datacenter destroyed",
+      "scope": "Failover to cloud DR environment",
+      "complexity": "Very High"
+    }
+  ],
+  "metrics": [
+    "Drill completion rate (scheduled vs. executed)",
+    "Average RTO achieved vs. target",
+    "Average RPO achieved vs. target",
+    "Action items completed on time %",
+    "Number of runbook failures per drill",
+    "Drill participant satisfaction scores",
+    "Time to first restore (speed improvement over time)"
+  ]
+}

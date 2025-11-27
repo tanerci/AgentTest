@@ -1,0 +1,67 @@
+name: health-probes-agent
+description: >
+  Validates liveness/readiness/startup health check endpoints, graceful shutdown,
+  and deployment health probes for Kubernetes, Azure App Service, and container platforms.
+triggers:
+  - event: push
+    branches: ["master", "main", "develop"]
+  - event: pull_request
+    actions: ["opened", "synchronize"]
+tasks:
+  - type: validate-health-endpoints
+    inputs:
+      source: "**/*.cs"
+      configFiles: ["appsettings*.json", "**/*.yaml", "**/*.yml"]
+      ruleset: ".github/copilot/rules/health-probes.json"
+      checks:
+        - "liveness-endpoint-exists"
+        - "readiness-endpoint-exists"
+        - "startup-probe-configured"
+        - "health-check-dependencies"
+  - type: check-probe-configuration
+    inputs:
+      platforms: ["Kubernetes", "Azure App Service", "Docker Compose"]
+      validate:
+        - "probe-paths-aligned"
+        - "timeout-values"
+        - "failure-threshold"
+        - "period-seconds"
+        - "initial-delay"
+  - type: validate-readiness-checks
+    inputs:
+      checks:
+        - "dependency-health-checks"
+        - "database-connectivity"
+        - "external-service-health"
+        - "readiness-blocks-traffic"
+        - "fast-failing-checks"
+  - type: validate-graceful-shutdown
+    inputs:
+      checks:
+        - "shutdown-signal-handling"
+        - "drain-inflight-requests"
+        - "stop-accepting-new-requests"
+        - "cleanup-resources"
+        - "timeout-configuration"
+  - type: check-health-check-implementation
+    inputs:
+      validate:
+        - "lightweight-checks"
+        - "no-expensive-operations"
+        - "dependency-checks-separate"
+        - "timeout-per-check"
+        - "proper-status-codes"
+  - type: detect-issues
+    inputs:
+      patterns:
+        - "missing-health-endpoints"
+        - "no-graceful-shutdown"
+        - "expensive-health-checks"
+        - "missing-dependency-checks"
+        - "incorrect-status-codes"
+  - type: generate-templates
+    inputs:
+      output:
+        - "HealthChecks/DatabaseHealthCheck.cs"
+        - "HealthChecks/ExternalServiceHealthCheck.cs"
+        - "Extensions/HealthCheckExtensions.cs"

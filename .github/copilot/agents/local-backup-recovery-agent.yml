@@ -1,0 +1,73 @@
+name: local-backup-recovery-agent
+description: >
+  Validates local backup strategies including volume snapshots, database backups,
+  encryption, air-gap/offsite storage, restore scripts, and checksum verification
+  for on-premises and hybrid deployments.
+triggers:
+  - event: schedule
+    cron: "0 11 * * MON"  # Weekly on Monday at 11 AM
+  - event: push
+    branches: ["master", "main"]
+    paths:
+      - "backup-scripts/**"
+      - "infrastructure/**"
+tasks:
+  - type: validate-backup-coverage
+    inputs:
+      sources: ["Database", "File System", "Configuration", "Volumes"]
+      ruleset: ".github/copilot/rules/local-backup.json"
+      checks:
+        - "backup-coverage-complete"
+        - "backup-frequency-met"
+        - "incremental-backups"
+        - "full-backup-schedule"
+  - type: check-encryption
+    inputs:
+      validate:
+        - "encrypted-at-rest"
+        - "encryption-algorithm"
+        - "key-management"
+        - "secure-storage"
+  - type: validate-offsite-backup
+    inputs:
+      checks:
+        - "offsite-copy-exists"
+        - "air-gap-protection"
+        - "geographic-separation"
+        - "immutable-backups"
+        - "3-2-1-rule-compliance"
+  - type: validate-restore-scripts
+    inputs:
+      checks:
+        - "restore-scripts-exist"
+        - "scripts-tested-recently"
+        - "automated-restore-process"
+        - "restore-documentation"
+        - "rollback-procedures"
+  - type: check-integrity
+    inputs:
+      validate:
+        - "checksum-verification"
+        - "backup-validation"
+        - "corruption-detection"
+        - "integrity-reports"
+  - type: validate-retention
+    inputs:
+      checks:
+        - "retention-policy-defined"
+        - "retention-period-met"
+        - "archive-strategy"
+        - "purge-policy"
+  - type: test-restore-process
+    inputs:
+      validate:
+        - "restore-time-tested"
+        - "restore-success-rate"
+        - "partial-restore-capability"
+        - "point-in-time-recovery"
+  - type: generate-reports
+    inputs:
+      output:
+        - "backup-status-report.md"
+        - "restore-test-results.md"
+        - "compliance-checklist.md"

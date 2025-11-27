@@ -1,0 +1,86 @@
+name: dr-drill-agent
+description: >
+  Ensures scheduled disaster recovery drills are performed, captures evidence of
+  RPO/RTO compliance, verifies automated restore paths, and validates recovery
+  procedures for both Azure and local environments.
+triggers:
+  - event: schedule
+    cron: "0 9 1 */3 *"  # Quarterly on the 1st at 9 AM
+  - event: workflow_dispatch
+    inputs:
+      drill_type: ["full", "partial", "tabletop"]
+tasks:
+  - type: validate-drill-schedule
+    inputs:
+      ruleset: ".github/copilot/rules/dr-drill.json"
+      checks:
+        - "quarterly-drill-minimum"
+        - "annual-full-drill"
+        - "monthly-tabletop-exercise"
+        - "drill-calendar-current"
+  - type: verify-rpo-rto
+    inputs:
+      validate:
+        - "rpo-target-defined"
+        - "rto-target-defined"
+        - "actual-rpo-measured"
+        - "actual-rto-measured"
+        - "targets-met"
+        - "gaps-documented"
+  - type: test-automated-restore
+    inputs:
+      environments: ["Azure", "Local", "Hybrid"]
+      checks:
+        - "runbook-executes-successfully"
+        - "automated-failover-works"
+        - "data-integrity-verified"
+        - "application-functional"
+        - "rollback-tested"
+  - type: validate-drill-documentation
+    inputs:
+      requirements:
+        - "drill-plan-exists"
+        - "roles-responsibilities-defined"
+        - "success-criteria-clear"
+        - "communication-plan"
+        - "escalation-procedures"
+  - type: capture-drill-evidence
+    inputs:
+      collect:
+        - "start-end-timestamps"
+        - "recovery-time-actual"
+        - "data-loss-measured"
+        - "screenshots-logs"
+        - "participant-notes"
+        - "issues-encountered"
+  - type: generate-post-drill-report
+    inputs:
+      output: "dr-drill-reports/"
+      include:
+        - "executive-summary"
+        - "rpo-rto-analysis"
+        - "success-failures"
+        - "lessons-learned"
+        - "action-items"
+        - "improvement-recommendations"
+  - type: validate-runbook-currency
+    inputs:
+      checks:
+        - "runbooks-updated-recently"
+        - "contact-info-current"
+        - "dependencies-documented"
+        - "version-controlled"
+  - type: test-communication-plan
+    inputs:
+      validate:
+        - "notification-system-works"
+        - "stakeholder-alerts"
+        - "status-page-updates"
+        - "escalation-chain-tested"
+  - type: verify-compliance
+    inputs:
+      checks:
+        - "regulatory-requirements-met"
+        - "audit-trail-complete"
+        - "report-retention"
+        - "executive-approval"
