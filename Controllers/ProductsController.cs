@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using ProductApi.Data;
 using ProductApi.DTOs;
 using ProductApi.Models;
+using ProductApi.Resources;
 
 namespace ProductApi.Controllers;
 
@@ -16,16 +18,19 @@ public class ProductsController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<ProductsController> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     /// <summary>
     /// Initializes a new instance of the ProductsController.
     /// </summary>
     /// <param name="context">The database context for product operations.</param>
     /// <param name="logger">The logger for tracking product operations.</param>
-    public ProductsController(AppDbContext context, ILogger<ProductsController> logger)
+    /// <param name="localizer">The string localizer for localized messages.</param>
+    public ProductsController(AppDbContext context, ILogger<ProductsController> logger, IStringLocalizer<SharedResource> localizer)
     {
         _context = context;
         _logger = logger;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -75,7 +80,7 @@ public class ProductsController : ControllerBase
         if (product == null)
         {
             _logger.LogWarning("Product with ID {ProductId} not found", id);
-            return NotFound(new { message = $"Product with ID {id} not found" });
+            return NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) });
         }
 
         _logger.LogInformation("Retrieved product: {ProductName} (ID: {ProductId})", product.Name, product.Id);
@@ -174,7 +179,7 @@ public class ProductsController : ControllerBase
         if (product == null)
         {
             _logger.LogWarning("Update failed: Product with ID {ProductId} not found", id);
-            return NotFound(new { message = $"Product with ID {id} not found" });
+            return NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) });
         }
 
         if (productDto.Name != null)
@@ -224,7 +229,7 @@ public class ProductsController : ControllerBase
         if (product == null)
         {
             _logger.LogWarning("Delete failed: Product with ID {ProductId} not found", id);
-            return NotFound(new { message = $"Product with ID {id} not found" });
+            return NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) });
         }
 
         var productName = product.Name;
@@ -232,6 +237,6 @@ public class ProductsController : ControllerBase
         await _context.SaveChangesAsync();
 
         _logger.LogInformation("Deleted product: {ProductName} (ID: {ProductId})", productName, id);
-        return Ok(new { message = "Product deleted successfully" });
+        return Ok(new { message = _localizer["ProductDeletedSuccessfully"].Value });
     }
 }

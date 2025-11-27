@@ -1,13 +1,19 @@
+using System.Globalization;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using ProductApi.Data;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add localization services
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddDataAnnotationsLocalization();
 builder.Services.AddEndpointsApiExplorer();
 
 // Configure Swagger/OpenAPI with XML documentation
@@ -110,6 +116,22 @@ using (var scope = app.Services.CreateScope())
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     context.Database.EnsureCreated();
 }
+
+// Configure supported cultures for localization
+var supportedCultures = new[]
+{
+    new CultureInfo("en-US"),
+    new CultureInfo("es-ES"),
+    new CultureInfo("fr-FR"),
+    new CultureInfo("de-DE")
+};
+
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("en-US"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

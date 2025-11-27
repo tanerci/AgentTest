@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ProductApi.Controllers;
 using ProductApi.Data;
 using ProductApi.DTOs;
 using ProductApi.Models;
+using ProductApi.Resources;
 using System.Security.Claims;
 using Xunit;
 
@@ -19,7 +21,8 @@ public class AuthControllerTests : TestBase
     private AuthController CreateControllerWithMockHttpContext(AppDbContext context)
     {
         var logger = Substitute.For<ILogger<AuthController>>();
-        var controller = new AuthController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new AuthController(context, logger, localizer);
         
         // Create mock HttpContext
         var httpContext = Substitute.For<HttpContext>();
@@ -72,7 +75,8 @@ public class AuthControllerTests : TestBase
         // Arrange
         var context = GetInMemoryDbContext();
         var logger = Substitute.For<ILogger<AuthController>>();
-        var controller = new AuthController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new AuthController(context, logger, localizer);
         
         // Add HttpContext mock
         var httpContext = new DefaultHttpContext();
@@ -110,7 +114,8 @@ public class AuthControllerTests : TestBase
         await context.SaveChangesAsync();
         
         var logger = Substitute.For<ILogger<AuthController>>();
-        var controller = new AuthController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new AuthController(context, logger, localizer);
         
         // Add HttpContext mock
         var httpContext = new DefaultHttpContext();
@@ -154,7 +159,8 @@ public class AuthControllerTests : TestBase
         // Arrange
         var context = GetInMemoryDbContext();
         var logger = Substitute.For<ILogger<AuthController>>();
-        var controller = new AuthController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new AuthController(context, logger, localizer);
         
         var claims = new List<Claim>
         {
@@ -198,7 +204,8 @@ public class AuthControllerTests : TestBase
         // Arrange
         var context = GetInMemoryDbContext();
         var logger = Substitute.For<ILogger<AuthController>>();
-        var controller = new AuthController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new AuthController(context, logger, localizer);
         
         var httpContext = new DefaultHttpContext();
         

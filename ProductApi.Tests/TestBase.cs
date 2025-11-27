@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using NSubstitute;
 using ProductApi.Data;
+using ProductApi.Resources;
 
 namespace ProductApi.Tests;
 
@@ -20,5 +23,23 @@ public abstract class TestBase
             .Options;
         
         return new AppDbContext(options);
+    }
+
+    /// <summary>
+    /// Creates a mock string localizer for testing localized strings.
+    /// Returns the key as the value for any localization lookup.
+    /// </summary>
+    /// <returns>A mock IStringLocalizer&lt;SharedResource&gt; instance.</returns>
+    protected IStringLocalizer<SharedResource> GetMockLocalizer()
+    {
+        var localizer = Substitute.For<IStringLocalizer<SharedResource>>();
+        
+        localizer["InvalidUsernameOrPassword"].Returns(new LocalizedString("InvalidUsernameOrPassword", "Invalid username or password"));
+        localizer["LoginSuccessful"].Returns(new LocalizedString("LoginSuccessful", "Login successful"));
+        localizer["LogoutSuccessful"].Returns(new LocalizedString("LogoutSuccessful", "Logout successful"));
+        localizer["ProductNotFound"].Returns(new LocalizedString("ProductNotFound", "Product with ID {0} not found"));
+        localizer["ProductDeletedSuccessfully"].Returns(new LocalizedString("ProductDeletedSuccessfully", "Product deleted successfully"));
+        
+        return localizer;
     }
 }

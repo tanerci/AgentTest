@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using ProductApi.Data;
 using ProductApi.DTOs;
+using ProductApi.Resources;
 using System.Security.Claims;
 
 namespace ProductApi.Controllers;
@@ -17,16 +19,19 @@ public class AuthController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<AuthController> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     /// <summary>
     /// Initializes a new instance of the AuthController.
     /// </summary>
     /// <param name="context">The database context for user operations.</param>
     /// <param name="logger">The logger for security event tracking.</param>
-    public AuthController(AppDbContext context, ILogger<AuthController> logger)
+    /// <param name="localizer">The string localizer for localized messages.</param>
+    public AuthController(AppDbContext context, ILogger<AuthController> logger, IStringLocalizer<SharedResource> localizer)
     {
         _context = context;
         _logger = logger;
+        _localizer = localizer;
     }
 
     /// <summary>
@@ -83,7 +88,7 @@ public class AuthController : ControllerBase
         {
             _logger.LogWarning("Failed login attempt for username: {Username} from IP: {IpAddress}", 
                 request.Username, GetClientIpAddress());
-            return Unauthorized(new { message = "Invalid username or password" });
+            return Unauthorized(new { message = _localizer["InvalidUsernameOrPassword"].Value });
         }
 
         _logger.LogInformation("Successful login for user: {Username} from IP: {IpAddress}", 
@@ -107,7 +112,7 @@ public class AuthController : ControllerBase
             new ClaimsPrincipal(claimsIdentity),
             authProperties);
 
-        return Ok(new { message = "Login successful", username = user.Username });
+        return Ok(new { message = _localizer["LoginSuccessful"].Value, username = user.Username });
     }
 
     /// <summary>
@@ -129,7 +134,7 @@ public class AuthController : ControllerBase
         var username = User.Identity?.Name ?? "Unknown";
         _logger.LogInformation("User logged out: {Username}", username);
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return Ok(new { message = "Logout successful" });
+        return Ok(new { message = _localizer["LogoutSuccessful"].Value });
     }
 
     /// <summary>
