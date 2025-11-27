@@ -25,7 +25,8 @@ public class ProductsControllerTests : TestBase
         await context.SaveChangesAsync();
         
         var logger = Substitute.For<ILogger<ProductsController>>();
-        var controller = new ProductsController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new ProductsController(context, logger, localizer);
 
         // Act
         var result = await controller.GetProducts();
@@ -52,7 +53,8 @@ public class ProductsControllerTests : TestBase
         await context.SaveChangesAsync();
         
         var logger = Substitute.For<ILogger<ProductsController>>();
-        var controller = new ProductsController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new ProductsController(context, logger, localizer);
 
         // Act
         var result = await controller.GetProduct(1);
@@ -70,7 +72,8 @@ public class ProductsControllerTests : TestBase
         // Arrange
         var context = GetInMemoryDbContext();
         var logger = Substitute.For<ILogger<ProductsController>>();
-        var controller = new ProductsController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new ProductsController(context, logger, localizer);
 
         // Act
         var result = await controller.GetProduct(999);
@@ -85,7 +88,8 @@ public class ProductsControllerTests : TestBase
         // Arrange
         var context = GetInMemoryDbContext();
         var logger = Substitute.For<ILogger<ProductsController>>();
-        var controller = new ProductsController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new ProductsController(context, logger, localizer);
         var productDto = new ProductCreateDto
         {
             Name = "NewProduct",
@@ -126,7 +130,8 @@ public class ProductsControllerTests : TestBase
         await context.SaveChangesAsync();
         
         var logger = Substitute.For<ILogger<ProductsController>>();
-        var controller = new ProductsController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new ProductsController(context, logger, localizer);
         var updateDto = new ProductUpdateDto
         {
             Name = "Updated",
@@ -151,7 +156,8 @@ public class ProductsControllerTests : TestBase
         // Arrange
         var context = GetInMemoryDbContext();
         var logger = Substitute.For<ILogger<ProductsController>>();
-        var controller = new ProductsController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new ProductsController(context, logger, localizer);
         var updateDto = new ProductUpdateDto { Name = "Updated" };
 
         // Act
@@ -177,7 +183,8 @@ public class ProductsControllerTests : TestBase
         await context.SaveChangesAsync();
         
         var logger = Substitute.For<ILogger<ProductsController>>();
-        var controller = new ProductsController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new ProductsController(context, logger, localizer);
         var updateDto = new ProductUpdateDto { Stock = 25 };
 
         // Act
@@ -208,7 +215,8 @@ public class ProductsControllerTests : TestBase
         await context.SaveChangesAsync();
         
         var logger = Substitute.For<ILogger<ProductsController>>();
-        var controller = new ProductsController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new ProductsController(context, logger, localizer);
 
         // Act
         var result = await controller.DeleteProduct(1);
@@ -227,7 +235,8 @@ public class ProductsControllerTests : TestBase
         // Arrange
         var context = GetInMemoryDbContext();
         var logger = Substitute.For<ILogger<ProductsController>>();
-        var controller = new ProductsController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new ProductsController(context, logger, localizer);
 
         // Act
         var result = await controller.DeleteProduct(999);
