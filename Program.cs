@@ -1,6 +1,7 @@
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using ProductApi.Common;
 using ProductApi.Data;
 using System.Reflection;
 
@@ -9,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // Configure Swagger/OpenAPI with XML documentation
 builder.Services.AddSwaggerGen(options =>
@@ -112,6 +115,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
