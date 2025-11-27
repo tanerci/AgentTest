@@ -4,7 +4,7 @@ description: >
   and prevents logging of sensitive data across the application.
 triggers:
   - event: push
-    branches: ["main", "develop"]
+    branches: ["master", "main", "develop"]
   - event: pull_request
     actions: ["opened", "synchronize"]
 tasks:

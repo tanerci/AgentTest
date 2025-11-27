@@ -7,7 +7,7 @@ triggers:
   - event: schedule
     cron: "0 10 * * MON"  # Weekly on Monday at 10 AM
   - event: push
-    branches: ["main"]
+    branches: ["master", "main"]
     paths:
       - "infrastructure/**"
       - "*.bicep"
