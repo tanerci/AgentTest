@@ -1,0 +1,50 @@
+name: memory-leak-agent
+description: >
+  Detects memory leaks, improper IDisposable usage, event handler leaks,
+  GC pressure, and suggests memory optimization patterns for .NET applications.
+pillar: performance
+tags: [performance, memory, gc, disposal, idisposable, memory-leak]
+version: "1.0"
+tasks:
+  - type: analyze-disposal
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/memory-management.json"
+      checks:
+        - "idisposable-implementation"
+        - "using-statements"
+        - "event-handler-cleanup"
+        - "static-event-handlers"
+        - "large-object-allocation"
+  - type: detect-leaks
+    inputs:
+      patterns:
+        - "missing-dispose"
+        - "undisposed-httpclient"
+        - "unsubscribed-events"
+        - "static-collection-growth"
+        - "timer-not-disposed"
+        - "stream-not-closed"
+  - type: validate-lifecycle
+    inputs:
+      checks:
+        - "singleton-lifetime-appropriate"
+        - "scoped-dbcontext"
+        - "transient-disposables"
+        - "httpclient-factory-usage"
+  - type: check-collections
+    inputs:
+      validate:
+        - "unbounded-collection-growth"
+        - "large-list-allocations"
+        - "string-concatenation-loops"
+        - "byte-array-pooling"
+  - type: suggest-improvements
+    inputs:
+      recommendations:
+        - "implement-idisposable"
+        - "use-using-declarations"
+        - "unsubscribe-event-handlers"
+        - "use-weak-event-pattern"
+        - "use-arraypool"
+        - "use-memorycache-expiration"

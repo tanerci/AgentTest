@@ -1,0 +1,10 @@
+name: backup-recovery-collection
+description: >
+  Disaster recovery and backup strategy agents including Azure backup integration,
+  local backup validation, and disaster recovery drill enforcement.
+tags: [backup, recovery, disaster-recovery, business-continuity]
+
+agents:
+  - azure-backup-recovery-agent.yml
+  - local-backup-recovery-agent.yml
+  - dr-drill-agent.yml

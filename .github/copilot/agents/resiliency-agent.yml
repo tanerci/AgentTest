@@ -3,11 +3,9 @@ description: >
   Enforces runtime resiliency patterns including retries, circuit breakers, timeouts,
   bulkhead isolation, and fallback paths across HTTP clients, message handlers, and data access.
   Ensures Polly policies are properly configured with sensible thresholds.
-triggers:
-  - event: push
-    branches: ["master", "main", "develop"]
-  - event: pull_request
-    actions: ["opened", "synchronize"]
+pillar: reliability
+tags: [reliability, resiliency, retry, circuit-breaker, timeout, fallback, bulkhead, polly]
+version: "1.0"
 tasks:
   - type: validate-resiliency-policies
     inputs:

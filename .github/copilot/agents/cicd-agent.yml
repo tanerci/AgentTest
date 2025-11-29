@@ -1,9 +1,9 @@
 name: cicd-agent
 description: >
   Generates and updates GitHub Actions workflows for build, test, and deploy pipelines.
-triggers:
-  - event: push
-    branches: ["master", "main"]
+pillar: cicd
+tags: [cicd, pipeline, automation, workflow, github-actions, deployment]
+version: "1.0"
 tasks:
   - type: generate-workflow
     inputs:

@@ -1,0 +1,260 @@
+name: distributed-architecture-agent
+description: >
+  Enforces distributed system design principles including loose coupling, resilience,
+  fault tolerance, network reliability, distributed data consistency, and proper
+  communication patterns across distributed components.
+pillar: reliability
+tags: [reliability, architecture, distributed-systems, decoupling, resilience, contracts, fault-tolerance]
+version: "1.0"
+tasks:
+  - type: validate-decoupling
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/distributed-architecture.json"
+      checks:
+        - "loose-coupling-between-components"
+        - "interface-based-communication"
+        - "dependency-injection"
+        - "no-tight-coupling"
+        - "temporal-decoupling"
+        - "spatial-decoupling"
+  - type: validate-communication-contracts
+    inputs:
+      source: "**/*Contract.cs, **/*Interface.cs, Controllers/**/*.cs"
+      validate:
+        - "explicit-contract-definitions"
+        - "versioned-interfaces"
+        - "schema-validation"
+        - "consumer-provider-contracts"
+        - "contract-testing"
+        - "breaking-change-prevention"
+  - type: validate-network-resilience
+    inputs:
+      source: "**/*.cs"
+      checks:
+        - "timeout-configuration"
+        - "retry-with-backoff"
+        - "circuit-breaker-pattern"
+        - "fallback-mechanisms"
+        - "bulkhead-isolation"
+        - "connection-pooling"
+  - type: validate-failure-handling
+    inputs:
+      validate:
+        - "graceful-degradation"
+        - "partial-failure-handling"
+        - "cascade-failure-prevention"
+        - "fail-fast-principle"
+        - "defensive-programming"
+        - "chaos-engineering-ready"
+  - type: check-distributed-transactions
+    inputs:
+      source: "**/*.cs"
+      detect:
+        - "two-phase-commit-avoidance"
+        - "saga-pattern-usage"
+        - "eventual-consistency"
+        - "compensating-transactions"
+        - "idempotency-guarantees"
+        - "distributed-lock-patterns"
+  - type: validate-message-patterns
+    inputs:
+      source: "**/*.cs"
+      checks:
+        - "asynchronous-messaging"
+        - "message-durability"
+        - "at-least-once-delivery"
+        - "idempotent-consumers"
+        - "message-ordering-handling"
+        - "dead-letter-queues"
+  - type: validate-caching-strategy
+    inputs:
+      source: "**/*.cs"
+      validate:
+        - "cache-aside-pattern"
+        - "distributed-cache-usage"
+        - "cache-consistency"
+        - "cache-invalidation-strategy"
+        - "ttl-configuration"
+        - "cache-stampede-prevention"
+  - type: check-data-consistency
+    inputs:
+      validate:
+        - "eventual-consistency-acceptance"
+        - "conflict-resolution-strategy"
+        - "version-vectors-or-timestamps"
+        - "causal-consistency"
+        - "read-your-writes-consistency"
+        - "bounded-staleness"
+  - type: validate-service-discovery
+    inputs:
+      source: "Program.cs, Startup.cs, appsettings*.json"
+      checks:
+        - "dynamic-service-location"
+        - "service-registry-integration"
+        - "dns-based-discovery"
+        - "client-side-load-balancing"
+        - "health-aware-routing"
+  - type: validate-observability
+    inputs:
+      source: "**/*.cs"
+      validate:
+        - "distributed-tracing-implementation"
+        - "correlation-id-propagation"
+        - "structured-logging"
+        - "metrics-aggregation"
+        - "distributed-debugging-support"
+        - "request-tracking"
+  - type: check-latency-management
+    inputs:
+      validate:
+        - "timeout-budgets"
+        - "deadline-propagation"
+        - "latency-aware-routing"
+        - "request-hedging"
+        - "adaptive-timeouts"
+        - "tail-latency-optimization"
+  - type: validate-scalability-patterns
+    inputs:
+      checks:
+        - "horizontal-scaling-support"
+        - "stateless-components"
+        - "shared-nothing-architecture"
+        - "data-partitioning"
+        - "load-balancing-compatible"
+        - "auto-scaling-ready"
+  - type: validate-security-boundaries
+    inputs:
+      source: "**/*.cs"
+      validate:
+        - "zero-trust-architecture"
+        - "mutual-tls"
+        - "token-based-authentication"
+        - "encrypted-communication"
+        - "api-gateway-security"
+        - "service-mesh-security"
+  - type: detect-distributed-anti-patterns
+    inputs:
+      patterns:
+        - "distributed-monolith"
+        - "chatty-communication"
+        - "synchronous-coupling"
+        - "shared-mutable-state"
+        - "network-as-reliable"
+        - "central-point-of-failure"
+        - "unbounded-retries"
+  - type: validate-rate-limiting
+    inputs:
+      source: "**/*.cs, appsettings*.json"
+      checks:
+        - "rate-limiting-implementation"
+        - "throttling-policies"
+        - "backpressure-handling"
+        - "quota-management"
+        - "fair-resource-allocation"
+  - type: validate-health-checks
+    inputs:
+      source: "**/*.cs"
+      validate:
+        - "liveness-probes"
+        - "readiness-probes"
+        - "dependency-health-checks"
+        - "circuit-breaker-state-exposure"
+        - "graceful-shutdown"
+  - type: check-network-topology
+    inputs:
+      validate:
+        - "service-mesh-integration"
+        - "api-gateway-pattern"
+        - "sidecar-proxy-pattern"
+        - "ambassador-pattern"
+        - "ingress-egress-control"
+  - type: validate-event-driven-patterns
+    inputs:
+      source: "**/*Event.cs, Events/**/*.cs"
+      checks:
+        - "event-sourcing"
+        - "cqrs-implementation"
+        - "event-streaming"
+        - "event-choreography"
+        - "pub-sub-pattern"
+        - "event-versioning"
+  - type: validate-consistency-models
+    inputs:
+      validate:
+        - "cap-theorem-awareness"
+        - "consistency-level-explicit"
+        - "partition-tolerance"
+        - "availability-requirements"
+        - "strong-eventual-consistency"
+  - type: check-deployment-patterns
+    inputs:
+      files: ["*.yaml", "*.yml", "Dockerfile"]
+      validate:
+        - "blue-green-deployment"
+        - "canary-releases"
+        - "rolling-updates"
+        - "feature-toggles"
+        - "shadow-traffic"
+  - type: validate-monitoring-integration
+    inputs:
+      source: "**/*.cs"
+      checks:
+        - "metrics-export"
+        - "alert-definitions"
+        - "slo-sli-tracking"
+        - "error-budget-monitoring"
+        - "distributed-profiling"
+  - type: validate-api-composition
+    inputs:
+      validate:
+        - "aggregation-patterns"
+        - "parallel-requests"
+        - "request-coalescing"
+        - "batch-processing"
+        - "graphql-federation"
+  - type: check-consensus-algorithms
+    inputs:
+      source: "**/*.cs"
+      detect:
+        - "leader-election"
+        - "distributed-consensus"
+        - "quorum-based-operations"
+        - "raft-paxos-implementation"
+        - "coordination-service-usage"
+  - type: validate-time-synchronization
+    inputs:
+      validate:
+        - "ntp-synchronization"
+        - "logical-clocks"
+        - "vector-clocks"
+        - "timestamp-ordering"
+        - "time-skew-handling"
+  - type: validate-backpressure
+    inputs:
+      source: "**/*.cs"
+      checks:
+        - "flow-control-mechanisms"
+        - "queue-size-limits"
+        - "rejection-policies"
+        - "load-shedding"
+        - "adaptive-concurrency"
+  - type: suggest-patterns
+    inputs:
+      recommendations:
+        - "implement-circuit-breaker"
+        - "add-request-hedging"
+        - "introduce-bulkhead-isolation"
+        - "apply-saga-pattern"
+        - "add-distributed-tracing"
+        - "implement-cache-aside"
+        - "add-rate-limiting"
+  - type: generate-architecture-diagram
+    inputs:
+      output: ".github/copilot/diagrams/distributed-architecture.md"
+      include:
+        - "component-topology"
+        - "communication-flows"
+        - "failure-boundaries"
+        - "consistency-boundaries"
+        - "scaling-dimensions"

@@ -1,0 +1,51 @@
+name: input-validation-agent
+description: >
+  Prevents injection attacks (SQL, XSS, command injection, LDAP) by enforcing
+  parameterized queries, input sanitization, output encoding, and proper
+  validation of all user inputs.
+pillar: security
+tags: [security, validation, injection, xss, sql-injection, sanitization]
+version: "1.0"
+tasks:
+  - type: validate-input-handling
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/input-validation.json"
+      checks:
+        - "parameterized-queries"
+        - "model-validation"
+        - "input-sanitization"
+        - "output-encoding"
+        - "sql-injection-prevention"
+  - type: detect-vulnerabilities
+    inputs:
+      patterns:
+        - "string-concatenation-sql"
+        - "raw-sql-queries"
+        - "unvalidated-redirects"
+        - "html-raw-rendering"
+        - "command-execution"
+        - "deserialization-untrusted"
+  - type: validate-dto
+    inputs:
+      source: "DTOs/**/*.cs"
+      checks:
+        - "data-annotations-present"
+        - "range-validation"
+        - "string-length-limits"
+        - "regex-validation"
+        - "required-fields"
+  - type: check-ef-core
+    inputs:
+      source: "**/*.cs"
+      validate:
+        - "no-fromSqlRaw-string-concat"
+        - "use-fromSqlInterpolated"
+        - "parameterized-queries-only"
+  - type: suggest-improvements
+    inputs:
+      recommendations:
+        - "use-fluent-validation"
+        - "implement-request-validation"
+        - "add-anti-forgery-tokens"
+        - "sanitize-html-inputs"

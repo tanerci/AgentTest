@@ -1,8 +1,10 @@
 name: consistency-agent
 description: >
-  Enforces naming conventions, DRY principles, and consistent error handling.
-triggers:
-  - event: pull_request_review
+  Enforces naming conventions, DRY principles, and consistent error handling
+  across the codebase to maintain code quality and readability.
+pillar: ops-excellence
+tags: [consistency, naming, dry, refactoring, code-quality]
+version: "1.0"
 tasks:
   - type: lint
     inputs:

@@ -1,0 +1,142 @@
+name: clean-architecture-agent
+description: >
+  Enforces Clean Architecture principles including separation of concerns,
+  dependency inversion, layer independence, and proper boundaries between
+  Entities, Use Cases, Interface Adapters, and Infrastructure layers.
+pillar: ops-excellence
+tags: [ops-excellence, architecture, clean-architecture, separation-of-concerns, dependency-rules, layering]
+version: "1.0"
+tasks:
+  - type: validate-layer-separation
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/clean-architecture.json"
+      layers:
+        - "Domain/Entities"
+        - "Application/UseCases"
+        - "Application/Interfaces"
+        - "Infrastructure"
+        - "Presentation/Controllers"
+      checks:
+        - "layer-dependencies"
+        - "dependency-direction"
+        - "circular-references"
+        - "boundary-violations"
+  - type: validate-dependency-rules
+    inputs:
+      enforce:
+        - "domain-has-no-dependencies"
+        - "application-depends-on-domain-only"
+        - "infrastructure-implements-interfaces"
+        - "presentation-depends-on-application"
+        - "no-infrastructure-in-domain"
+        - "no-presentation-in-application"
+  - type: check-entity-purity
+    inputs:
+      source: "Models/**/*.cs, Domain/**/*.cs, Entities/**/*.cs"
+      validate:
+        - "no-infrastructure-dependencies"
+        - "no-framework-dependencies"
+        - "pure-business-logic"
+        - "value-objects-immutable"
+        - "rich-domain-models"
+  - type: validate-use-cases
+    inputs:
+      source: "Application/**/*.cs, UseCases/**/*.cs, Services/**/*.cs"
+      checks:
+        - "single-responsibility"
+        - "interface-abstractions"
+        - "dependency-injection"
+        - "no-direct-infrastructure-access"
+        - "orchestration-only"
+  - type: check-interface-adapters
+    inputs:
+      source: "Controllers/**/*.cs, DTOs/**/*.cs, Mappers/**/*.cs"
+      validate:
+        - "dto-separation-from-entities"
+        - "mapping-between-layers"
+        - "controller-thin-logic"
+        - "request-response-isolation"
+        - "no-domain-exposure"
+  - type: validate-infrastructure
+    inputs:
+      source: "Infrastructure/**/*.cs, Data/**/*.cs, Repositories/**/*.cs"
+      checks:
+        - "implements-application-interfaces"
+        - "dependency-inversion"
+        - "no-business-logic"
+        - "framework-specific-code-isolated"
+        - "database-context-in-infrastructure"
+  - type: detect-violations
+    inputs:
+      patterns:
+        - "domain-referencing-ef-core"
+        - "entities-with-data-annotations"
+        - "controllers-with-business-logic"
+        - "use-cases-with-ef-core-queries"
+        - "infrastructure-in-domain-namespace"
+        - "tight-coupling-to-frameworks"
+  - type: validate-dependency-injection
+    inputs:
+      files: ["Program.cs", "Startup.cs"]
+      checks:
+        - "interface-registration"
+        - "lifetime-management"
+        - "infrastructure-registration-last"
+        - "domain-services-registered"
+        - "repository-pattern-usage"
+  - type: check-cross-cutting-concerns
+    inputs:
+      validate:
+        - "logging-in-infrastructure"
+        - "validation-in-application"
+        - "authorization-in-presentation"
+        - "error-handling-separation"
+        - "concerns-properly-isolated"
+  - type: analyze-namespace-organization
+    inputs:
+      check:
+        - "domain-namespace-purity"
+        - "application-namespace-structure"
+        - "infrastructure-namespace-isolation"
+        - "clear-layer-boundaries"
+        - "consistent-naming-conventions"
+  - type: validate-testability
+    inputs:
+      checks:
+        - "interfaces-for-dependencies"
+        - "dependency-injection-enabled"
+        - "pure-functions-in-domain"
+        - "mockable-infrastructure"
+        - "unit-test-isolation"
+  - type: suggest-refactoring
+    inputs:
+      recommendations:
+        - "extract-business-logic-to-domain"
+        - "move-infrastructure-code"
+        - "create-application-interfaces"
+        - "introduce-repository-pattern"
+        - "implement-mediator-pattern"
+        - "separate-read-write-models"
+  - type: generate-architecture-diagram
+    inputs:
+      output: ".github/copilot/diagrams/architecture-layers.md"
+      include:
+        - "current-layer-structure"
+        - "dependency-graph"
+        - "violation-highlights"
+        - "recommended-structure"
+  - type: validate-bounded-contexts
+    inputs:
+      analyze:
+        - "domain-model-boundaries"
+        - "aggregate-roots"
+        - "context-isolation"
+        - "shared-kernel-usage"
+  - type: check-onion-architecture-compliance
+    inputs:
+      validate:
+        - "dependencies-point-inward"
+        - "outer-layers-depend-on-inner"
+        - "core-layer-independence"
+        - "plugin-architecture-pattern"

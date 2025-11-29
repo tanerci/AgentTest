@@ -1,0 +1,203 @@
+name: domain-driven-design-agent
+description: >
+  Enforces Domain-Driven Design (DDD) principles including bounded contexts,
+  aggregates, entities, value objects, domain events, repositories, and
+  ubiquitous language. Validates strategic and tactical DDD patterns.
+pillar: ops-excellence
+tags: [ops-excellence, architecture, ddd, domain-driven-design, aggregates, bounded-context, value-objects]
+version: "1.0"
+tasks:
+  - type: validate-bounded-contexts
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/domain-driven-design.json"
+      checks:
+        - "context-boundaries-defined"
+        - "context-isolation"
+        - "shared-kernel-minimal"
+        - "anti-corruption-layer"
+        - "context-mapping"
+  - type: validate-aggregates
+    inputs:
+      source: "Domain/**/*.cs, Models/**/*.cs"
+      checks:
+        - "aggregate-root-identified"
+        - "aggregate-boundary-enforcement"
+        - "consistency-boundary"
+        - "transaction-boundary-alignment"
+        - "aggregate-size-appropriate"
+        - "root-only-repository-access"
+  - type: validate-entities
+    inputs:
+      source: "Domain/**/*.cs, Models/**/*.cs, Entities/**/*.cs"
+      validate:
+        - "identity-property-present"
+        - "reference-equality"
+        - "lifecycle-management"
+        - "business-logic-encapsulation"
+        - "invariants-protected"
+        - "no-anemic-domain-model"
+  - type: validate-value-objects
+    inputs:
+      source: "Domain/**/*.cs, ValueObjects/**/*.cs"
+      checks:
+        - "immutability"
+        - "structural-equality"
+        - "no-identity"
+        - "self-validation"
+        - "side-effect-free-methods"
+        - "proper-record-usage"
+  - type: validate-domain-services
+    inputs:
+      source: "Domain/**/*Service.cs, Domain/**/*DomainService.cs"
+      validate:
+        - "stateless-services"
+        - "domain-logic-only"
+        - "operation-not-natural-to-entity"
+        - "interface-defined"
+        - "no-infrastructure-dependencies"
+  - type: validate-domain-events
+    inputs:
+      source: "Domain/**/*Event.cs, Events/**/*.cs"
+      checks:
+        - "immutable-events"
+        - "past-tense-naming"
+        - "event-metadata-present"
+        - "serializable"
+        - "published-after-state-change"
+        - "idempotent-handlers"
+  - type: validate-repositories
+    inputs:
+      source: "**/*Repository.cs, Repositories/**/*.cs"
+      validate:
+        - "aggregate-root-only"
+        - "collection-oriented-interface"
+        - "no-business-logic"
+        - "interface-in-domain"
+        - "implementation-in-infrastructure"
+        - "unit-of-work-pattern"
+  - type: validate-factories
+    inputs:
+      source: "Domain/**/*Factory.cs, Factories/**/*.cs"
+      checks:
+        - "complex-creation-logic"
+        - "encapsulates-construction"
+        - "invariant-validation"
+        - "returns-valid-aggregates"
+  - type: validate-ubiquitous-language
+    inputs:
+      analyze:
+        - "domain-term-consistency"
+        - "naming-reflects-business"
+        - "avoid-technical-jargon-in-domain"
+        - "code-matches-documentation"
+        - "consistent-terminology"
+  - type: detect-anemic-domain-model
+    inputs:
+      patterns:
+        - "entities-with-only-getters-setters"
+        - "business-logic-in-services-only"
+        - "public-setters-on-entities"
+        - "no-behavior-in-domain-objects"
+        - "data-bags-instead-of-objects"
+  - type: validate-specifications
+    inputs:
+      source: "Domain/**/*Specification.cs, Specifications/**/*.cs"
+      checks:
+        - "specification-pattern-implementation"
+        - "combinable-specifications"
+        - "reusable-business-rules"
+        - "explicit-business-criteria"
+  - type: validate-domain-invariants
+    inputs:
+      validate:
+        - "invariants-enforced-in-constructor"
+        - "validation-in-domain-layer"
+        - "guard-clauses-present"
+        - "business-rules-protected"
+        - "consistency-rules-enforced"
+  - type: check-persistence-ignorance
+    inputs:
+      source: "Domain/**/*.cs"
+      detect:
+        - "no-ef-core-attributes"
+        - "no-orm-dependencies"
+        - "no-database-concerns"
+        - "infrastructure-free-domain"
+        - "pure-poco-objects"
+  - type: validate-application-services
+    inputs:
+      source: "Application/**/*Service.cs, UseCases/**/*.cs"
+      checks:
+        - "orchestration-only"
+        - "transaction-management"
+        - "repository-coordination"
+        - "domain-event-publishing"
+        - "no-business-logic"
+        - "thin-application-layer"
+  - type: validate-dto-separation
+    inputs:
+      checks:
+        - "dtos-separate-from-entities"
+        - "mapping-layer-present"
+        - "no-domain-exposure-to-presentation"
+        - "anti-corruption-layer-for-external"
+  - type: validate-saga-pattern
+    inputs:
+      source: "Application/**/*Saga.cs, Sagas/**/*.cs"
+      validate:
+        - "long-running-process-coordination"
+        - "compensation-logic"
+        - "event-driven-orchestration"
+        - "state-machine-implementation"
+  - type: validate-cqrs-separation
+    inputs:
+      check:
+        - "command-query-separation"
+        - "separate-read-write-models"
+        - "command-handlers-modify-state"
+        - "queries-read-only"
+        - "no-mixed-responsibilities"
+  - type: detect-violations
+    inputs:
+      patterns:
+        - "aggregate-root-reference-by-id-only"
+        - "cross-aggregate-transactions"
+        - "lazy-loading-in-domain"
+        - "infrastructure-in-domain-namespace"
+        - "business-logic-in-controllers"
+        - "direct-repository-access-from-presentation"
+  - type: suggest-tactical-patterns
+    inputs:
+      recommendations:
+        - "introduce-value-objects"
+        - "extract-aggregate-roots"
+        - "implement-domain-events"
+        - "create-specification-objects"
+        - "add-factory-methods"
+        - "apply-strategy-pattern"
+  - type: suggest-strategic-patterns
+    inputs:
+      recommendations:
+        - "define-bounded-contexts"
+        - "implement-context-mapping"
+        - "add-anti-corruption-layer"
+        - "extract-shared-kernel"
+        - "separate-read-write-models"
+  - type: generate-context-map
+    inputs:
+      output: ".github/copilot/diagrams/bounded-context-map.md"
+      include:
+        - "identified-contexts"
+        - "context-relationships"
+        - "shared-kernel-areas"
+        - "integration-patterns"
+  - type: validate-event-sourcing
+    inputs:
+      source: "**/*EventStore.cs, EventSourcing/**/*.cs"
+      checks:
+        - "immutable-events"
+        - "event-versioning"
+        - "snapshot-strategy"
+        - "replay-capability"
+        - "eventual-consistency-handling"

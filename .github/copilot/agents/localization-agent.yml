@@ -2,9 +2,9 @@ name: localization-agent
 description: >
   Ensures globalization and localization best practices are followed.
   Validates resource usage, enforces English default, and requires Turkish translations.
-triggers:
-  - event: pull_request
-    actions: ["opened", "synchronize", "review_requested"]
+pillar: ops-excellence
+tags: [ops-excellence, localization, i18n, globalization, resources, translations]
+version: "1.0"
 tasks:
   - type: lint
     inputs:

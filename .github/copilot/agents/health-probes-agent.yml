@@ -2,11 +2,9 @@ name: health-probes-agent
 description: >
   Validates liveness/readiness/startup health check endpoints, graceful shutdown,
   and deployment health probes for Kubernetes, Azure App Service, and container platforms.
-triggers:
-  - event: push
-    branches: ["master", "main", "develop"]
-  - event: pull_request
-    actions: ["opened", "synchronize"]
+pillar: reliability
+tags: [reliability, probes, health-checks, liveness, readiness, kubernetes, graceful-shutdown]
+version: "1.0"
 tasks:
   - type: validate-health-endpoints
     inputs:

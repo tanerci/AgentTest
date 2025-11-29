@@ -2,9 +2,9 @@ name: accessibility-agent
 description: >
   Ensures API endpoints and responses meet accessibility standards,
   including proper error messages, localization support, and inclusive design.
-triggers:
-  - event: pull_request
-    actions: ["opened", "synchronize"]
+pillar: accessibility
+tags: [accessibility, a11y, inclusive, localization, error-messages]
+version: "1.0"
 tasks:
   - type: validate-accessibility
     inputs:

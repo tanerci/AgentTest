@@ -1,0 +1,12 @@
+name: performance-collection
+description: >
+  A collection of agents optimizing application performance including
+  SQL query optimization, API latency reduction, memory leak detection,
+  and general performance best practices.
+tags: [performance, optimization, speed, efficiency]
+
+agents:
+  - performance-agent.yml
+  - sql-optimization-agent.yml
+  - api-latency-agent.yml
+  - memory-leak-agent.yml

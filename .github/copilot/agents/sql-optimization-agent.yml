@@ -1,0 +1,51 @@
+name: sql-optimization-agent
+description: >
+  Detects inefficient database queries, missing indexes, N+1 problems,
+  unnecessary data loading, and suggests Entity Framework Core optimizations
+  for better performance.
+pillar: performance
+tags: [performance, sql, ef-core, optimization, n-plus-one, indexing, queries]
+version: "1.0"
+tasks:
+  - type: analyze-queries
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/sql-optimization.json"
+      checks:
+        - "n-plus-one-queries"
+        - "missing-asnotracking"
+        - "select-all-columns"
+        - "missing-indexes"
+        - "eager-loading-efficiency"
+  - type: detect-issues
+    inputs:
+      patterns:
+        - "lazy-loading-in-loops"
+        - "tolist-before-where"
+        - "multiple-roundtrips"
+        - "missing-includes"
+        - "inefficient-projections"
+        - "no-pagination"
+  - type: validate-dbcontext
+    inputs:
+      source: "Data/**/*Context.cs"
+      checks:
+        - "index-configuration"
+        - "query-filter-usage"
+        - "split-query-configuration"
+        - "connection-pooling"
+  - type: check-projections
+    inputs:
+      validate:
+        - "use-select-for-dto"
+        - "avoid-loading-unnecessary-data"
+        - "projection-before-materialization"
+  - type: suggest-optimizations
+    inputs:
+      recommendations:
+        - "add-asnotracking-readonly"
+        - "use-compiled-queries"
+        - "implement-pagination"
+        - "add-includes-eager-loading"
+        - "create-covering-indexes"
+        - "use-splitquery-collections"

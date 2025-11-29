@@ -2,15 +2,9 @@ name: configuration-agent
 description: >
   Validates application configuration files for consistency, security,
   and best practices. Detects hardcoded secrets and missing settings.
-triggers:
-  - event: push
-    branches: ["master", "main", "develop"]
-  - event: pull_request
-    actions: ["opened", "synchronize"]
-    paths:
-      - "appsettings*.json"
-      - "*.config"
-      - "web.config"
+pillar: ops-excellence
+tags: [ops-excellence, configuration, settings, secrets, appsettings]
+version: "1.0"
 tasks:
   - type: validate-configuration
     inputs:

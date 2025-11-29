@@ -3,11 +3,9 @@ description: >
   Enforces message broker reliability patterns including durable queues/topics,
   dead letter queues (DLQ), retry policies, partitioning strategies, consumer
   concurrency limits, and exponential backoff for Azure Service Bus, RabbitMQ, Kafka, etc.
-triggers:
-  - event: push
-    branches: ["master", "main", "develop"]
-  - event: pull_request
-    actions: ["opened", "synchronize"]
+pillar: reliability
+tags: [reliability, messaging, dlq, idempotency, azure-service-bus, kafka, rabbitmq]
+version: "1.0"
 tasks:
   - type: validate-queue-configuration
     inputs:
