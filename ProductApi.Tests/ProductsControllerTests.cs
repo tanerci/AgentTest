@@ -1,9 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ProductApi.Controllers;
-using ProductApi.Data;
 using ProductApi.DTOs;
 using ProductApi.Models;
 using Xunit;
@@ -24,9 +21,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - default pagination returns paginated response
         var result = await controller.GetProducts();
@@ -50,9 +47,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - with pagination parameters
         var result = await controller.GetProducts(1, 2);
@@ -84,9 +81,9 @@ public class ProductsControllerTests : TestBase
         });
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.GetProduct(1);
@@ -103,9 +100,9 @@ public class ProductsControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.GetProduct(999);
@@ -119,9 +116,9 @@ public class ProductsControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
         var productDto = new ProductCreateDto
         {
             Name = "NewProduct",
@@ -161,9 +158,9 @@ public class ProductsControllerTests : TestBase
         });
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
         var updateDto = new ProductUpdateDto
         {
             Name = "Updated",
@@ -187,9 +184,9 @@ public class ProductsControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
         var updateDto = new ProductUpdateDto { Name = "Updated" };
 
         // Act
@@ -214,9 +211,9 @@ public class ProductsControllerTests : TestBase
         });
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
         var updateDto = new ProductUpdateDto { Stock = 25 };
 
         // Act
@@ -246,9 +243,9 @@ public class ProductsControllerTests : TestBase
         });
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.DeleteProduct(1);
@@ -266,9 +263,9 @@ public class ProductsControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.DeleteProduct(999);
@@ -290,9 +287,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts();
@@ -316,9 +313,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - Search for "Mouse" in name
         var result = await controller.FilterProducts(searchTerm: "Mouse");
@@ -342,9 +339,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - Search for "ergonomic" in description
         var result = await controller.FilterProducts(searchTerm: "ergonomic");
@@ -366,9 +363,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - Search with mixed case
         var result = await controller.FilterProducts(searchTerm: "WiReLeSs");
@@ -391,9 +388,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts(minPrice: 50.0m);
@@ -417,9 +414,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts(maxPrice: 50.0m);
@@ -445,9 +442,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts(minPrice: 25.0m, maxPrice: 100.0m);
@@ -471,9 +468,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts(minStock: 20);
@@ -497,9 +494,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts(maxStock: 25);
@@ -525,9 +522,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts(minStock: 10, maxStock: 100);
@@ -553,9 +550,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - Search for "Wireless" products priced between 40 and 130 with stock >= 15
         var result = await controller.FilterProducts(
@@ -590,9 +587,9 @@ public class ProductsControllerTests : TestBase
         }
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - Get page 2 with 5 items per page
         var result = await controller.FilterProducts(page: 2, pageSize: 5);
@@ -627,9 +624,9 @@ public class ProductsControllerTests : TestBase
         }
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - Filter for "Alpha" products with pagination
         var result = await controller.FilterProducts(searchTerm: "Alpha", page: 1, pageSize: 5);
@@ -654,9 +651,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - Search for non-existent term
         var result = await controller.FilterProducts(searchTerm: "NonExistentProduct");
@@ -673,9 +670,9 @@ public class ProductsControllerTests : TestBase
     {
         // Arrange
         var context = GetInMemoryDbContext();
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts();
@@ -688,7 +685,7 @@ public class ProductsControllerTests : TestBase
     }
 
     [Fact]
-    public async Task FilterProducts_WithInvalidPriceRange_ReturnsEmptyResult()
+    public async Task FilterProducts_WithInvalidPriceRange_ReturnsBadRequest()
     {
         // Arrange
         var context = GetInMemoryDbContext();
@@ -698,22 +695,20 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - minPrice > maxPrice (invalid range)
         var result = await controller.FilterProducts(minPrice: 100.0m, maxPrice: 50.0m);
 
-        // Assert - Returns empty because no products match impossible range
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
-        Assert.Empty(paginatedResponse.Items);
-        Assert.Equal(0, paginatedResponse.TotalCount);
+        // Assert - Returns bad request for invalid range (DDD validation)
+        var objectResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(400, objectResult.StatusCode);
     }
 
     [Fact]
-    public async Task FilterProducts_WithInvalidStockRange_ReturnsEmptyResult()
+    public async Task FilterProducts_WithInvalidStockRange_ReturnsBadRequest()
     {
         // Arrange
         var context = GetInMemoryDbContext();
@@ -723,18 +718,16 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - minStock > maxStock (invalid range)
         var result = await controller.FilterProducts(minStock: 100, maxStock: 10);
 
-        // Assert - Returns empty because no products match impossible range
-        var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
-        Assert.Empty(paginatedResponse.Items);
-        Assert.Equal(0, paginatedResponse.TotalCount);
+        // Assert - Returns bad request for invalid range (DDD validation)
+        var objectResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(400, objectResult.StatusCode);
     }
 
     [Fact]
@@ -748,9 +741,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts(page: -5);
@@ -780,9 +773,9 @@ public class ProductsControllerTests : TestBase
         }
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts(pageSize: 500);
@@ -807,9 +800,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts();
@@ -842,9 +835,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act
         var result = await controller.FilterProducts(searchTerm: "   ");
@@ -867,9 +860,9 @@ public class ProductsControllerTests : TestBase
         );
         await context.SaveChangesAsync();
         
-        var logger = Substitute.For<ILogger<ProductsController>>();
+        var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(context, logger, localizer);
+        var controller = new ProductsController(productService, localizer);
 
         // Act - Use exact boundary values
         var result = await controller.FilterProducts(minPrice: 50.0m, maxPrice: 100.0m, minStock: 10, maxStock: 50);

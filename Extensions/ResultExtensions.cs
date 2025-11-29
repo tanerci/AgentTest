@@ -96,4 +96,27 @@ public static class ResultExtensions
     {
         return result.Match(onSuccess, error => error.ToProblemDetails());
     }
+
+    /// <summary>
+    /// Pattern matching extension for Result (non-generic) for cleaner controller code.
+    /// </summary>
+    public static ActionResult Match(
+        this Result result,
+        Func<ActionResult> onSuccess,
+        Func<Error, ActionResult> onFailure)
+    {
+        return result.IsSuccess 
+            ? onSuccess() 
+            : onFailure(result.Error);
+    }
+
+    /// <summary>
+    /// Simplified pattern matching for Result (non-generic) with default error handling.
+    /// </summary>
+    public static ActionResult Match(
+        this Result result,
+        Func<ActionResult> onSuccess)
+    {
+        return result.Match(onSuccess, error => error.ToProblemDetails());
+    }
 }

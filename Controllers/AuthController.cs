@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using ProductApi.Data;
+using ProductApi.Application.Services;
 using ProductApi.DTOs;
 using ProductApi.Resources;
 using System.Security.Claims;
@@ -12,24 +11,25 @@ namespace ProductApi.Controllers;
 
 /// <summary>
 /// Handles user authentication operations including login, logout, and status checks.
+/// Thin controller that delegates to the AuthService following DDD principles.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IAuthService _authService;
     private readonly ILogger<AuthController> _logger;
     private readonly IStringLocalizer<SharedResource> _localizer;
 
     /// <summary>
     /// Initializes a new instance of the AuthController.
     /// </summary>
-    /// <param name="context">The database context for user operations.</param>
+    /// <param name="authService">The authentication application service.</param>
     /// <param name="logger">The logger for security event tracking.</param>
     /// <param name="localizer">The string localizer for localized messages.</param>
-    public AuthController(AppDbContext context, ILogger<AuthController> logger, IStringLocalizer<SharedResource> localizer)
+    public AuthController(IAuthService authService, ILogger<AuthController> logger, IStringLocalizer<SharedResource> localizer)
     {
-        _context = context;
+        _authService = authService;
         _logger = logger;
         _localizer = localizer;
     }
@@ -82,25 +82,18 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+        var result = await _authService.AuthenticateAsync(
+            request.Username, 
+            request.Password, 
+            GetClientIpAddress());
 
-        if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        if (result.IsFailure)
         {
-            _logger.LogWarning("Failed login attempt for username: {Username} from IP: {IpAddress}", 
-                request.Username, GetClientIpAddress());
             return Unauthorized(new { message = _localizer["InvalidUsernameOrPassword"].Value });
         }
 
-        _logger.LogInformation("Successful login for user: {Username} from IP: {IpAddress}", 
-            user.Username, GetClientIpAddress());
-
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
-        };
-
-        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var authResult = result.Value;
+        var claimsIdentity = new ClaimsIdentity(authResult.Claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var authProperties = new AuthenticationProperties
         {
             IsPersistent = true,
@@ -112,7 +105,7 @@ public class AuthController : ControllerBase
             new ClaimsPrincipal(claimsIdentity),
             authProperties);
 
-        return Ok(new { message = _localizer["LoginSuccessful"].Value, username = user.Username });
+        return Ok(new { message = _localizer["LoginSuccessful"].Value, username = authResult.Username });
     }
 
     /// <summary>
