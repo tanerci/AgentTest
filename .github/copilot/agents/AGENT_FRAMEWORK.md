@@ -40,19 +40,24 @@ All agents are organized under six core pillars plus operational categories:
 
 ## 📊 Current Agent Inventory
 
-### 🔐 Security (3 agents)
+### 🔐 Security (5 agents)
 | Agent | File | Tags | Status |
 |-------|------|------|--------|
 | Security Agent | `security-agent.yml` | `security`, `vulnerabilities`, `xss`, `injection` | ✅ Active |
 | Dependency Agent | `dependency-agent.yml` | `security`, `dependencies`, `vulnerabilities`, `cve` | ✅ Active |
 | Configuration Agent | `configuration-agent.yml` | `security`, `configuration`, `secrets` | ✅ Active |
+| Auth Agent | `auth-agent.yml` | `security`, `auth`, `authorization`, `jwt`, `rbac` | ✅ Active |
+| Input Validation Agent | `input-validation-agent.yml` | `security`, `validation`, `injection`, `xss`, `sanitization` | ✅ Active |
 
-### ⚡ Performance Efficiency (1 agent)
+### ⚡ Performance Efficiency (4 agents)
 | Agent | File | Tags | Status |
 |-------|------|------|--------|
 | Performance Agent | `performance-agent.yml` | `performance`, `sql`, `latency`, `optimization`, `n-plus-one` | ✅ Active |
+| SQL Optimization Agent | `sql-optimization-agent.yml` | `performance`, `sql`, `ef-core`, `optimization`, `n-plus-one` | ✅ Active |
+| API Latency Agent | `api-latency-agent.yml` | `performance`, `api`, `latency`, `caching`, `compression` | ✅ Active |
+| Memory Leak Agent | `memory-leak-agent.yml` | `performance`, `memory`, `gc`, `disposal`, `idisposable` | ✅ Active |
 
-### 🛡️ Reliability (5 agents)
+### 🛡️ Reliability (6 agents)
 | Agent | File | Tags | Status |
 |-------|------|------|--------|
 | Resiliency Agent | `resiliency-agent.yml` | `reliability`, `resiliency`, `retry`, `circuit-breaker`, `timeout` | ✅ Active |
@@ -60,8 +65,9 @@ All agents are organized under six core pillars plus operational categories:
 | Message Broker Agent | `message-broker-reliability-agent.yml` | `reliability`, `messaging`, `dlq`, `idempotency` | ✅ Active |
 | Error Handling Agent | `error-handling-agent.yml` | `reliability`, `error`, `exceptions`, `result-pattern` | ✅ Active |
 | Logging Agent | `logging-agent.yml` | `reliability`, `logging`, `telemetry`, `observability` | ✅ Active |
+| Distributed Architecture Agent | `distributed-architecture-agent.yml` | `reliability`, `distributed-systems`, `decoupling`, `fault-tolerance` | ✅ Active |
 
-### 📖 Operational Excellence (5 agents)
+### 📖 Operational Excellence (9 agents)
 | Agent | File | Tags | Status |
 |-------|------|------|--------|
 | Documentation Agent | `documentation-agent.yml` | `ops-excellence`, `docs`, `swagger`, `comments` | ✅ Active |
@@ -69,6 +75,10 @@ All agents are organized under six core pillars plus operational categories:
 | Localization Agent | `localization-agent.yml` | `ops-excellence`, `localization`, `i18n`, `globalization` | ✅ Active |
 | Testing Agent | `testing-agent.yml` | `ops-excellence`, `testing`, `unit-tests`, `coverage` | ✅ Active |
 | Configuration Agent | `configuration-agent.yml` | `ops-excellence`, `configuration`, `settings` | ✅ Active |
+| Clean Architecture Agent | `clean-architecture-agent.yml` | `ops-excellence`, `architecture`, `clean-architecture`, `layering` | ✅ Active |
+| Domain Driven Design Agent | `domain-driven-design-agent.yml` | `ops-excellence`, `architecture`, `ddd`, `aggregates`, `bounded-context` | ✅ Active |
+| Microservices Agent | `microservices-agent.yml` | `ops-excellence`, `architecture`, `microservices`, `service-boundaries` | ✅ Active |
+| Agent Evolution Agent | `agent-evolution-agent.yml` | `ops-excellence`, `meta-agent`, `continuous-improvement`, `pattern-analysis` | ✅ Active |
 
 ### 💾 Backup & Recovery (3 agents)
 | Agent | File | Tags | Status |
@@ -87,27 +97,32 @@ All agents are organized under six core pillars plus operational categories:
 |-------|------|------|--------|
 | CI/CD Agent | `cicd-agent.yml` | `cicd`, `pipeline`, `automation`, `workflow` | ✅ Active |
 
-**Total Active Agents:** 19
+**Total Active Agents:** 29
 
 ---
 
 ## 🆕 Planned Specialized Agents
 
-### 🔐 Security (3 new)
-- [ ] `auth-agent.yml` — Authentication/authorization enforcement
-- [ ] `input-validation-agent.yml` — Injection prevention (SQL, XSS, command)
+### 🔐 Security (1 new)
+- [x] `auth-agent.yml` — Authentication/authorization enforcement
+- [x] `input-validation-agent.yml` — Injection prevention (SQL, XSS, command)
 - [ ] `secrets-scanning-agent.yml` — API keys, passwords, tokens detection
 
-### ⚡ Performance Efficiency (3 new)
-- [ ] `sql-optimization-agent.yml` — Query tuning, indexing, N+1 prevention
-- [ ] `api-latency-agent.yml` — Endpoint performance, response caching
-- [ ] `memory-leak-agent.yml` — IDisposable, GC pressure, memory leaks
+### ⚡ Performance Efficiency (0 new)
+- [x] `sql-optimization-agent.yml` — Query tuning, indexing, N+1 prevention
+- [x] `api-latency-agent.yml` — Endpoint performance, response caching
+- [x] `memory-leak-agent.yml` — IDisposable, GC pressure, memory leaks
 
 ### 🛡️ Reliability (2 new)
+- [x] `distributed-architecture-agent.yml` — Distributed system design principles
 - [ ] `distributed-tracing-agent.yml` — Correlation IDs, OpenTelemetry
 - [ ] `rate-limiting-agent.yml` — Rate limiting, throttling patterns
 
 ### 📖 Operational Excellence (3 new)
+- [x] `clean-architecture-agent.yml` — Clean Architecture principles enforcement
+- [x] `domain-driven-design-agent.yml` — DDD patterns and bounded contexts
+- [x] `microservices-agent.yml` — Microservices architecture patterns
+- [x] `agent-evolution-agent.yml` — Agent improvement and pattern analysis
 - [ ] `readme-agent.yml` — README.md generation/updates
 - [ ] `api-documentation-agent.yml` — OpenAPI/Swagger completeness
 - [ ] `code-comments-agent.yml` — XML documentation enforcement
@@ -187,19 +202,26 @@ grep -l "tags:.*logging" .github/copilot/agents/*.yml
 - ✅ Operational excellence
 - ✅ Backup & recovery
 
-### Phase 2: Performance & Cost (Next)
-- [ ] SQL optimization agent
-- [ ] API latency agent
-- [ ] Memory leak agent
+### Phase 2: Performance & Cost (In Progress)
+- [x] SQL optimization agent
+- [x] API latency agent
+- [x] Memory leak agent
 - [ ] Resource usage agent
 - [ ] Logging cost agent
 
-### Phase 3: Advanced Security (Future)
-- [ ] Auth agent
-- [ ] Input validation agent
+### Phase 3: Advanced Security (In Progress)
+- [x] Auth agent
+- [x] Input validation agent
 - [ ] Secrets scanning agent
 
-### Phase 4: Sustainability (Future)
+### Phase 4: Architecture (Complete)
+- [x] Clean Architecture agent
+- [x] Domain Driven Design agent
+- [x] Microservices agent
+- [x] Distributed Architecture agent
+- [x] Agent Evolution agent
+
+### Phase 5: Sustainability (Future)
 - [ ] Green build agent
 - [ ] Cloud footprint agent
 
