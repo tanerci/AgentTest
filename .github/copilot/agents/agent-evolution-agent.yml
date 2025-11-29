@@ -1,0 +1,131 @@
+name: agent-evolution-agent
+description: >
+  Analyzes code evolution across PRs and commits to identify patterns, common issues,
+  and gaps in existing agent coverage. Suggests improvements to agent rulesets,
+  creates new agent recommendations, and ensures agents stay relevant to the codebase's
+  actual practices and challenges.
+pillar: ops-excellence
+tags: [ops-excellence, meta-agent, continuous-improvement, pattern-analysis, agent-optimization]
+version: "1.0"
+tasks:
+  - type: analyze-commit-history
+    inputs:
+      source: "**/*.cs"
+      timeframe: "last-30-days"
+      focus:
+        - "repeated-patterns"
+        - "common-mistakes"
+        - "review-comments"
+        - "bug-fixes"
+        - "refactoring-patterns"
+  - type: analyze-pr-patterns
+    inputs:
+      reviews: "pull-requests/**"
+      checks:
+        - "frequently-requested-changes"
+        - "common-review-comments"
+        - "repeated-violations"
+        - "missed-by-existing-agents"
+        - "manual-intervention-needed"
+  - type: evaluate-agent-effectiveness
+    inputs:
+      agents: ".github/copilot/agents/*.yml"
+      metrics:
+        - "detection-rate"
+        - "false-positive-rate"
+        - "coverage-gaps"
+        - "rule-relevance"
+        - "enforcement-compliance"
+  - type: identify-coverage-gaps
+    inputs:
+      compare:
+        - "existing-agent-rules"
+        - "actual-code-issues"
+        - "pr-review-themes"
+      output:
+        - "missing-validations"
+        - "under-enforced-patterns"
+        - "new-technology-adoption"
+        - "emerging-anti-patterns"
+  - type: analyze-code-patterns
+    inputs:
+      source: "**/*.cs"
+      detect:
+        - "new-libraries-introduced"
+        - "architectural-shifts"
+        - "technology-stack-changes"
+        - "coding-style-drift"
+        - "complexity-trends"
+  - type: suggest-agent-improvements
+    inputs:
+      existing-agents: ".github/copilot/agents/*.yml"
+      recommendations:
+        - "update-existing-rules"
+        - "add-new-checks"
+        - "remove-obsolete-rules"
+        - "adjust-severity-levels"
+        - "combine-duplicate-checks"
+  - type: recommend-new-agents
+    inputs:
+      based-on:
+        - "uncaught-patterns"
+        - "repeated-manual-reviews"
+        - "new-tech-stack-components"
+        - "team-pain-points"
+      output:
+        - "new-agent-proposals"
+        - "priority-ranking"
+        - "implementation-roadmap"
+  - type: generate-agent-metrics
+    inputs:
+      analyze:
+        - "agent-trigger-frequency"
+        - "issue-detection-count"
+        - "fix-implementation-rate"
+        - "time-to-resolution"
+      output: ".github/copilot/metrics/agent-effectiveness.md"
+  - type: create-improvement-report
+    inputs:
+      output: ".github/copilot/reports/agent-evolution-report.md"
+      sections:
+        - "executive-summary"
+        - "code-evolution-analysis"
+        - "agent-effectiveness-metrics"
+        - "identified-gaps"
+        - "recommended-updates"
+        - "new-agent-proposals"
+        - "priority-action-items"
+  - type: track-technical-debt
+    inputs:
+      identify:
+        - "unaddressed-violations"
+        - "deferred-refactoring"
+        - "workaround-patterns"
+        - "tech-debt-accumulation"
+      correlate-with:
+        - "agent-coverage"
+        - "enforcement-gaps"
+  - type: benchmark-against-best-practices
+    inputs:
+      frameworks:
+        - "Well-Architected Framework"
+        - "OWASP Top 10"
+        - "Microsoft .NET Guidelines"
+        - "Clean Code Principles"
+      compare:
+        - "current-agent-coverage"
+        - "industry-standards"
+        - "missing-best-practices"
+  - type: suggest-ruleset-refinements
+    inputs:
+      rulesets: ".github/copilot/rules/*.json"
+      analyze:
+        - "rule-effectiveness"
+        - "false-positive-patterns"
+        - "edge-cases-missed"
+        - "severity-appropriateness"
+      recommendations:
+        - "tune-thresholds"
+        - "add-exclusions"
+        - "update-examples"
+        - "clarify-guidance"

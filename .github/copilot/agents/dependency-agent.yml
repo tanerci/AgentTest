@@ -2,6 +2,9 @@ name: dependency-agent
 description: >
   Monitors NuGet packages for outdated or vulnerable versions,
   suggests upgrades, and can generate automated update PRs.
+pillar: security
+tags: [security, dependencies, vulnerabilities, cve, nuget, updates]
+version: "1.0"
 triggers:
   - event: schedule
     cron: "0 9 * * MON"  # Weekly on Monday at 9 AM

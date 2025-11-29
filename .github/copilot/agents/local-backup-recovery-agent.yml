@@ -3,14 +3,9 @@ description: >
   Validates local backup strategies including volume snapshots, database backups,
   encryption, air-gap/offsite storage, restore scripts, and checksum verification
   for on-premises and hybrid deployments.
-triggers:
-  - event: schedule
-    cron: "0 11 * * MON"  # Weekly on Monday at 11 AM
-  - event: push
-    branches: ["master", "main"]
-    paths:
-      - "backup-scripts/**"
-      - "infrastructure/**"
+pillar: backup
+tags: [backup, recovery, local, encryption, air-gap, snapshots, checksum]
+version: "1.0"
 tasks:
   - type: validate-backup-coverage
     inputs:

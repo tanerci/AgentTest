@@ -3,15 +3,9 @@ description: >
   Validates Azure backup policies for Blob Storage, Azure Files, Azure SQL Database,
   retention policies, geo-redundancy configuration, and automated restore runbooks.
   Ensures recovery point objectives (RPO) are met.
-triggers:
-  - event: schedule
-    cron: "0 10 * * MON"  # Weekly on Monday at 10 AM
-  - event: push
-    branches: ["master", "main"]
-    paths:
-      - "infrastructure/**"
-      - "*.bicep"
-      - "*.tf"
+pillar: backup
+tags: [backup, recovery, azure, rpo, rto, geo-redundancy, restore]
+version: "1.0"
 tasks:
   - type: validate-backup-policies
     inputs:

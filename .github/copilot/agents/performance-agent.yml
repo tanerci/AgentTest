@@ -2,11 +2,9 @@ name: performance-agent
 description: >
   Detects performance bottlenecks, inefficient queries, blocking calls,
   and suggests optimizations for better application performance.
-triggers:
-  - event: pull_request
-    actions: ["opened", "synchronize"]
-  - event: push
-    branches: ["master", "main", "develop"]
+pillar: performance
+tags: [performance, sql, latency, optimization, n-plus-one, async, ef-core]
+version: "1.0"
 tasks:
   - type: performance-analysis
     inputs:

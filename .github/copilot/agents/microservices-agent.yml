@@ -1,0 +1,231 @@
+name: microservices-agent
+description: >
+  Enforces microservices architecture principles including service boundaries,
+  independent deployability, API contracts, data ownership, service discovery,
+  resilience patterns, and distributed system best practices.
+pillar: ops-excellence
+tags: [ops-excellence, architecture, microservices, service-boundaries, api-contracts, distributed-systems]
+version: "1.0"
+tasks:
+  - type: validate-service-boundaries
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/microservices.json"
+      checks:
+        - "single-responsibility-per-service"
+        - "bounded-context-alignment"
+        - "no-shared-databases"
+        - "autonomous-services"
+        - "loose-coupling"
+        - "high-cohesion"
+  - type: validate-data-ownership
+    inputs:
+      source: "Data/**/*.cs, Models/**/*.cs"
+      validate:
+        - "service-owns-its-data"
+        - "no-direct-database-access-across-services"
+        - "database-per-service"
+        - "data-sovereignty"
+        - "eventual-consistency-patterns"
+  - type: validate-api-contracts
+    inputs:
+      source: "Controllers/**/*.cs, **/*Contract.cs"
+      checks:
+        - "versioned-apis"
+        - "backwards-compatibility"
+        - "contract-first-design"
+        - "schema-validation"
+        - "openapi-specification"
+        - "breaking-change-detection"
+  - type: validate-service-communication
+    inputs:
+      validate:
+        - "async-communication-preferred"
+        - "event-driven-architecture"
+        - "message-broker-usage"
+        - "rest-http-for-synchronous"
+        - "grpc-for-performance"
+        - "no-direct-service-coupling"
+  - type: check-independent-deployability
+    inputs:
+      files: ["*.csproj", "Dockerfile", "*.yaml", "*.yml"]
+      checks:
+        - "separate-deployment-units"
+        - "independent-versioning"
+        - "no-shared-assemblies"
+        - "containerized-services"
+        - "infrastructure-as-code"
+  - type: validate-service-discovery
+    inputs:
+      source: "Program.cs, Startup.cs, appsettings*.json"
+      validate:
+        - "service-registry-integration"
+        - "dynamic-endpoint-discovery"
+        - "health-check-endpoints"
+        - "load-balancing-support"
+        - "no-hardcoded-endpoints"
+  - type: validate-resilience-patterns
+    inputs:
+      source: "**/*.cs"
+      checks:
+        - "circuit-breaker-implementation"
+        - "retry-policies"
+        - "timeout-configuration"
+        - "fallback-strategies"
+        - "bulkhead-isolation"
+        - "graceful-degradation"
+  - type: validate-distributed-transactions
+    inputs:
+      validate:
+        - "saga-pattern-for-transactions"
+        - "eventual-consistency"
+        - "compensation-logic"
+        - "idempotent-operations"
+        - "outbox-pattern"
+        - "no-distributed-transactions"
+  - type: check-service-autonomy
+    inputs:
+      detect:
+        - "shared-code-libraries-minimal"
+        - "independent-technology-stack"
+        - "self-contained-services"
+        - "no-compile-time-dependencies"
+        - "runtime-independence"
+  - type: validate-api-gateway
+    inputs:
+      patterns:
+        - "gateway-routing"
+        - "request-aggregation"
+        - "authentication-at-gateway"
+        - "rate-limiting"
+        - "api-composition"
+  - type: validate-observability
+    inputs:
+      source: "**/*.cs"
+      checks:
+        - "distributed-tracing"
+        - "correlation-ids"
+        - "centralized-logging"
+        - "metrics-collection"
+        - "health-monitoring"
+        - "service-mesh-integration"
+  - type: validate-configuration-management
+    inputs:
+      files: ["appsettings*.json", "**/*.config"]
+      validate:
+        - "externalized-configuration"
+        - "environment-specific-configs"
+        - "configuration-service-usage"
+        - "secrets-management"
+        - "feature-flags"
+  - type: check-versioning-strategy
+    inputs:
+      source: "Controllers/**/*.cs, **/*Contract.cs"
+      validate:
+        - "api-versioning-present"
+        - "url-versioning-or-header"
+        - "deprecation-strategy"
+        - "version-compatibility"
+        - "sunset-headers"
+  - type: validate-authentication-authorization
+    inputs:
+      checks:
+        - "token-based-auth"
+        - "jwt-or-oauth2"
+        - "distributed-session-management"
+        - "authorization-per-service"
+        - "api-gateway-auth"
+  - type: detect-anti-patterns
+    inputs:
+      patterns:
+        - "shared-database-across-services"
+        - "synchronous-cascade-calls"
+        - "distributed-monolith"
+        - "chatty-communication"
+        - "data-duplication-without-ownership"
+        - "tight-coupling-between-services"
+        - "shared-domain-models"
+  - type: validate-event-driven-architecture
+    inputs:
+      source: "**/*Event.cs, Events/**/*.cs"
+      checks:
+        - "event-publishing"
+        - "event-subscriptions"
+        - "event-schema-registry"
+        - "event-versioning"
+        - "eventual-consistency-handling"
+  - type: validate-cqrs-pattern
+    inputs:
+      validate:
+        - "command-query-separation"
+        - "separate-read-write-models"
+        - "read-replicas-for-queries"
+        - "write-model-optimization"
+  - type: check-service-size
+    inputs:
+      analyze:
+        - "lines-of-code-per-service"
+        - "team-size-alignment"
+        - "deployment-frequency"
+        - "bounded-context-fit"
+        - "service-not-too-granular"
+  - type: validate-backward-compatibility
+    inputs:
+      source: "Controllers/**/*.cs, DTOs/**/*.cs"
+      checks:
+        - "additive-changes-only"
+        - "optional-new-fields"
+        - "deprecation-warnings"
+        - "version-negotiation"
+        - "consumer-driven-contracts"
+  - type: validate-deployment-strategy
+    inputs:
+      files: ["*.yaml", "*.yml", "Dockerfile"]
+      validate:
+        - "blue-green-deployment"
+        - "canary-releases"
+        - "rolling-updates"
+        - "zero-downtime-deployment"
+        - "rollback-capability"
+  - type: check-service-mesh
+    inputs:
+      validate:
+        - "sidecar-pattern"
+        - "traffic-management"
+        - "service-to-service-auth"
+        - "observability-integration"
+        - "circuit-breaking-at-mesh"
+  - type: validate-data-consistency
+    inputs:
+      checks:
+        - "event-sourcing-for-audit"
+        - "saga-coordinator"
+        - "eventual-consistency-acceptance"
+        - "conflict-resolution-strategy"
+        - "distributed-cache-usage"
+  - type: suggest-refactoring
+    inputs:
+      recommendations:
+        - "extract-microservice-from-monolith"
+        - "split-large-services"
+        - "consolidate-nano-services"
+        - "implement-api-gateway"
+        - "add-service-mesh"
+        - "introduce-event-bus"
+  - type: generate-service-map
+    inputs:
+      output: ".github/copilot/diagrams/service-architecture.md"
+      include:
+        - "service-inventory"
+        - "communication-patterns"
+        - "dependencies-graph"
+        - "data-flow-diagram"
+        - "deployment-topology"
+  - type: validate-security-boundaries
+    inputs:
+      checks:
+        - "service-level-authentication"
+        - "network-segmentation"
+        - "least-privilege-access"
+        - "encrypted-communication"
+        - "secrets-rotation"

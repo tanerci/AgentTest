@@ -1,0 +1,50 @@
+name: auth-agent
+description: >
+  Enforces authentication and authorization best practices including proper
+  use of [Authorize] attributes, role-based access control, JWT validation,
+  cookie security, and prevents common auth vulnerabilities.
+pillar: security
+tags: [security, auth, authorization, jwt, cookies, rbac, identity]
+version: "1.0"
+tasks:
+  - type: validate-authentication
+    inputs:
+      source: "**/*.cs"
+      ruleset: ".github/copilot/rules/authentication.json"
+      checks:
+        - "authorize-attribute-usage"
+        - "anonymous-endpoints-intentional"
+        - "role-policy-validation"
+        - "jwt-configuration"
+        - "cookie-security"
+  - type: check-endpoints
+    inputs:
+      controllers: "Controllers/**/*Controller.cs"
+      requirements:
+        - "protected-write-operations"
+        - "public-read-justification"
+        - "role-based-access"
+        - "claim-validation"
+  - type: validate-middleware
+    inputs:
+      files: ["Program.cs", "Startup.cs"]
+      checks:
+        - "authentication-middleware-order"
+        - "authorization-middleware-present"
+        - "cookie-policy-secure"
+        - "cors-configuration"
+  - type: detect-vulnerabilities
+    inputs:
+      patterns:
+        - "missing-authorize-attribute"
+        - "weak-password-policy"
+        - "insecure-cookie-settings"
+        - "hardcoded-credentials"
+        - "missing-anti-forgery-token"
+  - type: suggest-improvements
+    inputs:
+      recommendations:
+        - "use-policy-based-authorization"
+        - "implement-refresh-tokens"
+        - "add-rate-limiting"
+        - "secure-cookie-settings"

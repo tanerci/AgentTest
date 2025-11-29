@@ -1,0 +1,50 @@
+name: api-latency-agent
+description: >
+  Monitors API endpoint performance, enforces response caching, compression,
+  output caching, and detects slow endpoints that exceed latency thresholds.
+pillar: performance
+tags: [performance, api, latency, caching, compression, response-time]
+version: "1.0"
+tasks:
+  - type: analyze-endpoints
+    inputs:
+      source: "Controllers/**/*Controller.cs"
+      ruleset: ".github/copilot/rules/api-performance.json"
+      checks:
+        - "response-caching"
+        - "compression-enabled"
+        - "async-endpoints"
+        - "timeout-configuration"
+        - "cache-headers"
+  - type: detect-issues
+    inputs:
+      patterns:
+        - "missing-responsecache-attribute"
+        - "synchronous-io"
+        - "no-compression"
+        - "heavy-computation-in-controller"
+        - "blocking-calls"
+  - type: validate-caching
+    inputs:
+      checks:
+        - "cache-duration-appropriate"
+        - "vary-by-query-keys"
+        - "cache-profiles"
+        - "distributed-cache-usage"
+        - "redis-configuration"
+  - type: check-middleware
+    inputs:
+      files: ["Program.cs", "Startup.cs"]
+      validate:
+        - "response-compression-middleware"
+        - "response-caching-middleware"
+        - "output-caching-enabled"
+  - type: suggest-optimizations
+    inputs:
+      recommendations:
+        - "add-response-caching"
+        - "enable-compression"
+        - "use-output-caching"
+        - "implement-redis-cache"
+        - "add-cdn-caching"
+        - "use-etag-headers"

@@ -1,9 +1,9 @@
 name: testing-agent
 description: >
   Ensures new endpoints have unit and integration tests. Runs test suite on PRs.
-triggers:
-  - event: pull_request
-    actions: ["opened", "synchronize"]
+pillar: ops-excellence
+tags: [testing, unit-tests, integration-tests, coverage, xunit]
+version: "1.0"
 tasks:
   - type: scaffold-tests
     inputs:

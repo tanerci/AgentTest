@@ -3,11 +3,9 @@ description: >
   Enforces consistent error handling patterns using the Result<T> pattern
   for expected failures, proper HTTP status codes, and a global exception
   handler for unhandled errors.
-triggers:
-  - event: push
-    branches: ["master", "main", "develop"]
-  - event: pull_request
-    actions: ["opened", "synchronize"]
+pillar: reliability
+tags: [reliability, error, exceptions, result-pattern, http-status]
+version: "2.0"
 tasks:
   - type: validate-error-handling
     inputs:
