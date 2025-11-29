@@ -124,6 +124,16 @@ public class ProductsController : ControllerBase
             searchTerm ?? "none", minPrice?.ToString() ?? "none", maxPrice?.ToString() ?? "none", 
             minStock?.ToString() ?? "none", maxStock?.ToString() ?? "none", page, pageSize);
         
+        // Validate range parameters
+        if (minPrice.HasValue && maxPrice.HasValue && minPrice.Value > maxPrice.Value)
+        {
+            return BadRequest("minPrice cannot be greater than maxPrice");
+        }
+        if (minStock.HasValue && maxStock.HasValue && minStock.Value > maxStock.Value)
+        {
+            return BadRequest("minStock cannot be greater than maxStock");
+        }
+        
         // Validate and clamp pagination parameters
         var validPage = Math.Max(1, page);
         var validPageSize = Math.Clamp(pageSize, 1, 100);
