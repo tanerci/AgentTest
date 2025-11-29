@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
-using ProductApi.Data;
+using ProductApi.Application.Services;
 using ProductApi.DTOs;
+using ProductApi.Extensions;
 using ProductApi.Models;
 using ProductApi.Resources;
 
@@ -11,25 +11,23 @@ namespace ProductApi.Controllers;
 
 /// <summary>
 /// Manages product inventory including CRUD operations.
+/// Thin controller that delegates to the ProductService following DDD principles.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class ProductsController : ControllerBase
 {
-    private readonly AppDbContext _context;
-    private readonly ILogger<ProductsController> _logger;
+    private readonly IProductService _productService;
     private readonly IStringLocalizer<SharedResource> _localizer;
 
     /// <summary>
     /// Initializes a new instance of the ProductsController.
     /// </summary>
-    /// <param name="context">The database context for product operations.</param>
-    /// <param name="logger">The logger for tracking product operations.</param>
+    /// <param name="productService">The product application service.</param>
     /// <param name="localizer">The string localizer for localized messages.</param>
-    public ProductsController(AppDbContext context, ILogger<ProductsController> logger, IStringLocalizer<SharedResource> localizer)
+    public ProductsController(IProductService productService, IStringLocalizer<SharedResource> localizer)
     {
-        _context = context;
-        _logger = logger;
+        _productService = productService;
         _localizer = localizer;
     }
 
@@ -54,33 +52,11 @@ public class ProductsController : ControllerBase
     [ResponseCache(Duration = 60, VaryByQueryKeys = ["page", "pageSize"])]
     public async Task<ActionResult<PaginatedResponse<Product>>> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        _logger.LogInformation("Retrieving products (page: {Page}, pageSize: {PageSize})", page, pageSize);
+        var result = await _productService.GetProductsAsync(page, pageSize);
         
-        // Validate and clamp pagination parameters
-        var validPage = Math.Max(1, page);
-        var validPageSize = Math.Clamp(pageSize, 1, 100);
-        
-        // Use AsNoTracking for read-only queries to improve performance
-        var query = _context.Products.AsNoTracking();
-        
-        var totalCount = await query.CountAsync();
-        var products = await query
-            .OrderBy(p => p.Id)
-            .Skip((validPage - 1) * validPageSize)
-            .Take(validPageSize)
-            .ToListAsync();
-        
-        var response = new PaginatedResponse<Product>
-        {
-            Items = products,
-            Page = validPage,
-            PageSize = validPageSize,
-            TotalCount = totalCount
-        };
-        
-        _logger.LogInformation("Retrieved {Count} products (page {Page} of {TotalPages})", 
-            products.Count, validPage, response.TotalPages);
-        return Ok(response);
+        return result.Match(
+            response => Ok(MapToPaginatedProductResponse(response)),
+            error => error.ToProblemDetails());
     }
 
     /// <summary>
@@ -119,83 +95,12 @@ public class ProductsController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
-        _logger.LogInformation(
-            "Filtering products - SearchTerm: {SearchTerm}, MinPrice: {MinPrice}, MaxPrice: {MaxPrice}, MinStock: {MinStock}, MaxStock: {MaxStock}, Page: {Page}, PageSize: {PageSize}",
-            searchTerm ?? "none", minPrice?.ToString() ?? "none", maxPrice?.ToString() ?? "none", 
-            minStock?.ToString() ?? "none", maxStock?.ToString() ?? "none", page, pageSize);
-        
-        // Validate range parameters
-        if (minPrice.HasValue && maxPrice.HasValue && minPrice.Value > maxPrice.Value)
-        {
-            return BadRequest($"minPrice ({minPrice}) cannot be greater than maxPrice ({maxPrice})");
-        }
-        if (minStock.HasValue && maxStock.HasValue && minStock.Value > maxStock.Value)
-        {
-            return BadRequest($"minStock ({minStock}) cannot be greater than maxStock ({maxStock})");
-        }
-        
-        // Validate and clamp pagination parameters
-        var validPage = Math.Max(1, page);
-        var validPageSize = Math.Clamp(pageSize, 1, 100);
-        
-        // Build the query with filters
-        IQueryable<Product> query = _context.Products.AsNoTracking();
-        
-        // Apply search term filter (case-insensitive partial match on name and description)
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            var lowerSearchTerm = searchTerm.ToLower();
-            query = query.Where(p => 
-                p.Name.ToLower().Contains(lowerSearchTerm) || 
-                p.Description.ToLower().Contains(lowerSearchTerm));
-        }
-        
-        // Apply price range filters
-        if (minPrice.HasValue)
-        {
-            query = query.Where(p => p.Price >= minPrice.Value);
-        }
-        
-        if (maxPrice.HasValue)
-        {
-            query = query.Where(p => p.Price <= maxPrice.Value);
-        }
-        
-        // Apply stock range filters
-        if (minStock.HasValue)
-        {
-            query = query.Where(p => p.Stock >= minStock.Value);
-        }
-        
-        if (maxStock.HasValue)
-        {
-            query = query.Where(p => p.Stock <= maxStock.Value);
-        }
-        
-        // Get total count after filters
-        var totalCount = await query.CountAsync();
-        
-        // Apply pagination and ordering
-        var products = await query
-            .OrderBy(p => p.Name)
-            .ThenBy(p => p.Id)
-            .Skip((validPage - 1) * validPageSize)
-            .Take(validPageSize)
-            .ToListAsync();
-        
-        var response = new PaginatedResponse<Product>
-        {
-            Items = products,
-            Page = validPage,
-            PageSize = validPageSize,
-            TotalCount = totalCount
-        };
-        
-        _logger.LogInformation(
-            "Retrieved {Count} filtered products (page {Page} of {TotalPages}, total matching: {TotalCount})", 
-            products.Count, validPage, response.TotalPages, totalCount);
-        
-        return Ok(response);
+        var result = await _productService.FilterProductsAsync(
+            searchTerm, minPrice, maxPrice, minStock, maxStock, page, pageSize);
+
+        return result.Match(
+            response => Ok(MapToPaginatedProductResponse(response)),
+            error => error.ToProblemDetails());
     }
 
     /// <summary>
@@ -218,21 +123,11 @@ public class ProductsController : ControllerBase
     [ResponseCache(Duration = 60)]
     public async Task<ActionResult<Product>> GetProduct(int id)
     {
-        _logger.LogInformation("Retrieving product with ID: {ProductId}", id);
-        
-        // Use AsNoTracking for read-only queries to improve performance
-        var product = await _context.Products
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == id);
+        var result = await _productService.GetProductByIdAsync(id);
 
-        if (product == null)
-        {
-            _logger.LogWarning("Product with ID {ProductId} not found", id);
-            return NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) });
-        }
-
-        _logger.LogInformation("Retrieved product: {ProductName} (ID: {ProductId})", product.Name, product.Id);
-        return Ok(product);
+        return result.Match(
+            product => Ok(MapToProduct(product)),
+            error => NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) }));
     }
 
     /// <summary>
@@ -265,24 +160,14 @@ public class ProductsController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            _logger.LogWarning("Create product failed: invalid model state");
             return BadRequest(ModelState);
         }
 
-        _logger.LogInformation("Creating new product: {ProductName}", productDto.Name);
-        var product = new Product
-        {
-            Name = productDto.Name,
-            Description = productDto.Description,
-            Price = productDto.Price,
-            Stock = productDto.Stock
-        };
+        var result = await _productService.CreateProductAsync(productDto);
 
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
-
-        _logger.LogInformation("Created product: {ProductName} (ID: {ProductId})", product.Name, product.Id);
-        return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+        return result.Match(
+            product => CreatedAtAction(nameof(GetProduct), new { id = product.Id }, MapToProduct(product)),
+            error => error.ToProblemDetails());
     }
 
     /// <summary>
@@ -317,35 +202,16 @@ public class ProductsController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            _logger.LogWarning("Update product failed for ID {ProductId}: invalid model state", id);
             return BadRequest(ModelState);
         }
 
-        _logger.LogInformation("Updating product with ID: {ProductId}", id);
-        var product = await _context.Products.FindAsync(id);
+        var result = await _productService.UpdateProductAsync(id, productDto);
 
-        if (product == null)
-        {
-            _logger.LogWarning("Update failed: Product with ID {ProductId} not found", id);
-            return NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) });
-        }
-
-        if (productDto.Name != null)
-            product.Name = productDto.Name;
-        
-        if (productDto.Description != null)
-            product.Description = productDto.Description;
-        
-        if (productDto.Price.HasValue)
-            product.Price = productDto.Price.Value;
-        
-        if (productDto.Stock.HasValue)
-            product.Stock = productDto.Stock.Value;
-
-        await _context.SaveChangesAsync();
-
-        _logger.LogInformation("Updated product: {ProductName} (ID: {ProductId})", product.Name, product.Id);
-        return Ok(product);
+        return result.Match(
+            product => Ok(MapToProduct(product)),
+            error => error.Type == Common.ErrorType.NotFound
+                ? NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) })
+                : error.ToProblemDetails());
     }
 
     /// <summary>
@@ -371,20 +237,41 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteProduct(int id)
     {
-        _logger.LogInformation("Deleting product with ID: {ProductId}", id);
-        var product = await _context.Products.FindAsync(id);
+        var result = await _productService.DeleteProductAsync(id);
 
-        if (product == null)
+        return result.Match(
+            () => Ok(new { message = _localizer["ProductDeletedSuccessfully"].Value }),
+            error => error.Type == Common.ErrorType.NotFound
+                ? NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) })
+                : error.ToProblemDetails());
+    }
+
+    /// <summary>
+    /// Maps ProductDto to Product model for API backward compatibility.
+    /// </summary>
+    private static Product MapToProduct(ProductDto dto)
+    {
+        return new Product
         {
-            _logger.LogWarning("Delete failed: Product with ID {ProductId} not found", id);
-            return NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) });
-        }
+            Id = dto.Id,
+            Name = dto.Name,
+            Description = dto.Description,
+            Price = dto.Price,
+            Stock = dto.Stock
+        };
+    }
 
-        var productName = product.Name;
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
-
-        _logger.LogInformation("Deleted product: {ProductName} (ID: {ProductId})", productName, id);
-        return Ok(new { message = _localizer["ProductDeletedSuccessfully"].Value });
+    /// <summary>
+    /// Maps PaginatedResponse of ProductDto to PaginatedResponse of Product for API backward compatibility.
+    /// </summary>
+    private static PaginatedResponse<Product> MapToPaginatedProductResponse(PaginatedResponse<ProductDto> response)
+    {
+        return new PaginatedResponse<Product>
+        {
+            Items = response.Items.Select(MapToProduct),
+            Page = response.Page,
+            PageSize = response.PageSize,
+            TotalCount = response.TotalCount
+        };
     }
 }

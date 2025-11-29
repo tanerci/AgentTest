@@ -1,7 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
+using ProductApi.Application.Services;
 using ProductApi.Data;
+using ProductApi.Domain.Repositories;
+using ProductApi.Infrastructure.Repositories;
 using ProductApi.Resources;
 
 namespace ProductApi.Tests;
@@ -41,5 +45,25 @@ public abstract class TestBase
         localizer["ProductDeletedSuccessfully"].Returns(new LocalizedString("ProductDeletedSuccessfully", "Product deleted successfully"));
         
         return localizer;
+    }
+
+    /// <summary>
+    /// Creates a ProductService with the given context for testing.
+    /// </summary>
+    protected IProductService GetProductService(AppDbContext context)
+    {
+        var repository = new ProductRepository(context);
+        var logger = Substitute.For<ILogger<ProductService>>();
+        return new ProductService(repository, logger);
+    }
+
+    /// <summary>
+    /// Creates an AuthService with the given context for testing.
+    /// </summary>
+    protected IAuthService GetAuthService(AppDbContext context)
+    {
+        var repository = new UserRepository(context);
+        var logger = Substitute.For<ILogger<AuthService>>();
+        return new AuthService(repository, logger);
     }
 }
