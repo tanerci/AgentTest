@@ -51,7 +51,8 @@ public class ProductsControllerTests : TestBase
         await context.SaveChangesAsync();
         
         var logger = Substitute.For<ILogger<ProductsController>>();
-        var controller = new ProductsController(context, logger);
+        var localizer = GetMockLocalizer();
+        var controller = new ProductsController(context, logger, localizer);
 
         // Act - with pagination parameters
         var result = await controller.GetProducts(1, 2);
