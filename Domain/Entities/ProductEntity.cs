@@ -23,8 +23,9 @@ public class ProductEntity
         Stock = null!;
     }
 
-    private ProductEntity(ProductName name, string description, Money price, Stock stock)
+    private ProductEntity(int id, ProductName name, string description, Money price, Stock stock)
     {
+        Id = id;
         Name = name;
         Description = description ?? string.Empty;
         Price = price;
@@ -37,10 +38,29 @@ public class ProductEntity
     public static ProductEntity Create(string name, string description, decimal price, int stock)
     {
         return new ProductEntity(
+            0, // ID will be assigned by the database
             ProductName.Create(name),
             description,
             Money.Create(price),
             Stock.Create(stock));
+    }
+
+    /// <summary>
+    /// Factory method to hydrate a Product entity from persistence.
+    /// This method is used by the repository layer to reconstruct domain entities.
+    /// </summary>
+    /// <remarks>
+    /// Uses TryCreate methods for safer value object instantiation from persisted data.
+    /// Falls back to default values if persistence data is invalid.
+    /// </remarks>
+    internal static ProductEntity Hydrate(int id, string name, string description, decimal price, int stock)
+    {
+        // Use TryCreate for safer hydration from persistence - data should be valid but we handle edge cases
+        var productName = ProductName.TryCreate(name) ?? ProductName.Create("Unknown Product");
+        var money = Money.TryCreate(price) ?? Money.Create(0);
+        var stockValue = Stock.TryCreate(stock) ?? Stock.Create(0);
+
+        return new ProductEntity(id, productName, description ?? string.Empty, money, stockValue);
     }
 
     /// <summary>

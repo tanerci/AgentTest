@@ -63,18 +63,11 @@ public class UserRepository : IUserRepository
 
     private static UserEntity MapToDomainEntity(Models.User model)
     {
-        // Using reflection to set private properties (for domain entity hydration from persistence)
-        var entity = (UserEntity)Activator.CreateInstance(typeof(UserEntity), nonPublic: true)!;
-        
-        var idProp = typeof(UserEntity).GetProperty(nameof(UserEntity.Id));
-        var usernameProp = typeof(UserEntity).GetProperty(nameof(UserEntity.Username));
-        var passwordHashProp = typeof(UserEntity).GetProperty(nameof(UserEntity.PasswordHash));
-
-        idProp!.SetValue(entity, model.Id);
-        usernameProp!.SetValue(entity, model.Username);
-        passwordHashProp!.SetValue(entity, model.PasswordHash);
-
-        return entity;
+        // Use the Hydrate factory method to safely reconstruct the domain entity from persistence
+        return UserEntity.Hydrate(
+            model.Id,
+            model.Username,
+            model.PasswordHash);
     }
 
     private static Models.User MapToDataModel(UserEntity entity)

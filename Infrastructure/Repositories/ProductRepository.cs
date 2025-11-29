@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using ProductApi.Data;
 using ProductApi.Domain.Entities;
 using ProductApi.Domain.Repositories;
-using ProductApi.Domain.ValueObjects;
 
 namespace ProductApi.Infrastructure.Repositories;
 
@@ -131,22 +130,13 @@ public class ProductRepository : IProductRepository
 
     private static ProductEntity MapToDomainEntity(Models.Product model)
     {
-        // Using reflection to set private properties (for domain entity hydration from persistence)
-        var entity = (ProductEntity)Activator.CreateInstance(typeof(ProductEntity), nonPublic: true)!;
-        
-        var idProp = typeof(ProductEntity).GetProperty(nameof(ProductEntity.Id));
-        var nameProp = typeof(ProductEntity).GetProperty(nameof(ProductEntity.Name));
-        var descProp = typeof(ProductEntity).GetProperty(nameof(ProductEntity.Description));
-        var priceProp = typeof(ProductEntity).GetProperty(nameof(ProductEntity.Price));
-        var stockProp = typeof(ProductEntity).GetProperty(nameof(ProductEntity.Stock));
-
-        idProp!.SetValue(entity, model.Id);
-        nameProp!.SetValue(entity, ProductName.Create(model.Name));
-        descProp!.SetValue(entity, model.Description);
-        priceProp!.SetValue(entity, Money.Create(model.Price));
-        stockProp!.SetValue(entity, Stock.Create(model.Stock));
-
-        return entity;
+        // Use the Hydrate factory method to safely reconstruct the domain entity from persistence
+        return ProductEntity.Hydrate(
+            model.Id,
+            model.Name,
+            model.Description,
+            model.Price,
+            model.Stock);
     }
 
     private static Models.Product MapToDataModel(ProductEntity entity)

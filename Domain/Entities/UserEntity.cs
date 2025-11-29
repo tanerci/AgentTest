@@ -17,8 +17,9 @@ public class UserEntity
         PasswordHash = string.Empty;
     }
 
-    private UserEntity(string username, string passwordHash)
+    private UserEntity(int id, string username, string passwordHash)
     {
+        Id = id;
         Username = username;
         PasswordHash = passwordHash;
     }
@@ -30,7 +31,16 @@ public class UserEntity
     {
         ValidateUsername(username);
         
-        return new UserEntity(username, passwordHash);
+        return new UserEntity(0, username, passwordHash);
+    }
+
+    /// <summary>
+    /// Factory method to hydrate a User entity from persistence.
+    /// This method is used by the repository layer to reconstruct domain entities.
+    /// </summary>
+    internal static UserEntity Hydrate(int id, string username, string passwordHash)
+    {
+        return new UserEntity(id, username ?? string.Empty, passwordHash ?? string.Empty);
     }
 
     /// <summary>
