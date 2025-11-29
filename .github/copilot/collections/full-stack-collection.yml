@@ -23,4 +23,4 @@ agents:
   - testing-agent.yml
   - documentation-agent.yml
   - consistency-agent.yml
-  - ci-cd-agent.yml
+  - cicd-agent.yml

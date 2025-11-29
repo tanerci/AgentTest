@@ -98,6 +98,18 @@ All agents are organized under six core pillars plus operational categories:
 | CI/CD Agent | `cicd-agent.yml` | `cicd`, `pipeline`, `automation`, `workflow` | ✅ Active |
 
 **Total Active Agents:** 29
+| Auth Agent | `auth-agent.yml` | `security`, `authentication`, `authorization` | ✅ Active |
+| Input Validation Agent | `input-validation-agent.yml` | `security`, `validation`, `injection-prevention` | ✅ Active |
+| SQL Optimization Agent | `sql-optimization-agent.yml` | `performance`, `query`, `optimization`, `indexing` | ✅ Active |
+| API Latency Agent | `api-latency-agent.yml` | `performance`, `latency`, `caching`, `endpoint` | ✅ Active |
+| Memory Leak Agent | `memory-leak-agent.yml` | `performance`, `memory`, `GC`, `leak` | ✅ Active |
+| Clean Architecture Agent | `clean-architecture-agent.yml` | `architecture`, `clean`, `structure` | ✅ Active |
+| Domain Driven Design Agent | `domain-driven-design-agent.yml` | `architecture`, `domain`, `ddd` | ✅ Active |
+| Microservices Agent | `microservices-agent.yml` | `architecture`, `microservices`, `distributed` | ✅ Active |
+| Distributed Architecture Agent | `distributed-architecture-agent.yml` | `architecture`, `distributed`, `scalability` | ✅ Active |
+| Agent Evolution Agent | `agent-evolution-agent.yml` | `meta`, `evolution`, `self-improvement` | ✅ Active |
+
+**Total Active Agents:** 28
 
 ---
 
@@ -112,6 +124,9 @@ All agents are organized under six core pillars plus operational categories:
 - [x] `sql-optimization-agent.yml` — Query tuning, indexing, N+1 prevention
 - [x] `api-latency-agent.yml` — Endpoint performance, response caching
 - [x] `memory-leak-agent.yml` — IDisposable, GC pressure, memory leaks
+- [ ] `secrets-scanning-agent.yml` — API keys, passwords, tokens detection
+
+### ⚡ Performance Efficiency (0 new)
 
 ### 🛡️ Reliability (2 new)
 - [x] `distributed-architecture-agent.yml` — Distributed system design principles
