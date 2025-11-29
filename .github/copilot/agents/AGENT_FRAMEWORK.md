@@ -45,7 +45,6 @@ All agents are organized under six core pillars plus operational categories:
 |-------|------|------|--------|
 | Security Agent | `security-agent.yml` | `security`, `vulnerabilities`, `xss`, `injection` | ✅ Active |
 | Dependency Agent | `dependency-agent.yml` | `security`, `dependencies`, `vulnerabilities`, `cve` | ✅ Active |
-| Configuration Agent | `configuration-agent.yml` | `security`, `configuration`, `secrets` | ✅ Active |
 
 ### ⚡ Performance Efficiency (1 agent)
 | Agent | File | Tags | Status |
