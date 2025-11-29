@@ -5,6 +5,6 @@ description: >
 tags: [backup, recovery, disaster-recovery, business-continuity]
 
 agents:
-  - azure-backup-agent.yml
-  - local-backup-agent.yml
+  - azure-backup-recovery-agent.yml
+  - local-backup-recovery-agent.yml
   - dr-drill-agent.yml
