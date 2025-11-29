@@ -127,11 +127,11 @@ public class ProductsController : ControllerBase
         // Validate range parameters
         if (minPrice.HasValue && maxPrice.HasValue && minPrice.Value > maxPrice.Value)
         {
-            return BadRequest("minPrice cannot be greater than maxPrice");
+            return BadRequest($"minPrice ({minPrice}) cannot be greater than maxPrice ({maxPrice})");
         }
         if (minStock.HasValue && maxStock.HasValue && minStock.Value > maxStock.Value)
         {
-            return BadRequest("minStock cannot be greater than maxStock");
+            return BadRequest($"minStock ({minStock}) cannot be greater than maxStock ({maxStock})");
         }
         
         // Validate and clamp pagination parameters
