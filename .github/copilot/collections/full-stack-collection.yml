@@ -1,0 +1,26 @@
+name: full-stack-collection
+description: >
+  Comprehensive collection covering all critical aspects of application development
+  including security, performance, reliability, architecture, operations, and quality.
+  Use this for holistic code reviews and validation.
+tags: [full-stack, comprehensive, holistic, complete]
+
+agents:
+  - security-agent.yml
+  - auth-agent.yml
+  - input-validation-agent.yml
+  - performance-agent.yml
+  - sql-optimization-agent.yml
+  - api-latency-agent.yml
+  - resiliency-agent.yml
+  - health-probes-agent.yml
+  - error-handling-agent.yml
+  - logging-agent.yml
+  - clean-architecture-agent.yml
+  - domain-driven-design-agent.yml
+  - microservices-agent.yml
+  - distributed-architecture-agent.yml
+  - testing-agent.yml
+  - documentation-agent.yml
+  - consistency-agent.yml
+  - ci-cd-agent.yml

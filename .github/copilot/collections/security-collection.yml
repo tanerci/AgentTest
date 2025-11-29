@@ -1,0 +1,13 @@
+name: security-collection
+description: >
+  A comprehensive set of agents focused on application security including
+  authentication, authorization, input validation, dependency scanning,
+  configuration security, and secure coding practices.
+tags: [security, protection, vulnerabilities, hardening]
+
+agents:
+  - security-agent.yml
+  - auth-agent.yml
+  - input-validation-agent.yml
+  - dependency-agent.yml
+  - configuration-agent.yml

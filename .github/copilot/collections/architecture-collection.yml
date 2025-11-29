@@ -1,0 +1,12 @@
+name: architecture-collection
+description: >
+  A curated set of agents enforcing architectural styles and principles
+  including Clean Architecture, Microservices, Distributed Systems, and
+  Domain-Driven Design.
+tags: [architecture, design, enforcement, system-structure]
+
+agents:
+  - clean-architecture-agent.yml
+  - microservices-agent.yml
+  - distributed-architecture-agent.yml
+  - domain-driven-design-agent.yml

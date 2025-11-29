@@ -1,0 +1,11 @@
+name: quality-assurance-collection
+description: >
+  Code quality and standards enforcement including testing coverage,
+  consistency checks, documentation standards, and accessibility compliance.
+tags: [quality, standards, testing, compliance]
+
+agents:
+  - testing-agent.yml
+  - consistency-agent.yml
+  - documentation-agent.yml
+  - accessibility-agent.yml

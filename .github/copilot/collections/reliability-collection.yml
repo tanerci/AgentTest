@@ -1,0 +1,14 @@
+name: reliability-collection
+description: >
+  Agents ensuring system reliability through resilience patterns, health monitoring,
+  error handling, logging, message broker integration, and distributed architecture
+  best practices.
+tags: [reliability, resilience, fault-tolerance, availability]
+
+agents:
+  - resiliency-agent.yml
+  - health-probes-agent.yml
+  - error-handling-agent.yml
+  - logging-agent.yml
+  - message-broker-agent.yml
+  - distributed-architecture-agent.yml

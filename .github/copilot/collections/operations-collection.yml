@@ -1,0 +1,14 @@
+name: operations-collection
+description: >
+  Operational excellence agents covering documentation, testing, code consistency,
+  configuration management, localization, and continuous improvement through
+  agent evolution analysis.
+tags: [operations, devops, excellence, automation]
+
+agents:
+  - documentation-agent.yml
+  - testing-agent.yml
+  - consistency-agent.yml
+  - configuration-agent.yml
+  - localization-agent.yml
+  - agent-evolution-agent.yml
