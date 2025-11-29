@@ -85,22 +85,27 @@ All agents are organized under six core pillars plus operational categories:
 | Agent | File | Tags | Status |
 |-------|------|------|--------|
 | CI/CD Agent | `cicd-agent.yml` | `cicd`, `pipeline`, `automation`, `workflow` | ✅ Active |
+| Auth Agent | `auth-agent.yml` | `security`, `authentication`, `authorization` | ✅ Active |
+| Input Validation Agent | `input-validation-agent.yml` | `security`, `validation`, `injection-prevention` | ✅ Active |
+| SQL Optimization Agent | `sql-optimization-agent.yml` | `performance`, `query`, `optimization`, `indexing` | ✅ Active |
+| API Latency Agent | `api-latency-agent.yml` | `performance`, `latency`, `caching`, `endpoint` | ✅ Active |
+| Memory Leak Agent | `memory-leak-agent.yml` | `performance`, `memory`, `GC`, `leak` | ✅ Active |
+| Clean Architecture Agent | `clean-architecture-agent.yml` | `architecture`, `clean`, `structure` | ✅ Active |
+| Domain Driven Design Agent | `domain-driven-design-agent.yml` | `architecture`, `domain`, `ddd` | ✅ Active |
+| Microservices Agent | `microservices-agent.yml` | `architecture`, `microservices`, `distributed` | ✅ Active |
+| Distributed Architecture Agent | `distributed-architecture-agent.yml` | `architecture`, `distributed`, `scalability` | ✅ Active |
+| Agent Evolution Agent | `agent-evolution-agent.yml` | `meta`, `evolution`, `self-improvement` | ✅ Active |
 
-**Total Active Agents:** 19
+**Total Active Agents:** 28
 
 ---
 
 ## 🆕 Planned Specialized Agents
 
-### 🔐 Security (3 new)
-- [ ] `auth-agent.yml` — Authentication/authorization enforcement
-- [ ] `input-validation-agent.yml` — Injection prevention (SQL, XSS, command)
+### 🔐 Security (1 new)
 - [ ] `secrets-scanning-agent.yml` — API keys, passwords, tokens detection
 
-### ⚡ Performance Efficiency (3 new)
-- [ ] `sql-optimization-agent.yml` — Query tuning, indexing, N+1 prevention
-- [ ] `api-latency-agent.yml` — Endpoint performance, response caching
-- [ ] `memory-leak-agent.yml` — IDisposable, GC pressure, memory leaks
+### ⚡ Performance Efficiency (0 new)
 
 ### 🛡️ Reliability (2 new)
 - [ ] `distributed-tracing-agent.yml` — Correlation IDs, OpenTelemetry
