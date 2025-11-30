@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProductApi.Domain.Entities;
 using ProductApi.Domain.Repositories;
-using ProductApi.Infrastructure.Persistence;
 using ProductApi.Infrastructure.Persistence.Models;
 
 namespace ProductApi.Infrastructure.Repositories;
@@ -11,9 +10,9 @@ namespace ProductApi.Infrastructure.Repositories;
 /// </summary>
 public class UserRepository : IUserRepository
 {
-    private readonly AppDbContext _context;
+    private readonly Persistence.AppDbContext _context;
 
-    public UserRepository(AppDbContext context)
+    public UserRepository(Persistence.AppDbContext context)
     {
         _context = context;
     }
@@ -48,7 +47,7 @@ public class UserRepository : IUserRepository
 
     public async Task UpdateAsync(UserEntity user, CancellationToken cancellationToken = default)
     {
-        var model = await _context.Users.FindAsync(new object[] { user.Id }, cancellationToken)
+        var model = await _context.Users.FindAsync([user.Id], cancellationToken)
             ?? throw new InvalidOperationException($"User with ID {user.Id} not found");
 
         model.Username = user.Username;

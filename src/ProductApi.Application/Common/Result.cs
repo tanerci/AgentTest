@@ -1,4 +1,4 @@
-namespace ProductApi.Common;
+namespace ProductApi.Application.Common;
 
 /// <summary>
 /// Represents the result of an operation that can succeed or fail.

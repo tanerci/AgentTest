@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using ProductApi.Common;
+using ProductApi.Application.Common;
 
 namespace ProductApi.Extensions;
 
