@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using ProductApi.Data;
 using ProductApi.Domain.Entities;
 using ProductApi.Domain.Repositories;
+using ProductApi.Infrastructure.Persistence;
+using ProductApi.Infrastructure.Persistence.Models;
 
 namespace ProductApi.Infrastructure.Repositories;
 
@@ -54,7 +55,7 @@ public class ProductRepository : IProductRepository
         int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
-        IQueryable<Models.Product> query = _context.Products.AsNoTracking();
+        IQueryable<Product> query = _context.Products.AsNoTracking();
 
         // Apply search term filter
         if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -128,7 +129,7 @@ public class ProductRepository : IProductRepository
         return await _context.Products.AnyAsync(p => p.Id == id, cancellationToken);
     }
 
-    private static ProductEntity MapToDomainEntity(Models.Product model)
+    private static ProductEntity MapToDomainEntity(Product model)
     {
         // Use the Hydrate factory method to safely reconstruct the domain entity from persistence
         return ProductEntity.Hydrate(
@@ -139,9 +140,9 @@ public class ProductRepository : IProductRepository
             model.Stock);
     }
 
-    private static Models.Product MapToDataModel(ProductEntity entity)
+    private static Product MapToDataModel(ProductEntity entity)
     {
-        return new Models.Product
+        return new Product
         {
             Id = entity.Id,
             Name = entity.Name.Value,

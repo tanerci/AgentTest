@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using ProductApi.DTOs;
+using ProductApi.Application.DTOs;
 using Xunit;
 
 namespace ProductApi.Tests;

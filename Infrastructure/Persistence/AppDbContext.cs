@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using ProductApi.Models;
+using ProductApi.Infrastructure.Persistence.Models;
 
-namespace ProductApi.Data;
+namespace ProductApi.Infrastructure.Persistence;
 
 /// <summary>
 /// Database context for the Product API application.

@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
+using ProductApi.Application.DTOs;
 using ProductApi.Controllers;
-using ProductApi.DTOs;
-using ProductApi.Models;
+using ProductApi.Infrastructure.Persistence.Models;
 using Xunit;
 
 namespace ProductApi.Tests;
@@ -30,7 +30,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
         Assert.Equal(2, paginatedResponse.TotalCount);
     }
@@ -56,7 +56,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
         Assert.Equal(1, paginatedResponse.Page);
         Assert.Equal(2, paginatedResponse.PageSize);
@@ -90,7 +90,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var product = Assert.IsType<Product>(okResult.Value);
+        var product = Assert.IsType<ProductDto>(okResult.Value);
         Assert.Equal("TestProduct", product.Name);
         Assert.Equal(99.99m, product.Price);
     }
@@ -132,7 +132,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
-        var product = Assert.IsType<Product>(createdResult.Value);
+        var product = Assert.IsType<ProductDto>(createdResult.Value);
         Assert.Equal("NewProduct", product.Name);
         Assert.Equal(49.99m, product.Price);
         Assert.Equal(20, product.Stock);
@@ -172,7 +172,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var product = Assert.IsType<Product>(okResult.Value);
+        var product = Assert.IsType<ProductDto>(okResult.Value);
         Assert.Equal("Updated", product.Name);
         Assert.Equal(15.0m, product.Price);
         Assert.Equal("OriginalDesc", product.Description); // Unchanged
@@ -221,7 +221,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var product = Assert.IsType<Product>(okResult.Value);
+        var product = Assert.IsType<ProductDto>(okResult.Value);
         Assert.Equal("Original", product.Name); // Unchanged
         Assert.Equal("OriginalDesc", product.Description); // Unchanged
         Assert.Equal(10.0m, product.Price); // Unchanged
@@ -296,7 +296,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
         Assert.Equal(2, paginatedResponse.TotalCount);
     }
@@ -322,7 +322,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
         Assert.All(paginatedResponse.Items, p => Assert.Contains("Mouse", p.Name));
     }
@@ -348,7 +348,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
     }
 
@@ -372,7 +372,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
     }
 
@@ -397,7 +397,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
         Assert.All(paginatedResponse.Items, p => Assert.True(p.Price >= 50.0m));
     }
@@ -423,7 +423,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
         Assert.All(paginatedResponse.Items, p => Assert.True(p.Price <= 50.0m));
     }
@@ -451,7 +451,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(3, paginatedResponse.Items.Count());
         Assert.All(paginatedResponse.Items, p => Assert.True(p.Price >= 25.0m && p.Price <= 100.0m));
     }
@@ -477,7 +477,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
         Assert.All(paginatedResponse.Items, p => Assert.True(p.Stock >= 20));
     }
@@ -503,7 +503,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
         Assert.All(paginatedResponse.Items, p => Assert.True(p.Stock <= 25));
     }
@@ -531,7 +531,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(3, paginatedResponse.Items.Count());
         Assert.All(paginatedResponse.Items, p => Assert.True(p.Stock >= 10 && p.Stock <= 100));
     }
@@ -563,7 +563,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
         Assert.Contains(paginatedResponse.Items, p => p.Name == "Wireless Mouse");
         Assert.Contains(paginatedResponse.Items, p => p.Name == "Wireless Keyboard");
@@ -596,7 +596,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(5, paginatedResponse.Items.Count());
         Assert.Equal(2, paginatedResponse.Page);
         Assert.Equal(5, paginatedResponse.PageSize);
@@ -633,7 +633,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(5, paginatedResponse.Items.Count());
         Assert.Equal(10, paginatedResponse.TotalCount); // Total Alpha products
         Assert.Equal(2, paginatedResponse.TotalPages);
@@ -660,7 +660,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Empty(paginatedResponse.Items);
         Assert.Equal(0, paginatedResponse.TotalCount);
     }
@@ -679,7 +679,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Empty(paginatedResponse.Items);
         Assert.Equal(0, paginatedResponse.TotalCount);
     }
@@ -750,7 +750,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(1, paginatedResponse.Page);
         Assert.Equal(2, paginatedResponse.Items.Count());
     }
@@ -782,7 +782,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(100, paginatedResponse.PageSize);
         Assert.Equal(100, paginatedResponse.Items.Count());
     }
@@ -809,7 +809,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         var products = paginatedResponse.Items.ToList();
         
         Assert.Equal(4, products.Count);
@@ -844,7 +844,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert - Should return all products
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(2, paginatedResponse.Items.Count());
     }
 
@@ -869,7 +869,7 @@ public class ProductsControllerTests : TestBase
 
         // Assert - Should include products at exact boundary values
         var okResult = Assert.IsType<OkObjectResult>(result.Result);
-        var paginatedResponse = Assert.IsType<PaginatedResponse<Product>>(okResult.Value);
+        var paginatedResponse = Assert.IsType<PaginatedResponse<ProductDto>>(okResult.Value);
         Assert.Equal(3, paginatedResponse.Items.Count());
     }
 

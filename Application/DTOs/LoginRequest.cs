@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ProductApi.DTOs;
+namespace ProductApi.Application.DTOs;
 
 /// <summary>
 /// Request model for user authentication.

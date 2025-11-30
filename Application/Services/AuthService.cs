@@ -1,7 +1,7 @@
+using ProductApi.Application.DTOs;
 using ProductApi.Common;
 using ProductApi.Domain.Entities;
 using ProductApi.Domain.Repositories;
-using ProductApi.DTOs;
 using System.Security.Claims;
 
 namespace ProductApi.Application.Services;

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using ProductApi.Application.DTOs;
 using ProductApi.Common;
-using ProductApi.DTOs;
 using ProductApi.Extensions;
 
 namespace ProductApi.Controllers.Examples;
@@ -14,7 +14,7 @@ public class ExampleController : ControllerBase
 {
     // Example 1: Simple success/failure with extension method
     [HttpGet("{id}")]
-    public async Task<ActionResult<Product>> GetProduct(int id)
+    public async Task<ActionResult<ProductDto>> GetProduct(int id)
     {
         var result = await GetProductByIdAsync(id);
         return result.ToActionResult();
@@ -22,7 +22,7 @@ public class ExampleController : ControllerBase
 
     // Example 2: Pattern matching for custom responses
     [HttpGet("advanced/{id}")]
-    public async Task<ActionResult<Product>> GetProductAdvanced(int id)
+    public async Task<ActionResult<ProductDto>> GetProductAdvanced(int id)
     {
         var result = await GetProductByIdAsync(id);
         
@@ -34,7 +34,7 @@ public class ExampleController : ControllerBase
 
     // Example 3: Custom success status code (Created)
     [HttpPost]
-    public async Task<ActionResult<Product>> CreateProduct(ProductCreateDto dto)
+    public async Task<ActionResult<ProductDto>> CreateProduct(ProductCreateDto dto)
     {
         var result = await CreateProductAsync(dto);
         
@@ -45,11 +45,11 @@ public class ExampleController : ControllerBase
 
     // Example 4: Validation with Result pattern
     [HttpPut("{id}")]
-    public async Task<ActionResult<Product>> UpdateProduct(int id, ProductUpdateDto dto)
+    public async Task<ActionResult<ProductDto>> UpdateProduct(int id, ProductUpdateDto dto)
     {
         // Early validation
         if (id <= 0)
-            return Result<Product>.ValidationError(
+            return Result<ProductDto>.ValidationError(
                 "Invalid product ID",
                 new Dictionary<string, string[]> 
                 { 
@@ -62,26 +62,26 @@ public class ExampleController : ControllerBase
     }
 
     // Example service methods that return Result<T>
-    private async Task<Result<Product>> GetProductByIdAsync(int id)
+    private async Task<Result<ProductDto>> GetProductByIdAsync(int id)
     {
         await Task.Delay(10); // Simulate async work
 
         // Simulate not found scenario
         if (id <= 0)
-            return Result<Product>.NotFound($"Product with ID {id} not found");
+            return Result<ProductDto>.NotFound($"Product with ID {id} not found");
 
         // Simulate success
-        var product = new Product { Id = id, Name = "Sample Product" };
-        return Result<Product>.Success(product);
+        var product = new ProductDto { Id = id, Name = "Sample Product" };
+        return Result<ProductDto>.Success(product);
     }
 
-    private async Task<Result<Product>> CreateProductAsync(ProductCreateDto dto)
+    private async Task<Result<ProductDto>> CreateProductAsync(ProductCreateDto dto)
     {
         await Task.Delay(10);
 
         // Validation
         if (string.IsNullOrWhiteSpace(dto.Name))
-            return Result<Product>.ValidationError(
+            return Result<ProductDto>.ValidationError(
                 "Product name is required",
                 new Dictionary<string, string[]>
                 {
@@ -91,30 +91,23 @@ public class ExampleController : ControllerBase
 
         // Simulate duplicate check
         if (dto.Name == "Duplicate")
-            return Result<Product>.Conflict("A product with this name already exists");
+            return Result<ProductDto>.Conflict("A product with this name already exists");
 
         // Success
-        var product = new Product { Id = 1, Name = dto.Name };
-        return Result<Product>.Success(product);
+        var product = new ProductDto { Id = 1, Name = dto.Name };
+        return Result<ProductDto>.Success(product);
     }
 
-    private async Task<Result<Product>> UpdateProductAsync(int id, ProductUpdateDto dto)
+    private async Task<Result<ProductDto>> UpdateProductAsync(int id, ProductUpdateDto dto)
     {
         await Task.Delay(10);
 
         // Check if exists
         if (id > 100)
-            return Result<Product>.NotFound($"Product {id} not found");
+            return Result<ProductDto>.NotFound($"Product {id} not found");
 
         // Update and return
-        var product = new Product { Id = id, Name = dto.Name ?? "Updated" };
-        return Result<Product>.Success(product);
+        var product = new ProductDto { Id = id, Name = dto.Name ?? "Updated" };
+        return Result<ProductDto>.Success(product);
     }
-}
-
-// Example models
-public class Product
-{
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
 }
