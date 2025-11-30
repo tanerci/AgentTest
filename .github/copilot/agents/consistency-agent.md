@@ -122,16 +122,41 @@ This project follows **Clean Architecture** with the following layer separation:
 
 The consistency agent uses the following C# style rules (from `csharp-style.json`):
 
-| Rule ID | Name | Severity |
-|---------|------|----------|
-| CS001 | PascalCaseClassNames | Error |
-| CS002 | CamelCasePrivateFields | Warning |
-| CS003 | AsyncMethodSuffix | Error |
-| CS004 | ControllerSuffix | Error |
-| CS005 | DtoSuffix | Warning |
-| CS006 | NoMagicNumbers | Warning |
-| CS007 | MaxMethodLength (50 lines) | Warning |
-| CS008 | RequireXmlComments | Info |
+| Rule ID | Name | Severity | Description |
+|---------|------|----------|-------------|
+| CS001 | PascalCaseClassNames | Error | Class names must use PascalCase |
+| CS002 | CamelCasePrivateFields | Warning | Private fields use _camelCase prefix |
+| CS003 | AsyncMethodSuffix | Error | Async methods end with 'Async' (except controllers) |
+| CS004 | ControllerSuffix | Error | Controller classes end with 'Controller' |
+| CS005 | DtoSuffix | Warning | DTOs end with 'Dto', 'Request', or 'Response' |
+| CS006 | NoMagicNumbers | Warning | Avoid hardcoded values, use constants |
+| CS007 | MaxMethodLength | Warning | Methods should not exceed 50 lines |
+| CS008 | RequireXmlComments | Info | Public types/members require XML documentation |
+| CS009 | InterfacePrefix | Error | Interfaces must start with 'I' |
+| CS010 | EntitySuffix | Info | Domain entities should end with 'Entity' |
+| CS011 | RepositorySuffix | Warning | Repository classes end with 'Repository' |
+| CS012 | ServiceSuffix | Warning | Service classes end with 'Service' |
+
+### Architecture Rules
+
+The `csharp-style.json` also includes architecture validation rules:
+
+```json
+{
+  "architectureRules": {
+    "cleanArchitecture": {
+      "layers": ["Domain", "Application", "Infrastructure", "Presentation"],
+      "dependencyDirection": "inward",
+      "domainNoDependencies": true
+    },
+    "ddd": {
+      "valueObjects": true,
+      "aggregateRoots": true,
+      "repositoryPattern": true
+    }
+  }
+}
+```
 
 ---
 
