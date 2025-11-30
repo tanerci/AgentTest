@@ -1,6 +1,29 @@
 # Product API
 
-A .NET Web API with cookie-based authentication and product management endpoints.
+A .NET Web API with cookie-based authentication and product management endpoints, built following Clean Architecture principles.
+
+## Architecture
+
+This project follows Clean Architecture principles with the following layer organization:
+
+```
+├── Domain/                    # Core business logic
+│   ├── Entities/             # Domain entities (ProductEntity, UserEntity)
+│   ├── ValueObjects/         # Value objects (Money, ProductName, Stock)
+│   ├── Repositories/         # Repository interfaces
+│   └── Exceptions/           # Domain exceptions
+├── Application/              # Application business rules
+│   ├── Services/             # Application services (ProductService, AuthService)
+│   └── DTOs/                 # Data Transfer Objects
+├── Infrastructure/           # External concerns
+│   ├── Persistence/          # Database context and persistence models
+│   │   ├── Models/           # EF Core entity models
+│   │   └── AppDbContext.cs   # Database context
+│   └── Repositories/         # Repository implementations
+├── Controllers/              # API Controllers (Presentation layer)
+├── Common/                   # Cross-cutting concerns
+└── Extensions/               # Extension methods
+```
 
 ## Features
 
