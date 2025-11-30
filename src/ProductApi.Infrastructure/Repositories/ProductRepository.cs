@@ -103,7 +103,7 @@ public class ProductRepository : IProductRepository
 
     public async Task UpdateAsync(ProductEntity product, CancellationToken cancellationToken = default)
     {
-        var model = await _context.Products.FindAsync(new object[] { product.Id }, cancellationToken)
+        var model = await _context.Products.FindAsync([product.Id], cancellationToken)
             ?? throw new InvalidOperationException($"Product with ID {product.Id} not found");
 
         model.Name = product.Name.Value;
@@ -116,7 +116,7 @@ public class ProductRepository : IProductRepository
 
     public async Task DeleteAsync(ProductEntity product, CancellationToken cancellationToken = default)
     {
-        var model = await _context.Products.FindAsync(new object[] { product.Id }, cancellationToken)
+        var model = await _context.Products.FindAsync([product.Id], cancellationToken)
             ?? throw new InvalidOperationException($"Product with ID {product.Id} not found");
 
         _context.Products.Remove(model);
