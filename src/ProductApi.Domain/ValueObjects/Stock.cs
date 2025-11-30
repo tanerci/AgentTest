@@ -4,7 +4,7 @@ namespace ProductApi.Domain.ValueObjects;
 /// Value object representing product stock quantity.
 /// Ensures stock is never negative.
 /// </summary>
-public sealed class Stock : IEquatable<Stock>
+public sealed class Stock : ValueObject<Stock>
 {
     public int Quantity { get; }
 
@@ -60,20 +60,10 @@ public sealed class Stock : IEquatable<Stock>
     /// </summary>
     public bool HasSufficientStock(int required) => Quantity >= required;
 
-    public bool Equals(Stock? other)
+    protected override IEnumerable<object?> GetEqualityComponents()
     {
-        if (other is null) return false;
-        return Quantity == other.Quantity;
+        yield return Quantity;
     }
-
-    public override bool Equals(object? obj) => Equals(obj as Stock);
-
-    public override int GetHashCode() => Quantity.GetHashCode();
-
-    public static bool operator ==(Stock? left, Stock? right) =>
-        left?.Equals(right) ?? right is null;
-
-    public static bool operator !=(Stock? left, Stock? right) => !(left == right);
 
     public static implicit operator int(Stock stock) => stock.Quantity;
 

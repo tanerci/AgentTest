@@ -3,7 +3,7 @@ namespace ProductApi.Domain.ValueObjects;
 /// <summary>
 /// Value object representing a unique reservation identifier.
 /// </summary>
-public sealed class ReservationId : IEquatable<ReservationId>
+public sealed class ReservationId : ValueObject<ReservationId>
 {
     public Guid Value { get; }
 
@@ -42,20 +42,10 @@ public sealed class ReservationId : IEquatable<ReservationId>
         return null;
     }
 
-    public bool Equals(ReservationId? other)
+    protected override IEnumerable<object?> GetEqualityComponents()
     {
-        if (other is null) return false;
-        return Value == other.Value;
+        yield return Value;
     }
-
-    public override bool Equals(object? obj) => Equals(obj as ReservationId);
-
-    public override int GetHashCode() => Value.GetHashCode();
-
-    public static bool operator ==(ReservationId? left, ReservationId? right) =>
-        left?.Equals(right) ?? right is null;
-
-    public static bool operator !=(ReservationId? left, ReservationId? right) => !(left == right);
 
     public override string ToString() => Value.ToString();
 }

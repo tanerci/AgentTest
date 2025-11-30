@@ -3,7 +3,7 @@ namespace ProductApi.Domain.ValueObjects;
 /// <summary>
 /// Value object representing the status of a reservation.
 /// </summary>
-public sealed class ReservationStatus : IEquatable<ReservationStatus>
+public sealed class ReservationStatus : ValueObject<ReservationStatus>
 {
     public string Value { get; }
 
@@ -69,20 +69,10 @@ public sealed class ReservationStatus : IEquatable<ReservationStatus>
     /// </summary>
     public bool IsActive => Value == Reserved.Value;
 
-    public bool Equals(ReservationStatus? other)
+    protected override IEnumerable<object?> GetEqualityComponents()
     {
-        if (other is null) return false;
-        return string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
+        yield return Value.ToLowerInvariant();
     }
-
-    public override bool Equals(object? obj) => Equals(obj as ReservationStatus);
-
-    public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Value);
-
-    public static bool operator ==(ReservationStatus? left, ReservationStatus? right) =>
-        left?.Equals(right) ?? right is null;
-
-    public static bool operator !=(ReservationStatus? left, ReservationStatus? right) => !(left == right);
 
     public override string ToString() => Value;
 }
