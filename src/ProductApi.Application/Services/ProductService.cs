@@ -116,13 +116,13 @@ public class ProductService : IProductService
         return Result.Success(MapToDto(product));
     }
 
-    public async Task<Result<ProductDto>> CreateProductAsync(ProductCreateDto dto, CancellationToken cancellationToken = default)
+    public async Task<Result<ProductDto>> CreateProductAsync(ProductCreateDto createRequest, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Creating new product: {ProductName}", dto.Name);
+        _logger.LogInformation("Creating new product: {ProductName}", createRequest.Name);
 
         try
         {
-            var product = ProductEntity.Create(dto.Name, dto.Description, dto.Price, dto.Stock);
+            var product = ProductEntity.Create(createRequest.Name, createRequest.Description, createRequest.Price, createRequest.Stock);
             var createdProduct = await _productRepository.AddAsync(product, cancellationToken);
 
             _logger.LogInformation("Created product: {ProductName} (ID: {ProductId})", 
@@ -130,14 +130,14 @@ public class ProductService : IProductService
 
             return Result.Success(MapToDto(createdProduct));
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException validationException)
         {
-            _logger.LogWarning("Failed to create product due to validation error: {Message}", ex.Message);
-            return Result.Failure<ProductDto>(Error.Validation(ex.Message));
+            _logger.LogWarning("Failed to create product due to validation error: {Message}", validationException.Message);
+            return Result.Failure<ProductDto>(Error.Validation(validationException.Message));
         }
     }
 
-    public async Task<Result<ProductDto>> UpdateProductAsync(int id, ProductUpdateDto dto, CancellationToken cancellationToken = default)
+    public async Task<Result<ProductDto>> UpdateProductAsync(int id, ProductUpdateDto updateRequest, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Updating product with ID: {ProductId}", id);
 
@@ -151,27 +151,27 @@ public class ProductService : IProductService
 
         try
         {
-            if (dto.Name != null)
-                product.UpdateName(dto.Name);
+            if (updateRequest.Name != null)
+                product.UpdateName(updateRequest.Name);
 
-            if (dto.Description != null)
-                product.UpdateDescription(dto.Description);
+            if (updateRequest.Description != null)
+                product.UpdateDescription(updateRequest.Description);
 
-            if (dto.Price.HasValue)
-                product.UpdatePrice(dto.Price.Value);
+            if (updateRequest.Price.HasValue)
+                product.UpdatePrice(updateRequest.Price.Value);
 
-            if (dto.Stock.HasValue)
-                product.UpdateStock(dto.Stock.Value);
+            if (updateRequest.Stock.HasValue)
+                product.UpdateStock(updateRequest.Stock.Value);
 
             await _productRepository.UpdateAsync(product, cancellationToken);
 
             _logger.LogInformation("Updated product: {ProductName} (ID: {ProductId})", product.Name.Value, product.Id);
             return Result.Success(MapToDto(product));
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException validationException)
         {
-            _logger.LogWarning("Failed to update product due to validation error: {Message}", ex.Message);
-            return Result.Failure<ProductDto>(Error.Validation(ex.Message));
+            _logger.LogWarning("Failed to update product due to validation error: {Message}", validationException.Message);
+            return Result.Failure<ProductDto>(Error.Validation(validationException.Message));
         }
     }
 
