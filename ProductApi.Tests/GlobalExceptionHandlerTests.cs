@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ProductApi.Common;
+using ProductApi.Resources;
 using System.IO;
 using System.Text.Json;
 using Xunit;
@@ -12,6 +14,13 @@ namespace ProductApi.Tests;
 
 public class GlobalExceptionHandlerTests
 {
+    private IStringLocalizer<SharedResource> CreateMockLocalizer()
+    {
+        var localizer = Substitute.For<IStringLocalizer<SharedResource>>();
+        localizer["UnexpectedError"].Returns(new LocalizedString("UnexpectedError", "An error occurred while processing your request"));
+        return localizer;
+    }
+
     [Fact]
     public async Task TryHandleAsync_InDevelopment_IncludesExceptionDetails()
     {
@@ -19,8 +28,9 @@ public class GlobalExceptionHandlerTests
         var logger = Substitute.For<ILogger<GlobalExceptionHandler>>();
         var environment = Substitute.For<IHostEnvironment>();
         environment.EnvironmentName.Returns("Development");
+        var localizer = CreateMockLocalizer();
         
-        var handler = new GlobalExceptionHandler(logger, environment);
+        var handler = new GlobalExceptionHandler(logger, environment, localizer);
         
         var httpContext = new DefaultHttpContext();
         httpContext.Response.Body = new MemoryStream();
@@ -57,8 +67,9 @@ public class GlobalExceptionHandlerTests
         var logger = Substitute.For<ILogger<GlobalExceptionHandler>>();
         var environment = Substitute.For<IHostEnvironment>();
         environment.EnvironmentName.Returns("Production");
+        var localizer = CreateMockLocalizer();
         
-        var handler = new GlobalExceptionHandler(logger, environment);
+        var handler = new GlobalExceptionHandler(logger, environment, localizer);
         
         var httpContext = new DefaultHttpContext();
         httpContext.Response.Body = new MemoryStream();
@@ -92,8 +103,9 @@ public class GlobalExceptionHandlerTests
         var logger = Substitute.For<ILogger<GlobalExceptionHandler>>();
         var environment = Substitute.For<IHostEnvironment>();
         environment.EnvironmentName.Returns("Production");
+        var localizer = CreateMockLocalizer();
         
-        var handler = new GlobalExceptionHandler(logger, environment);
+        var handler = new GlobalExceptionHandler(logger, environment, localizer);
         
         var httpContext = new DefaultHttpContext();
         httpContext.Response.Body = new MemoryStream();
