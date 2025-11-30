@@ -3,10 +3,60 @@ description: >
   Enforces Clean Architecture principles including separation of concerns,
   dependency inversion, layer independence, and proper boundaries between
   Entities, Use Cases, Interface Adapters, and Infrastructure layers.
+  Ensures each layer is organized as a separate project within the solution
+  with correct project references and dependency rules.
 pillar: ops-excellence
-tags: [ops-excellence, architecture, clean-architecture, separation-of-concerns, dependency-rules, layering]
-version: "1.0"
+tags: [ops-excellence, architecture, clean-architecture, separation-of-concerns, dependency-rules, layering, project-separation]
+version: "1.1"
 tasks:
+  - type: validate-project-separation
+    description: >
+      Validates that Clean Architecture layers are organized as separate .NET projects
+      within the solution. Each layer should be an independent project with its own
+      .csproj file, enabling compile-time dependency enforcement.
+    inputs:
+      solution-file: "**/*.sln"
+      required-projects:
+        - name: "{SolutionName}.Domain"
+          purpose: "Core domain entities, value objects, aggregates, domain events, and repository interfaces"
+          location: "src/{SolutionName}.Domain"
+          dependencies: []
+          must-not-reference:
+            - "*.Infrastructure*"
+            - "*.Application*"
+            - "*.Presentation*"
+            - "*.Web*"
+            - "*.Api*"
+            - "Microsoft.EntityFrameworkCore*"
+            - "System.Data.*"
+        - name: "{SolutionName}.Application"
+          purpose: "Use cases, application services, DTOs, mappers, and orchestration logic"
+          location: "src/{SolutionName}.Application"
+          dependencies:
+            - "{SolutionName}.Domain"
+          must-not-reference:
+            - "*.Infrastructure*"
+            - "*.Presentation*"
+            - "*.Web*"
+            - "Microsoft.EntityFrameworkCore*"
+            - "System.Data.SqlClient"
+        - name: "{SolutionName}.Infrastructure"
+          purpose: "External concerns including data access, external APIs, file systems, messaging"
+          location: "src/{SolutionName}.Infrastructure"
+          dependencies:
+            - "{SolutionName}.Domain"
+            - "{SolutionName}.Application"
+        - name: "{SolutionName} or {SolutionName}.Api or {SolutionName}.Web"
+          purpose: "Presentation layer with controllers, middleware, and composition root"
+          location: "root or src/{SolutionName}.Presentation"
+          dependencies:
+            - "{SolutionName}.Application"
+            - "{SolutionName}.Infrastructure"
+      checks:
+        - "all-layers-exist-as-projects"
+        - "project-references-follow-dependency-rules"
+        - "no-circular-project-references"
+        - "projects-in-solution-folder-structure"
   - type: validate-layer-separation
     inputs:
       source: "**/*.cs"
@@ -109,6 +159,128 @@ tasks:
         - "pure-functions-in-domain"
         - "mockable-infrastructure"
         - "unit-test-isolation"
+  - type: validate-project-references
+    description: >
+      Analyzes .csproj files to ensure project references follow Clean Architecture
+      dependency rules. Inner layers must not reference outer layers.
+    inputs:
+      files: ["**/*.csproj"]
+      rules:
+        domain-project:
+          name-pattern: "*.Domain.csproj"
+          allowed-project-references: []
+          forbidden-project-references:
+            - "*.Application*"
+            - "*.Infrastructure*"
+            - "*.Web*"
+            - "*.Api*"
+          allowed-package-references:
+            - "primitives-only"
+          forbidden-package-references:
+            - "Microsoft.EntityFrameworkCore*"
+            - "Dapper*"
+            - "Microsoft.AspNetCore*"
+            - "System.Data.SqlClient"
+        application-project:
+          name-pattern: "*.Application.csproj"
+          allowed-project-references:
+            - "*.Domain.csproj"
+          forbidden-project-references:
+            - "*.Infrastructure*"
+            - "*.Web*"
+            - "*.Api*"
+          forbidden-package-references:
+            - "Microsoft.EntityFrameworkCore*"
+            - "Dapper*"
+            - "Microsoft.AspNetCore.Mvc*"
+        infrastructure-project:
+          name-pattern: "*.Infrastructure.csproj"
+          allowed-project-references:
+            - "*.Domain.csproj"
+            - "*.Application.csproj"
+          forbidden-project-references:
+            - "*.Web*"
+            - "*.Api*"
+        presentation-project:
+          name-pattern: "*.Web.csproj|*.Api.csproj|<main-project>"
+          allowed-project-references:
+            - "*.Application.csproj"
+            - "*.Infrastructure.csproj"
+          forbidden-project-references:
+            - "*.Domain.csproj directly without going through Application"
+      checks:
+        - "project-reference-direction"
+        - "no-skip-layer-references"
+        - "package-reference-layer-appropriateness"
+  - type: validate-solution-structure
+    description: >
+      Ensures the solution file is organized with proper solution folders
+      to group projects by layer, making the architecture visually clear.
+    inputs:
+      solution-file: "**/*.sln"
+      recommended-structure:
+        folders:
+          - name: "src"
+            projects:
+              - "*.Domain"
+              - "*.Application"
+              - "*.Infrastructure"
+          - name: "tests"
+            projects:
+              - "*.Tests"
+              - "*.IntegrationTests"
+              - "*.UnitTests"
+          - name: "presentation"
+            projects:
+              - "*.Web"
+              - "*.Api"
+      checks:
+        - "solution-folders-exist"
+        - "projects-grouped-by-layer"
+        - "test-projects-separated"
+        - "no-orphan-projects"
+  - type: suggest-project-separation
+    description: >
+      Detects monolithic project structures and provides step-by-step guidance
+      to split into separate Clean Architecture projects.
+    inputs:
+      detection:
+        - "single-project-with-multiple-layers"
+        - "folders-that-should-be-projects"
+        - "namespace-based-layers-without-project-separation"
+      migration-guidance:
+        steps:
+          - "Identify layer boundaries in existing code"
+          - "Create new .NET class library projects for each layer"
+          - "Move domain entities and interfaces to Domain project"
+          - "Move application services and use cases to Application project"
+          - "Move data access and external integrations to Infrastructure project"
+          - "Keep controllers and composition root in main project"
+          - "Update namespaces to match new project structure"
+          - "Configure project references following dependency rules"
+          - "Update solution file with solution folders"
+          - "Verify build succeeds and tests pass"
+      templates:
+        domain-project: |
+          Create {SolutionName}.Domain.csproj with:
+          - Entities folder
+          - ValueObjects folder
+          - Repositories folder (interfaces only)
+          - Exceptions folder
+          - No external dependencies
+        application-project: |
+          Create {SolutionName}.Application.csproj with:
+          - Services folder
+          - DTOs folder
+          - Interfaces folder
+          - Common folder
+          - Reference only to Domain project
+        infrastructure-project: |
+          Create {SolutionName}.Infrastructure.csproj with:
+          - Persistence folder (DbContext, configurations)
+          - Repositories folder (implementations)
+          - External folder (API clients, messaging)
+          - Reference to Domain and Application projects
   - type: suggest-refactoring
     inputs:
       recommendations:
@@ -118,6 +290,8 @@ tasks:
         - "introduce-repository-pattern"
         - "implement-mediator-pattern"
         - "separate-read-write-models"
+        - "split-monolithic-project-into-layers"
+        - "create-shared-kernel-project-for-common-code"
   - type: generate-architecture-diagram
     inputs:
       output: ".github/copilot/diagrams/architecture-layers.md"
@@ -140,3 +314,119 @@ tasks:
         - "outer-layers-depend-on-inner"
         - "core-layer-independence"
         - "plugin-architecture-pattern"
+  - type: generate-project-templates
+    description: >
+      Generates .csproj file templates for each Clean Architecture layer
+      to help bootstrap new projects with correct structure and dependencies.
+    inputs:
+      output-directory: ".github/copilot/templates/clean-architecture"
+      templates:
+        - name: "Domain.csproj.template"
+          content:
+            sdk: "Microsoft.NET.Sdk"
+            properties:
+              - "TargetFramework: net9.0"
+              - "Nullable: enable"
+              - "ImplicitUsings: enable"
+            package-references: []
+            project-references: []
+            notes: "Domain project should have no external dependencies"
+        - name: "Application.csproj.template"
+          content:
+            sdk: "Microsoft.NET.Sdk"
+            properties:
+              - "TargetFramework: net9.0"
+              - "Nullable: enable"
+              - "ImplicitUsings: enable"
+            package-references:
+              - "Microsoft.Extensions.Logging.Abstractions"
+              - "FluentValidation (optional)"
+              - "MediatR (optional for CQRS)"
+            project-references:
+              - "../{SolutionName}.Domain/{SolutionName}.Domain.csproj"
+        - name: "Infrastructure.csproj.template"
+          content:
+            sdk: "Microsoft.NET.Sdk"
+            properties:
+              - "TargetFramework: net9.0"
+              - "Nullable: enable"
+              - "ImplicitUsings: enable"
+            package-references:
+              - "Microsoft.EntityFrameworkCore"
+              - "Microsoft.EntityFrameworkCore.SqlServer (or other provider)"
+            project-references:
+              - "../{SolutionName}.Domain/{SolutionName}.Domain.csproj"
+              - "../{SolutionName}.Application/{SolutionName}.Application.csproj"
+  - type: validate-test-project-structure
+    description: >
+      Ensures test projects follow Clean Architecture principles with proper
+      isolation between unit tests (testing Domain/Application) and integration
+      tests (testing Infrastructure).
+    inputs:
+      test-project-patterns:
+        - "*.Tests.csproj"
+        - "*.UnitTests.csproj"
+        - "*.IntegrationTests.csproj"
+      recommended-structure:
+        unit-tests:
+          name: "{SolutionName}.UnitTests or {SolutionName}.Tests"
+          should-reference:
+            - "Domain project"
+            - "Application project"
+          should-not-reference:
+            - "Infrastructure project (directly)"
+          purpose: "Test domain logic and application services in isolation"
+        integration-tests:
+          name: "{SolutionName}.IntegrationTests"
+          may-reference:
+            - "All projects"
+            - "Infrastructure project"
+          purpose: "Test actual integrations with databases, APIs, etc."
+      checks:
+        - "test-projects-properly-categorized"
+        - "unit-tests-isolated-from-infrastructure"
+        - "integration-tests-clearly-labeled"
+        - "test-utilities-in-shared-project"
+best-practices:
+  project-separation:
+    - "Each Clean Architecture layer MUST be a separate .NET project"
+    - "Domain project has zero project references (innermost layer)"
+    - "Application project references only Domain"
+    - "Infrastructure project references Domain and Application"
+    - "Presentation/API project references Application and Infrastructure"
+    - "Use solution folders to organize projects visually"
+    - "Never reference outer layers from inner layers"
+  naming-conventions:
+    - "Use {SolutionName}.Domain for domain layer"
+    - "Use {SolutionName}.Application for application layer"
+    - "Use {SolutionName}.Infrastructure for infrastructure layer"
+    - "Use {SolutionName}.Api or {SolutionName}.Web for presentation"
+    - "Use {SolutionName}.Tests or {SolutionName}.UnitTests for unit tests"
+    - "Use {SolutionName}.IntegrationTests for integration tests"
+  folder-structure:
+    domain:
+      - "Entities/"
+      - "ValueObjects/"
+      - "Repositories/ (interfaces only)"
+      - "Exceptions/"
+      - "Events/ (domain events)"
+      - "Aggregates/"
+    application:
+      - "Services/"
+      - "DTOs/"
+      - "Interfaces/"
+      - "Common/"
+      - "UseCases/ (or Commands/ and Queries/ for CQRS)"
+      - "Validators/"
+      - "Mappers/"
+    infrastructure:
+      - "Persistence/"
+      - "Repositories/"
+      - "External/"
+      - "Migrations/"
+      - "Configurations/"
+    presentation:
+      - "Controllers/"
+      - "Middleware/"
+      - "Filters/"
+      - "Extensions/"
