@@ -1,10 +1,11 @@
 name: consistency-agent
 description: >
   Enforces naming conventions, DRY principles, and consistent error handling
-  across the codebase to maintain code quality and readability.
+  across the codebase to maintain code quality and readability. Ensures
+  architectural consistency following Clean Architecture and DDD patterns.
 pillar: ops-excellence
-tags: [consistency, naming, dry, refactoring, code-quality]
-version: "1.0"
+tags: [consistency, naming, dry, refactoring, code-quality, clean-architecture, ddd]
+version: "1.1"
 tasks:
   - type: lint
     inputs:
@@ -18,6 +19,8 @@ tasks:
         - "missing-error-handling"
         - "magic-numbers"
         - "long-methods"
+        - "missing-xml-documentation"
+        - "inconsistent-localization"
   - type: validate
     inputs:
       framework: "ASP.NET Core"
@@ -25,3 +28,34 @@ tasks:
         - "controller-naming"
         - "dto-naming"
         - "async-suffix"
+        - "result-pattern"
+        - "value-objects"
+        - "repository-pattern"
+guidelines:
+  naming:
+    - "Classes use PascalCase"
+    - "Private fields use _camelCase prefix"
+    - "Interfaces use IPascalCase prefix"
+    - "Async methods end with 'Async' suffix (except controller actions)"
+    - "DTOs end with 'Dto', 'Request', or 'Response' suffix"
+    - "Controllers end with 'Controller' suffix"
+    - "Entities end with 'Entity' suffix in domain layer"
+  error-handling:
+    - "Use Result<T> pattern for expected failures instead of exceptions"
+    - "Domain exceptions for invariant violations"
+    - "GlobalExceptionHandler for unexpected errors"
+    - "Centralize error messages in ErrorMessages class"
+  architecture:
+    - "Follow Clean Architecture layer separation"
+    - "Domain layer has no external dependencies"
+    - "Application layer orchestrates use cases"
+    - "Infrastructure layer implements repositories"
+    - "Use value objects for domain concepts"
+  localization:
+    - "All user-facing strings in resource files"
+    - "Use IStringLocalizer for message formatting"
+    - "Maintain consistency across all culture files"
+  documentation:
+    - "XML documentation on all public types and members"
+    - "Include example code in API documentation"
+    - "Document all endpoints with ProducesResponseType attributes"
