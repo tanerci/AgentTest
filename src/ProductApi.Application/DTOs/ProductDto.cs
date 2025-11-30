@@ -1,32 +1,32 @@
 namespace ProductApi.Application.DTOs;
 
 /// <summary>
-/// Data transfer object for returning product information.
+/// DTO for product data returned to clients.
 /// </summary>
 public class ProductDto
 {
     /// <summary>
-    /// Gets or sets the unique identifier for the product.
+    /// The unique identifier of the product.
     /// </summary>
     public int Id { get; set; }
-    
+
     /// <summary>
-    /// Gets or sets the name of the product.
+    /// The name of the product.
     /// </summary>
     public string Name { get; set; } = string.Empty;
-    
+
     /// <summary>
-    /// Gets or sets the description of the product.
+    /// The description of the product.
     /// </summary>
     public string Description { get; set; } = string.Empty;
-    
+
     /// <summary>
-    /// Gets or sets the price of the product in dollars.
+    /// The price of the product.
     /// </summary>
     public decimal Price { get; set; }
-    
+
     /// <summary>
-    /// Gets or sets the available stock quantity.
+    /// The stock quantity.
     /// </summary>
     public int Stock { get; set; }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using ProductApi.Application.Common;
 using ProductApi.Application.DTOs;
 using ProductApi.Application.Services;
 using ProductApi.Extensions;
@@ -208,7 +209,7 @@ public class ProductsController : ControllerBase
 
         return result.Match(
             product => Ok(product),
-            error => error.Type == Common.ErrorType.NotFound
+            error => error.Type == Application.Common.ErrorType.NotFound
                 ? NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) })
                 : error.ToProblemDetails());
     }
@@ -240,7 +241,7 @@ public class ProductsController : ControllerBase
 
         return result.Match(
             () => Ok(new { message = _localizer["ProductDeletedSuccessfully"].Value }),
-            error => error.Type == Common.ErrorType.NotFound
+            error => error.Type == Application.Common.ErrorType.NotFound
                 ? NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) })
                 : error.ToProblemDetails());
     }

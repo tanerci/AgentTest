@@ -1,4 +1,4 @@
-using ProductApi.Common;
+using ProductApi.Application.Common;
 using ProductApi.Domain.Entities;
 
 namespace ProductApi.Application.Services;

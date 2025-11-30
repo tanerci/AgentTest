@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ProductApi.Domain.Entities;
 using ProductApi.Domain.Repositories;
-using ProductApi.Infrastructure.Persistence;
 using ProductApi.Infrastructure.Persistence.Models;
 
 namespace ProductApi.Infrastructure.Repositories;
@@ -11,9 +10,9 @@ namespace ProductApi.Infrastructure.Repositories;
 /// </summary>
 public class UserRepository : IUserRepository
 {
-    private readonly AppDbContext _context;
+    private readonly Persistence.AppDbContext _context;
 
-    public UserRepository(AppDbContext context)
+    public UserRepository(Persistence.AppDbContext context)
     {
         _context = context;
     }

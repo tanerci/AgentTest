@@ -1,8 +1,8 @@
-using ProductApi.Application.DTOs;
-using ProductApi.Common;
+using System.Security.Claims;
+using Microsoft.Extensions.Logging;
+using ProductApi.Application.Common;
 using ProductApi.Domain.Entities;
 using ProductApi.Domain.Repositories;
-using System.Security.Claims;
 
 namespace ProductApi.Application.Services;
 
