@@ -32,7 +32,7 @@ public class AuthService : IAuthService
         {
             _logger.LogWarning("Failed login attempt for username: {Username} from IP: {IpAddress}", 
                 username, clientIpAddress);
-            return Result.Failure<AuthResult>(Error.Unauthorized("Invalid username or password"));
+            return Result.Failure<AuthResult>(Error.Unauthorized(ErrorMessages.InvalidCredentials));
         }
 
         _logger.LogInformation("Successful login for user: {Username} from IP: {IpAddress}", 
@@ -58,7 +58,7 @@ public class AuthService : IAuthService
 
         if (user == null)
         {
-            return Result.Failure<UserEntity>(Error.NotFound($"User with ID {id} not found"));
+            return Result.Failure<UserEntity>(Error.NotFound(ErrorMessages.UserNotFound(id)));
         }
 
         return Result.Success(user);

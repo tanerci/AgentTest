@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ProductApi.Application.Common;
 using ProductApi.Domain.Entities;
 using ProductApi.Domain.Repositories;
 using ProductApi.Infrastructure.Persistence.Models;
@@ -48,7 +49,7 @@ public class UserRepository : IUserRepository
     public async Task UpdateAsync(UserEntity user, CancellationToken cancellationToken = default)
     {
         var model = await _context.Users.FindAsync([user.Id], cancellationToken)
-            ?? throw new InvalidOperationException($"User with ID {user.Id} not found");
+            ?? throw new InvalidOperationException(ErrorMessages.UserNotFound(user.Id));
 
         model.Username = user.Username;
         model.PasswordHash = user.PasswordHash;
