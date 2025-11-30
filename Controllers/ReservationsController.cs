@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using ProductApi.Application.Common;
 using ProductApi.Application.DTOs;
 using ProductApi.Application.Services;
 using ProductApi.Extensions;
+using ProductApi.Resources;
 
 namespace ProductApi.Controllers;
 
@@ -17,16 +19,19 @@ public class ReservationsController : ControllerBase
 {
     private readonly IReservationService _reservationService;
     private readonly ILogger<ReservationsController> _logger;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
     /// <summary>
     /// Initializes a new instance of the ReservationsController.
     /// </summary>
     /// <param name="reservationService">The reservation application service.</param>
     /// <param name="logger">The logger for reservation operations.</param>
-    public ReservationsController(IReservationService reservationService, ILogger<ReservationsController> logger)
+    /// <param name="localizer">The string localizer for localized messages.</param>
+    public ReservationsController(IReservationService reservationService, ILogger<ReservationsController> logger, IStringLocalizer<SharedResource> localizer)
     {
         _reservationService = reservationService;
         _logger = logger;
+        _localizer = localizer;
     }
 
     /// <summary>

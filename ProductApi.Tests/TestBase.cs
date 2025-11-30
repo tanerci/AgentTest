@@ -3,6 +3,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ProductApi.Application.Services;
+using ProductApi.Controllers;
 using ProductApi.Domain.Repositories;
 using ProductApi.Infrastructure.Persistence;
 using ProductApi.Infrastructure.Repositories;
@@ -43,6 +44,12 @@ public abstract class TestBase
         localizer["LogoutSuccessful"].Returns(new LocalizedString("LogoutSuccessful", "Logout successful"));
         localizer["ProductNotFound"].Returns(new LocalizedString("ProductNotFound", "Product with ID {0} not found"));
         localizer["ProductDeletedSuccessfully"].Returns(new LocalizedString("ProductDeletedSuccessfully", "Product deleted successfully"));
+        localizer["ReservationNotFound"].Returns(new LocalizedString("ReservationNotFound", "Reservation not found"));
+        localizer["ReservationCreatedSuccessfully"].Returns(new LocalizedString("ReservationCreatedSuccessfully", "Reservation created successfully"));
+        localizer["ReservationCancelledSuccessfully"].Returns(new LocalizedString("ReservationCancelledSuccessfully", "Reservation cancelled successfully"));
+        localizer["CheckoutCompletedSuccessfully"].Returns(new LocalizedString("CheckoutCompletedSuccessfully", "Checkout completed successfully"));
+        localizer["ReservationExpired"].Returns(new LocalizedString("ReservationExpired", "Reservation has expired"));
+        localizer["InsufficientStock"].Returns(new LocalizedString("InsufficientStock", "Insufficient stock available"));
         
         return localizer;
     }
@@ -65,5 +72,13 @@ public abstract class TestBase
         var repository = new UserRepository(context);
         var logger = Substitute.For<ILogger<AuthService>>();
         return new AuthService(repository, logger);
+    }
+
+    /// <summary>
+    /// Creates a mock logger for ProductsController for testing.
+    /// </summary>
+    protected ILogger<ProductsController> GetMockProductsControllerLogger()
+    {
+        return Substitute.For<ILogger<ProductsController>>();
     }
 }
