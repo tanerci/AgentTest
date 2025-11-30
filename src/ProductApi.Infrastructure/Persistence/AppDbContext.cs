@@ -38,12 +38,13 @@ public class AppDbContext : DbContext
         );
 
         // Seed a test user (password: "password123")
+        // Note: In production, use environment-specific seeding and never commit real passwords
         modelBuilder.Entity<User>().HasData(
             new User 
             { 
                 Id = 1, 
                 Username = "admin", 
-                PasswordHash = "$2a$11$xZ1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X" // BCrypt hash
+                PasswordHash = "$2a$11$SDCYH0wn9mp7m7g7CxakUerO/pOj.UspJlNDckQujniUDsBMtSRky" // BCrypt hash for "password123"
             }
         );
     }

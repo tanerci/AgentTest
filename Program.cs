@@ -171,6 +171,12 @@ app.Use(async (context, next) =>
     context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
     context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
     
+    // HSTS: Enforce HTTPS for 1 year, include subdomains (only in production)
+    if (!app.Environment.IsDevelopment())
+    {
+        context.Response.Headers.Append("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    }
+    
     // Use a more restrictive CSP in production, allow unsafe-inline/unsafe-eval only in development for Swagger
     var csp = app.Environment.IsDevelopment() 
         ? "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self';" 
