@@ -18,9 +18,10 @@
     {
       "id": "CS003",
       "name": "AsyncMethodSuffix",
-      "description": "Async methods must end with 'Async'",
+      "description": "Async methods must end with 'Async' (except controller actions)",
       "severity": "error",
-      "pattern": ".*Async$"
+      "pattern": ".*Async$",
+      "exceptions": ["Controller action methods"]
     },
     {
       "id": "CS004",
@@ -55,6 +56,35 @@
       "description": "Public methods and classes should have XML documentation",
       "severity": "info",
       "scope": ["public"]
+    },
+    {
+      "id": "CS009",
+      "name": "InterfacePrefix",
+      "description": "Interface names must start with 'I' followed by PascalCase",
+      "severity": "error",
+      "pattern": "^I[A-Z][a-zA-Z0-9]*$"
+    },
+    {
+      "id": "CS010",
+      "name": "EntitySuffix",
+      "description": "Domain entity classes should end with 'Entity'",
+      "severity": "info",
+      "pattern": ".*Entity$",
+      "scope": ["domain-layer"]
+    },
+    {
+      "id": "CS011",
+      "name": "RepositorySuffix",
+      "description": "Repository classes should end with 'Repository'",
+      "severity": "warning",
+      "pattern": ".*Repository$"
+    },
+    {
+      "id": "CS012",
+      "name": "ServiceSuffix",
+      "description": "Service classes should end with 'Service'",
+      "severity": "warning",
+      "pattern": ".*Service$"
     }
   ],
   "formatting": {
@@ -72,5 +102,17 @@
     "parameters": "camelCase",
     "localVariables": "camelCase",
     "constants": "UPPER_CASE"
+  },
+  "architectureRules": {
+    "cleanArchitecture": {
+      "layers": ["Domain", "Application", "Infrastructure", "Presentation"],
+      "dependencyDirection": "inward",
+      "domainNoDependencies": true
+    },
+    "ddd": {
+      "valueObjects": true,
+      "aggregateRoots": true,
+      "repositoryPattern": true
+    }
   }
 }
