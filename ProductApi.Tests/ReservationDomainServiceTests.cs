@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using ProductApi.Domain.Entities;
 using ProductApi.Domain.Services;
 using ProductApi.Domain.ValueObjects;
@@ -14,7 +16,8 @@ public class ReservationDomainServiceTests : TestBase
 
     public ReservationDomainServiceTests()
     {
-        _domainService = new ReservationDomainService();
+        var logger = Substitute.For<ILogger<ReservationDomainService>>();
+        _domainService = new ReservationDomainService(logger);
     }
 
     [Fact]

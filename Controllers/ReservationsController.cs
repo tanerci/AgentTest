@@ -16,14 +16,17 @@ namespace ProductApi.Controllers;
 public class ReservationsController : ControllerBase
 {
     private readonly IReservationService _reservationService;
+    private readonly ILogger<ReservationsController> _logger;
 
     /// <summary>
     /// Initializes a new instance of the ReservationsController.
     /// </summary>
     /// <param name="reservationService">The reservation application service.</param>
-    public ReservationsController(IReservationService reservationService)
+    /// <param name="logger">The logger for reservation operations.</param>
+    public ReservationsController(IReservationService reservationService, ILogger<ReservationsController> logger)
     {
         _reservationService = reservationService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -56,21 +59,34 @@ public class ReservationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ReservationDto>> Reserve([FromBody] ReserveRequest request)
     {
+        _logger.LogInformation("Reserve request received for ProductId: {ProductId}, Quantity: {Quantity}",
+            request.ProductId, request.Quantity);
+
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Reserve request validation failed for ProductId: {ProductId}", request.ProductId);
             return BadRequest(ModelState);
         }
 
         var result = await _reservationService.ReserveAsync(request);
 
         return result.Match(
-            reservation => CreatedAtAction(
-                nameof(GetReservation),
-                new { id = reservation.ReservationId },
-                reservation),
-            error => error.Type == ErrorType.NotFound
-                ? NotFound(new { message = error.Message })
-                : error.ToProblemDetails());
+            reservation =>
+            {
+                _logger.LogInformation("Reservation created successfully: {ReservationId}", reservation.ReservationId);
+                return CreatedAtAction(
+                    nameof(GetReservation),
+                    new { id = reservation.ReservationId },
+                    reservation);
+            },
+            error =>
+            {
+                _logger.LogWarning("Reserve failed for ProductId: {ProductId}, Error: {Error}",
+                    request.ProductId, error.Message);
+                return error.Type == ErrorType.NotFound
+                    ? NotFound(new { message = error.Message })
+                    : error.ToProblemDetails();
+            });
     }
 
     /// <summary>
@@ -97,13 +113,24 @@ public class ReservationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ReservationDto>> GetReservation(string id)
     {
+        _logger.LogDebug("GetReservation request for ReservationId: {ReservationId}", id);
+
         var result = await _reservationService.GetByIdAsync(id);
 
         return result.Match(
-            reservation => Ok(reservation),
-            error => error.Type == ErrorType.NotFound
-                ? NotFound(new { message = error.Message })
-                : error.ToProblemDetails());
+            reservation =>
+            {
+                _logger.LogDebug("Reservation retrieved: {ReservationId}", id);
+                return Ok(reservation);
+            },
+            error =>
+            {
+                _logger.LogWarning("GetReservation failed for ReservationId: {ReservationId}, Error: {Error}",
+                    id, error.Message);
+                return error.Type == ErrorType.NotFound
+                    ? NotFound(new { message = error.Message })
+                    : error.ToProblemDetails();
+            });
     }
 
     /// <summary>
@@ -134,18 +161,32 @@ public class ReservationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ReservationDto>> Checkout([FromBody] CheckoutRequest request)
     {
+        _logger.LogInformation("Checkout request received for ReservationId: {ReservationId}", request.ReservationId);
+
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("Checkout request validation failed for ReservationId: {ReservationId}",
+                request.ReservationId);
             return BadRequest(ModelState);
         }
 
         var result = await _reservationService.CheckoutAsync(request);
 
         return result.Match(
-            reservation => Ok(reservation),
-            error => error.Type == ErrorType.NotFound
-                ? NotFound(new { message = error.Message })
-                : error.ToProblemDetails());
+            reservation =>
+            {
+                _logger.LogInformation("Checkout completed successfully for ReservationId: {ReservationId}",
+                    request.ReservationId);
+                return Ok(reservation);
+            },
+            error =>
+            {
+                _logger.LogWarning("Checkout failed for ReservationId: {ReservationId}, Error: {Error}",
+                    request.ReservationId, error.Message);
+                return error.Type == ErrorType.NotFound
+                    ? NotFound(new { message = error.Message })
+                    : error.ToProblemDetails();
+            });
     }
 
     /// <summary>
@@ -173,12 +214,23 @@ public class ReservationsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ReservationDto>> Cancel(string id)
     {
+        _logger.LogInformation("Cancel request received for ReservationId: {ReservationId}", id);
+
         var result = await _reservationService.CancelAsync(id);
 
         return result.Match(
-            reservation => Ok(reservation),
-            error => error.Type == ErrorType.NotFound
-                ? NotFound(new { message = error.Message })
-                : error.ToProblemDetails());
+            reservation =>
+            {
+                _logger.LogInformation("Reservation cancelled successfully: {ReservationId}", id);
+                return Ok(reservation);
+            },
+            error =>
+            {
+                _logger.LogWarning("Cancel failed for ReservationId: {ReservationId}, Error: {Error}",
+                    id, error.Message);
+                return error.Type == ErrorType.NotFound
+                    ? NotFound(new { message = error.Message })
+                    : error.ToProblemDetails();
+            });
     }
 }

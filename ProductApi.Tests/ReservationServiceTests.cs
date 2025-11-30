@@ -19,11 +19,19 @@ public class ReservationServiceTests : TestBase
 {
     private readonly IReservationDomainService _domainService;
     private readonly ILogger<ReservationService> _logger;
+    private readonly ILogger<ReservationDomainService> _domainServiceLogger;
+    private readonly ILogger<ReservationRepository> _reservationRepoLogger;
+    private readonly ILogger<ReservationAuditRepository> _auditRepoLogger;
+    private readonly ILogger<InMemoryRedisReservationRepository> _redisRepoLogger;
 
     public ReservationServiceTests()
     {
-        _domainService = new ReservationDomainService();
+        _domainServiceLogger = Substitute.For<ILogger<ReservationDomainService>>();
+        _domainService = new ReservationDomainService(_domainServiceLogger);
         _logger = Substitute.For<ILogger<ReservationService>>();
+        _reservationRepoLogger = Substitute.For<ILogger<ReservationRepository>>();
+        _auditRepoLogger = Substitute.For<ILogger<ReservationAuditRepository>>();
+        _redisRepoLogger = Substitute.For<ILogger<InMemoryRedisReservationRepository>>();
     }
 
     private IReservationService GetReservationService(
@@ -31,9 +39,9 @@ public class ReservationServiceTests : TestBase
         IRedisReservationRepository? redisRepo = null)
     {
         var productRepo = new ProductRepository(context);
-        var reservationRepo = new ReservationRepository(context);
-        var auditRepo = new ReservationAuditRepository(context);
-        var redis = redisRepo ?? new InMemoryRedisReservationRepository();
+        var reservationRepo = new ReservationRepository(context, _reservationRepoLogger);
+        var auditRepo = new ReservationAuditRepository(context, _auditRepoLogger);
+        var redis = redisRepo ?? new InMemoryRedisReservationRepository(_redisRepoLogger);
 
         return new ReservationService(
             _domainService,
@@ -46,7 +54,7 @@ public class ReservationServiceTests : TestBase
 
     private async Task<IRedisReservationRepository> GetInitializedRedisRepo(AppDbContext context)
     {
-        var redisRepo = new InMemoryRedisReservationRepository();
+        var redisRepo = new InMemoryRedisReservationRepository(_redisRepoLogger);
         foreach (var product in context.Products)
         {
             await redisRepo.InitializeStockAsync(product.Id, product.Stock);
