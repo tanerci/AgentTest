@@ -4,7 +4,7 @@ namespace ProductApi.Domain.ValueObjects;
 /// Value object representing a monetary amount.
 /// Ensures price is always positive and provides value equality.
 /// </summary>
-public sealed class Money : IEquatable<Money>
+public sealed class Money : ValueObject<Money>
 {
     public decimal Amount { get; }
 
@@ -35,20 +35,10 @@ public sealed class Money : IEquatable<Money>
         return amount >= 0 ? new Money(amount) : null;
     }
 
-    public bool Equals(Money? other)
+    protected override IEnumerable<object?> GetEqualityComponents()
     {
-        if (other is null) return false;
-        return Amount == other.Amount;
+        yield return Amount;
     }
-
-    public override bool Equals(object? obj) => Equals(obj as Money);
-
-    public override int GetHashCode() => Amount.GetHashCode();
-
-    public static bool operator ==(Money? left, Money? right) =>
-        left?.Equals(right) ?? right is null;
-
-    public static bool operator !=(Money? left, Money? right) => !(left == right);
 
     public static implicit operator decimal(Money money) => money.Amount;
 

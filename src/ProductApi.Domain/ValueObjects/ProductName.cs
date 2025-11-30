@@ -4,7 +4,7 @@ namespace ProductApi.Domain.ValueObjects;
 /// Value object representing a product name.
 /// Ensures name is not empty and within length constraints.
 /// </summary>
-public sealed class ProductName : IEquatable<ProductName>
+public sealed class ProductName : ValueObject<ProductName>
 {
     public const int MaxLength = 100;
     public const int MinLength = 1;
@@ -43,20 +43,10 @@ public sealed class ProductName : IEquatable<ProductName>
         return new ProductName(name.Trim());
     }
 
-    public bool Equals(ProductName? other)
+    protected override IEnumerable<object?> GetEqualityComponents()
     {
-        if (other is null) return false;
-        return string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
+        yield return Value.ToLowerInvariant();
     }
-
-    public override bool Equals(object? obj) => Equals(obj as ProductName);
-
-    public override int GetHashCode() => Value.ToLowerInvariant().GetHashCode();
-
-    public static bool operator ==(ProductName? left, ProductName? right) =>
-        left?.Equals(right) ?? right is null;
-
-    public static bool operator !=(ProductName? left, ProductName? right) => !(left == right);
 
     public static implicit operator string(ProductName name) => name.Value;
 
