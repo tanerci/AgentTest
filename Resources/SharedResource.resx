@@ -115,4 +115,9 @@
   <data name="StockRange" xml:space="preserve">
     <value>Stock must be a non-negative number</value>
   </data>
+  
+  <!-- Error Messages -->
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>An error occurred while processing your request</value>
+  </data>
 </root>

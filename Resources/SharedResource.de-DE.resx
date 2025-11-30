@@ -61,63 +61,63 @@
   
   <!-- Authentication Messages -->
   <data name="InvalidUsernameOrPassword" xml:space="preserve">
-    <value>Nombre de usuario o contraseña inválidos</value>
+    <value>Ungültiger Benutzername oder Passwort</value>
   </data>
   <data name="LoginSuccessful" xml:space="preserve">
-    <value>Inicio de sesión exitoso</value>
+    <value>Anmeldung erfolgreich</value>
   </data>
   <data name="LogoutSuccessful" xml:space="preserve">
-    <value>Cierre de sesión exitoso</value>
+    <value>Abmeldung erfolgreich</value>
   </data>
   
   <!-- Product Messages -->
   <data name="ProductNotFound" xml:space="preserve">
-    <value>Producto con ID {0} no encontrado</value>
+    <value>Produkt mit ID {0} nicht gefunden</value>
   </data>
   <data name="ProductDeletedSuccessfully" xml:space="preserve">
-    <value>Producto eliminado exitosamente</value>
+    <value>Produkt erfolgreich gelöscht</value>
   </data>
   
   <!-- Validation Messages -->
   <data name="UsernameRequired" xml:space="preserve">
-    <value>El nombre de usuario es requerido</value>
+    <value>Benutzername ist erforderlich</value>
   </data>
   <data name="UsernameLength" xml:space="preserve">
-    <value>El nombre de usuario debe tener entre 3 y 50 caracteres</value>
+    <value>Der Benutzername muss zwischen 3 und 50 Zeichen lang sein</value>
   </data>
   <data name="PasswordRequired" xml:space="preserve">
-    <value>La contraseña es requerida</value>
+    <value>Passwort ist erforderlich</value>
   </data>
   <data name="PasswordLength" xml:space="preserve">
-    <value>La contraseña debe tener entre 6 y 100 caracteres</value>
+    <value>Das Passwort muss zwischen 6 und 100 Zeichen lang sein</value>
   </data>
   <data name="ProductNameRequired" xml:space="preserve">
-    <value>El nombre del producto es requerido</value>
+    <value>Produktname ist erforderlich</value>
   </data>
   <data name="ProductNameLength" xml:space="preserve">
-    <value>El nombre del producto debe tener entre 1 y 100 caracteres</value>
+    <value>Der Produktname muss zwischen 1 und 100 Zeichen lang sein</value>
   </data>
   <data name="ProductDescriptionRequired" xml:space="preserve">
-    <value>La descripción del producto es requerida</value>
+    <value>Produktbeschreibung ist erforderlich</value>
   </data>
   <data name="ProductDescriptionMaxLength" xml:space="preserve">
-    <value>La descripción del producto no puede exceder 500 caracteres</value>
+    <value>Die Produktbeschreibung darf 500 Zeichen nicht überschreiten</value>
   </data>
   <data name="ProductPriceRequired" xml:space="preserve">
-    <value>El precio del producto es requerido</value>
+    <value>Produktpreis ist erforderlich</value>
   </data>
   <data name="ProductPriceRange" xml:space="preserve">
-    <value>El precio debe estar entre 0.01 y 999999.99</value>
+    <value>Der Preis muss zwischen 0,01 und 999999,99 liegen</value>
   </data>
   <data name="StockRequired" xml:space="preserve">
-    <value>La cantidad en stock es requerida</value>
+    <value>Lagermenge ist erforderlich</value>
   </data>
   <data name="StockRange" xml:space="preserve">
-    <value>El stock debe ser un número no negativo</value>
+    <value>Der Lagerbestand muss eine nicht negative Zahl sein</value>
   </data>
   
   <!-- Error Messages -->
   <data name="UnexpectedError" xml:space="preserve">
-    <value>Ocurrió un error al procesar su solicitud</value>
+    <value>Bei der Verarbeitung Ihrer Anfrage ist ein Fehler aufgetreten</value>
   </data>
 </root>

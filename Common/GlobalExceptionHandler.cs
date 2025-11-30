@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using ProductApi.Resources;
 
 namespace ProductApi.Common;
 
@@ -10,11 +12,13 @@ public class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly ILogger<GlobalExceptionHandler> _logger;
     private readonly IHostEnvironment _environment;
+    private readonly IStringLocalizer<SharedResource> _localizer;
 
-    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IHostEnvironment environment)
+    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IHostEnvironment environment, IStringLocalizer<SharedResource> localizer)
     {
         _logger = logger;
         _environment = environment;
+        _localizer = localizer;
     }
 
     public async ValueTask<bool> TryHandleAsync(
@@ -27,7 +31,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         var problemDetails = new ProblemDetails
         {
             Status = StatusCodes.Status500InternalServerError,
-            Title = "An error occurred while processing your request",
+            Title = _localizer["UnexpectedError"].Value,
             Type = "https://httpstatuses.com/500"
         };
 
