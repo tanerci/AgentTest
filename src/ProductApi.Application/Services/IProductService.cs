@@ -37,12 +37,12 @@ public interface IProductService
     /// <summary>
     /// Creates a new product.
     /// </summary>
-    Task<Result<ProductDto>> CreateProductAsync(ProductCreateDto dto, CancellationToken cancellationToken = default);
+    Task<Result<ProductDto>> CreateProductAsync(ProductCreateDto createRequest, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates an existing product.
     /// </summary>
-    Task<Result<ProductDto>> UpdateProductAsync(int id, ProductUpdateDto dto, CancellationToken cancellationToken = default);
+    Task<Result<ProductDto>> UpdateProductAsync(int id, ProductUpdateDto updateRequest, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Deletes a product.
