@@ -120,4 +120,24 @@
   <data name="UnexpectedError" xml:space="preserve">
     <value>Une erreur s'est produite lors du traitement de votre demande</value>
   </data>
+  
+  <!-- Reservation Messages -->
+  <data name="ReservationNotFound" xml:space="preserve">
+    <value>Réservation non trouvée</value>
+  </data>
+  <data name="ReservationCreatedSuccessfully" xml:space="preserve">
+    <value>Réservation créée avec succès</value>
+  </data>
+  <data name="ReservationCancelledSuccessfully" xml:space="preserve">
+    <value>Réservation annulée avec succès</value>
+  </data>
+  <data name="CheckoutCompletedSuccessfully" xml:space="preserve">
+    <value>Paiement effectué avec succès</value>
+  </data>
+  <data name="ReservationExpired" xml:space="preserve">
+    <value>La réservation a expiré</value>
+  </data>
+  <data name="InsufficientStock" xml:space="preserve">
+    <value>Stock insuffisant disponible</value>
+  </data>
 </root>

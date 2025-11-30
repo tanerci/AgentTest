@@ -18,16 +18,19 @@ namespace ProductApi.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
+    private readonly ILogger<ProductsController> _logger;
     private readonly IStringLocalizer<SharedResource> _localizer;
 
     /// <summary>
     /// Initializes a new instance of the ProductsController.
     /// </summary>
     /// <param name="productService">The product application service.</param>
+    /// <param name="logger">The logger for product operations.</param>
     /// <param name="localizer">The string localizer for localized messages.</param>
-    public ProductsController(IProductService productService, IStringLocalizer<SharedResource> localizer)
+    public ProductsController(IProductService productService, ILogger<ProductsController> logger, IStringLocalizer<SharedResource> localizer)
     {
         _productService = productService;
+        _logger = logger;
         _localizer = localizer;
     }
 
@@ -52,11 +55,22 @@ public class ProductsController : ControllerBase
     [ResponseCache(Duration = 60, VaryByQueryKeys = ["page", "pageSize"])]
     public async Task<ActionResult<PaginatedResponse<ProductDto>>> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
+        _logger.LogDebug("GetProducts request received - Page: {Page}, PageSize: {PageSize}", page, pageSize);
+
         var result = await _productService.GetProductsAsync(page, pageSize);
         
         return result.Match(
-            response => Ok(response),
-            error => error.ToProblemDetails());
+            response =>
+            {
+                _logger.LogDebug("GetProducts returned {Count} items (Page {Page} of {TotalPages})",
+                    response.Items.Count(), response.Page, response.TotalPages);
+                return Ok(response);
+            },
+            error =>
+            {
+                _logger.LogWarning("GetProducts failed: {Error}", error.Message);
+                return error.ToProblemDetails();
+            });
     }
 
     /// <summary>
@@ -95,12 +109,25 @@ public class ProductsController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
+        _logger.LogDebug("FilterProducts request - SearchTerm: {SearchTerm}, MinPrice: {MinPrice}, MaxPrice: {MaxPrice}, MinStock: {MinStock}, MaxStock: {MaxStock}, Page: {Page}, PageSize: {PageSize}",
+            searchTerm ?? "none", minPrice?.ToString() ?? "none", maxPrice?.ToString() ?? "none",
+            minStock?.ToString() ?? "none", maxStock?.ToString() ?? "none", page, pageSize);
+
         var result = await _productService.FilterProductsAsync(
             searchTerm, minPrice, maxPrice, minStock, maxStock, page, pageSize);
 
         return result.Match(
-            response => Ok(response),
-            error => error.ToProblemDetails());
+            response =>
+            {
+                _logger.LogDebug("FilterProducts returned {Count} items (Page {Page} of {TotalPages}, Total: {TotalCount})",
+                    response.Items.Count(), response.Page, response.TotalPages, response.TotalCount);
+                return Ok(response);
+            },
+            error =>
+            {
+                _logger.LogWarning("FilterProducts failed: {Error}", error.Message);
+                return error.ToProblemDetails();
+            });
     }
 
     /// <summary>
@@ -123,11 +150,21 @@ public class ProductsController : ControllerBase
     [ResponseCache(Duration = 60)]
     public async Task<ActionResult<ProductDto>> GetProduct(int id)
     {
+        _logger.LogDebug("GetProduct request for ProductId: {ProductId}", id);
+
         var result = await _productService.GetProductByIdAsync(id);
 
         return result.Match(
-            product => Ok(product),
-            error => NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) }));
+            product =>
+            {
+                _logger.LogDebug("GetProduct returned product: {ProductName} (ID: {ProductId})", product.Name, id);
+                return Ok(product);
+            },
+            error =>
+            {
+                _logger.LogWarning("GetProduct failed for ProductId: {ProductId}, Error: {Error}", id, error.Message);
+                return NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) });
+            });
     }
 
     /// <summary>
@@ -158,16 +195,27 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<ProductDto>> CreateProduct([FromBody] ProductCreateDto productDto)
     {
+        _logger.LogInformation("CreateProduct request received for product: {ProductName}", productDto.Name);
+
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("CreateProduct validation failed for product: {ProductName}", productDto.Name);
             return BadRequest(ModelState);
         }
 
         var result = await _productService.CreateProductAsync(productDto);
 
         return result.Match(
-            product => CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product),
-            error => error.ToProblemDetails());
+            product =>
+            {
+                _logger.LogInformation("CreateProduct succeeded: {ProductName} (ID: {ProductId})", product.Name, product.Id);
+                return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
+            },
+            error =>
+            {
+                _logger.LogWarning("CreateProduct failed for product: {ProductName}, Error: {Error}", productDto.Name, error.Message);
+                return error.ToProblemDetails();
+            });
     }
 
     /// <summary>
@@ -200,18 +248,29 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateProduct(int id, [FromBody] ProductUpdateDto productDto)
     {
+        _logger.LogInformation("UpdateProduct request received for ProductId: {ProductId}", id);
+
         if (!ModelState.IsValid)
         {
+            _logger.LogWarning("UpdateProduct validation failed for ProductId: {ProductId}", id);
             return BadRequest(ModelState);
         }
 
         var result = await _productService.UpdateProductAsync(id, productDto);
 
         return result.Match(
-            product => Ok(product),
-            error => error.Type == Application.Common.ErrorType.NotFound
-                ? NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) })
-                : error.ToProblemDetails());
+            product =>
+            {
+                _logger.LogInformation("UpdateProduct succeeded for ProductId: {ProductId}", id);
+                return Ok(product);
+            },
+            error =>
+            {
+                _logger.LogWarning("UpdateProduct failed for ProductId: {ProductId}, Error: {Error}", id, error.Message);
+                return error.Type == Application.Common.ErrorType.NotFound
+                    ? NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) })
+                    : error.ToProblemDetails();
+            });
     }
 
     /// <summary>
@@ -237,12 +296,22 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteProduct(int id)
     {
+        _logger.LogInformation("DeleteProduct request received for ProductId: {ProductId}", id);
+
         var result = await _productService.DeleteProductAsync(id);
 
         return result.Match(
-            () => Ok(new { message = _localizer["ProductDeletedSuccessfully"].Value }),
-            error => error.Type == Application.Common.ErrorType.NotFound
-                ? NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) })
-                : error.ToProblemDetails());
+            () =>
+            {
+                _logger.LogInformation("DeleteProduct succeeded for ProductId: {ProductId}", id);
+                return Ok(new { message = _localizer["ProductDeletedSuccessfully"].Value });
+            },
+            error =>
+            {
+                _logger.LogWarning("DeleteProduct failed for ProductId: {ProductId}, Error: {Error}", id, error.Message);
+                return error.Type == Application.Common.ErrorType.NotFound
+                    ? NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) })
+                    : error.ToProblemDetails();
+            });
     }
 }

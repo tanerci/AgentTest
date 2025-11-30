@@ -23,7 +23,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - default pagination returns paginated response
         var result = await controller.GetProducts();
@@ -49,7 +49,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - with pagination parameters
         var result = await controller.GetProducts(1, 2);
@@ -83,7 +83,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.GetProduct(1);
@@ -102,7 +102,7 @@ public class ProductsControllerTests : TestBase
         var context = GetInMemoryDbContext();
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.GetProduct(999);
@@ -118,7 +118,7 @@ public class ProductsControllerTests : TestBase
         var context = GetInMemoryDbContext();
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
         var productDto = new ProductCreateDto
         {
             Name = "NewProduct",
@@ -160,7 +160,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
         var updateDto = new ProductUpdateDto
         {
             Name = "Updated",
@@ -186,7 +186,7 @@ public class ProductsControllerTests : TestBase
         var context = GetInMemoryDbContext();
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
         var updateDto = new ProductUpdateDto { Name = "Updated" };
 
         // Act
@@ -213,7 +213,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
         var updateDto = new ProductUpdateDto { Stock = 25 };
 
         // Act
@@ -245,7 +245,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.DeleteProduct(1);
@@ -265,7 +265,7 @@ public class ProductsControllerTests : TestBase
         var context = GetInMemoryDbContext();
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.DeleteProduct(999);
@@ -289,7 +289,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts();
@@ -315,7 +315,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - Search for "Mouse" in name
         var result = await controller.FilterProducts(searchTerm: "Mouse");
@@ -341,7 +341,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - Search for "ergonomic" in description
         var result = await controller.FilterProducts(searchTerm: "ergonomic");
@@ -365,7 +365,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - Search with mixed case
         var result = await controller.FilterProducts(searchTerm: "WiReLeSs");
@@ -390,7 +390,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts(minPrice: 50.0m);
@@ -416,7 +416,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts(maxPrice: 50.0m);
@@ -444,7 +444,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts(minPrice: 25.0m, maxPrice: 100.0m);
@@ -470,7 +470,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts(minStock: 20);
@@ -496,7 +496,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts(maxStock: 25);
@@ -524,7 +524,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts(minStock: 10, maxStock: 100);
@@ -552,7 +552,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - Search for "Wireless" products priced between 40 and 130 with stock >= 15
         var result = await controller.FilterProducts(
@@ -589,7 +589,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - Get page 2 with 5 items per page
         var result = await controller.FilterProducts(page: 2, pageSize: 5);
@@ -626,7 +626,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - Filter for "Alpha" products with pagination
         var result = await controller.FilterProducts(searchTerm: "Alpha", page: 1, pageSize: 5);
@@ -653,7 +653,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - Search for non-existent term
         var result = await controller.FilterProducts(searchTerm: "NonExistentProduct");
@@ -672,7 +672,7 @@ public class ProductsControllerTests : TestBase
         var context = GetInMemoryDbContext();
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts();
@@ -697,7 +697,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - minPrice > maxPrice (invalid range)
         var result = await controller.FilterProducts(minPrice: 100.0m, maxPrice: 50.0m);
@@ -720,7 +720,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - minStock > maxStock (invalid range)
         var result = await controller.FilterProducts(minStock: 100, maxStock: 10);
@@ -743,7 +743,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts(page: -5);
@@ -775,7 +775,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts(pageSize: 500);
@@ -802,7 +802,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts();
@@ -837,7 +837,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act
         var result = await controller.FilterProducts(searchTerm: "   ");
@@ -862,7 +862,7 @@ public class ProductsControllerTests : TestBase
         
         var productService = GetProductService(context);
         var localizer = GetMockLocalizer();
-        var controller = new ProductsController(productService, localizer);
+        var controller = new ProductsController(productService, GetMockProductsControllerLogger(), localizer);
 
         // Act - Use exact boundary values
         var result = await controller.FilterProducts(minPrice: 50.0m, maxPrice: 100.0m, minStock: 10, maxStock: 50);
