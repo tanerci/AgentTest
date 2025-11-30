@@ -26,9 +26,37 @@ public class AppDbContext : DbContext
     /// </summary>
     public DbSet<User> Users { get; set; }
 
+    /// <summary>
+    /// Gets or sets the Reservations entity set.
+    /// </summary>
+    public DbSet<Reservation> Reservations { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ReservationAudits entity set.
+    /// </summary>
+    public DbSet<ReservationAudit> ReservationAudits { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Configure Reservation entity
+        modelBuilder.Entity<Reservation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => new { e.ProductId, e.Status });
+            entity.HasIndex(e => e.ExpiresAt);
+        });
+
+        // Configure ReservationAudit entity
+        modelBuilder.Entity<ReservationAudit>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.HasIndex(e => e.ReservationId);
+        });
 
         // Seed some initial products
         modelBuilder.Entity<Product>().HasData(

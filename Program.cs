@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using ProductApi.Application.Services;
 using ProductApi.Common;
 using ProductApi.Domain.Repositories;
+using ProductApi.Domain.Services;
 using ProductApi.Infrastructure.Persistence;
 using ProductApi.Infrastructure.Repositories;
 using System.Reflection;
@@ -38,10 +39,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Register Domain Repositories (Infrastructure Layer implementations)
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IReservationAuditRepository, ReservationAuditRepository>();
+builder.Services.AddSingleton<IRedisReservationRepository, InMemoryRedisReservationRepository>();
+
+// Register Domain Services
+builder.Services.AddScoped<IReservationDomainService, ReservationDomainService>();
 
 // Register Application Services (Application Layer)
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
 
 // Add Cookie Authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -127,11 +135,18 @@ builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>()
 
 var app = builder.Build();
 
-// Seed the database
+// Seed the database and initialize Redis cache
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     context.Database.EnsureCreated();
+    
+    // Initialize Redis cache with product stock from database
+    var redisRepo = scope.ServiceProvider.GetRequiredService<IRedisReservationRepository>();
+    foreach (var product in context.Products)
+    {
+        await redisRepo.InitializeStockAsync(product.Id, product.Stock);
+    }
 }
 
 // Configure supported cultures for localization
