@@ -70,6 +70,11 @@ The application sets the following security headers on all responses:
   
 - **Referrer-Policy**: strict-origin-when-cross-origin
   - Controls referrer information sent in requests
+
+- **Strict-Transport-Security**: max-age=31536000; includeSubDomains (Production only)
+  - Enforces HTTPS for 1 year
+  - Includes all subdomains
+  - Protects against protocol downgrade attacks
   
 - **Content-Security-Policy**: Environment-specific
   - **Production**: Strict policy with no unsafe directives
@@ -195,5 +200,5 @@ Consider these enhancements for future releases:
 
 ## Updates
 
-Last security review: 2025-11-26
+Last security review: 2025-11-30
 Next recommended review: Every major release or when adding new features

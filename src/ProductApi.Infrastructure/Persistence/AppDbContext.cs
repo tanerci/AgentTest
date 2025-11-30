@@ -37,13 +37,17 @@ public class AppDbContext : DbContext
             new Product { Id = 3, Name = "Keyboard", Description = "Mechanical keyboard", Price = 89.99m, Stock = 25 }
         );
 
-        // Seed a test user (password: "password123")
+        // WARNING: This seed data is for development/testing only.
+        // In production:
+        // - Use environment-specific initialization scripts or admin setup endpoints
+        // - Never commit real credentials to source control
+        // - Use secure password policies and unique passwords per environment
         modelBuilder.Entity<User>().HasData(
             new User 
             { 
                 Id = 1, 
                 Username = "admin", 
-                PasswordHash = "$2a$11$xZ1Y2Z3A4B5C6D7E8F9G0H1I2J3K4L5M6N7O8P9Q0R1S2T3U4V5W6X" // BCrypt hash
+                PasswordHash = "$2a$11$SDCYH0wn9mp7m7g7CxakUerO/pOj.UspJlNDckQujniUDsBMtSRky" // BCrypt hash for test password "password123"
             }
         );
     }
