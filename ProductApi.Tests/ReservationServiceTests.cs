@@ -477,4 +477,136 @@ public class ReservationServiceTests : TestBase
         var failedResult = await service.ReserveAsync(new ReserveRequest { ProductId = 1, Quantity = 10, TtlMinutes = 15 });
         Assert.False(failedResult.IsSuccess);
     }
+
+    [Fact]
+    public async Task Cancel_WithInvalidIdFormat_ReturnsValidationError()
+    {
+        // Arrange
+        var context = GetInMemoryDbContext();
+        var redisRepo = await GetInitializedRedisRepo(context);
+        var service = GetReservationService(context, redisRepo);
+
+        // Act
+        var result = await service.CancelAsync("invalid-guid-format");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(Application.Common.ErrorType.Validation, result.Error.Type);
+    }
+
+    [Fact]
+    public async Task GetById_WithInvalidIdFormat_ReturnsValidationError()
+    {
+        // Arrange
+        var context = GetInMemoryDbContext();
+        var redisRepo = await GetInitializedRedisRepo(context);
+        var service = GetReservationService(context, redisRepo);
+
+        // Act
+        var result = await service.GetByIdAsync("not-a-valid-guid");
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(Application.Common.ErrorType.Validation, result.Error.Type);
+    }
+
+    [Fact]
+    public async Task GetById_WithNonExistentId_ReturnsNotFound()
+    {
+        // Arrange
+        var context = GetInMemoryDbContext();
+        var redisRepo = await GetInitializedRedisRepo(context);
+        var service = GetReservationService(context, redisRepo);
+
+        // Act
+        var result = await service.GetByIdAsync(Guid.NewGuid().ToString());
+
+        // Assert
+        Assert.False(result.IsSuccess);
+        Assert.Equal(Application.Common.ErrorType.NotFound, result.Error.Type);
+    }
+
+    [Fact]
+    public async Task Cancel_WithAlreadyCancelledReservation_ReturnsValidationError()
+    {
+        // Arrange
+        var context = GetInMemoryDbContext();
+        context.Products.Add(new Infrastructure.Persistence.Models.Product
+        {
+            Id = 1,
+            Name = "Test Product",
+            Description = "Test Description",
+            Price = 99.99m,
+            Stock = 10
+        });
+        await context.SaveChangesAsync();
+
+        var redisRepo = await GetInitializedRedisRepo(context);
+        var service = GetReservationService(context, redisRepo);
+
+        // Create and cancel a reservation
+        var reserveRequest = new ReserveRequest
+        {
+            ProductId = 1,
+            Quantity = 3,
+            TtlMinutes = 15
+        };
+        var reserveResult = await service.ReserveAsync(reserveRequest);
+        Assert.True(reserveResult.IsSuccess);
+        
+        // First cancel
+        var firstCancel = await service.CancelAsync(reserveResult.Value.ReservationId);
+        Assert.True(firstCancel.IsSuccess);
+
+        // Act - Try to cancel again
+        var secondCancel = await service.CancelAsync(reserveResult.Value.ReservationId);
+
+        // Assert
+        Assert.False(secondCancel.IsSuccess);
+        Assert.Equal(Application.Common.ErrorType.Validation, secondCancel.Error.Type);
+    }
+
+    [Fact]
+    public async Task Checkout_WithAlreadyCompletedReservation_ReturnsValidationError()
+    {
+        // Arrange
+        var context = GetInMemoryDbContext();
+        context.Products.Add(new Infrastructure.Persistence.Models.Product
+        {
+            Id = 1,
+            Name = "Test Product",
+            Description = "Test Description",
+            Price = 99.99m,
+            Stock = 10
+        });
+        await context.SaveChangesAsync();
+
+        var redisRepo = await GetInitializedRedisRepo(context);
+        var service = GetReservationService(context, redisRepo);
+
+        // Create and checkout a reservation
+        var reserveRequest = new ReserveRequest
+        {
+            ProductId = 1,
+            Quantity = 2,
+            TtlMinutes = 15
+        };
+        var reserveResult = await service.ReserveAsync(reserveRequest);
+        Assert.True(reserveResult.IsSuccess);
+        
+        // First checkout
+        var checkoutRequest = new CheckoutRequest
+        {
+            ReservationId = reserveResult.Value.ReservationId
+        };
+        var firstCheckout = await service.CheckoutAsync(checkoutRequest);
+        Assert.True(firstCheckout.IsSuccess);
+
+        // Act - Try to checkout again
+        var secondCheckout = await service.CheckoutAsync(checkoutRequest);
+
+        // Assert
+        Assert.False(secondCheckout.IsSuccess);
+        Assert.Equal(Application.Common.ErrorType.Validation, secondCheckout.Error.Type);
+    }
 }
