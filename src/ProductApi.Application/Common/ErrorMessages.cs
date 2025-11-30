@@ -24,10 +24,10 @@ public static class ErrorMessages
     /// <summary>
     /// Gets a formatted product not found error message.
     /// </summary>
-    public static string ProductNotFound(int id) => string.Format(ProductNotFoundFormat, id);
+    public static string ProductNotFound(int id) => $"Product with ID {id} not found";
 
     /// <summary>
     /// Gets a formatted user not found error message.
     /// </summary>
-    public static string UserNotFound(int id) => string.Format(UserNotFoundFormat, id);
+    public static string UserNotFound(int id) => $"User with ID {id} not found";
 }
