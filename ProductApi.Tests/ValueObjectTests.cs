@@ -610,14 +610,16 @@ public class ValueObjectTests
     [Fact]
     public void ReservationStatus_FromString_IsCaseInsensitive()
     {
-        // Act
+        // Act - FromString preserves original case but equality is case-insensitive
         var status1 = ReservationStatus.FromString("reserved");
         var status2 = ReservationStatus.FromString("RESERVED");
 
-        // Assert
+        // Assert - Values preserve original case
         Assert.Equal("reserved", status1.Value);
         Assert.Equal("RESERVED", status2.Value);
+        // But equality comparison is case-insensitive
         Assert.True(status1 == status2);
+        Assert.Equal(status1, status2);
     }
 
     [Fact]
