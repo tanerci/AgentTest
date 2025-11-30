@@ -1,7 +1,7 @@
-namespace ProductApi.Models;
+namespace ProductApi.Infrastructure.Persistence.Models;
 
 /// <summary>
-/// Represents a user account for authentication.
+/// Represents a user account for authentication (persistence model).
 /// </summary>
 public class User
 {

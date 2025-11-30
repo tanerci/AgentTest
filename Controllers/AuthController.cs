@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using ProductApi.Application.DTOs;
 using ProductApi.Application.Services;
-using ProductApi.DTOs;
 using ProductApi.Resources;
 using System.Security.Claims;
 

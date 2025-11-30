@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ProductApi.DTOs;
+namespace ProductApi.Application.DTOs;
 
 /// <summary>
 /// Data transfer object for updating an existing product.

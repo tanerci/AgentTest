@@ -3,8 +3,8 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using ProductApi.Application.Services;
-using ProductApi.Data;
 using ProductApi.Domain.Repositories;
+using ProductApi.Infrastructure.Persistence;
 using ProductApi.Infrastructure.Repositories;
 using ProductApi.Resources;
 

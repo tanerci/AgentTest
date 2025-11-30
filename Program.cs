@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using ProductApi.Application.Services;
 using ProductApi.Common;
-using ProductApi.Data;
 using ProductApi.Domain.Repositories;
+using ProductApi.Infrastructure.Persistence;
 using ProductApi.Infrastructure.Repositories;
 using System.Reflection;
 

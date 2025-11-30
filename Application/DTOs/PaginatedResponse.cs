@@ -1,4 +1,4 @@
-namespace ProductApi.DTOs;
+namespace ProductApi.Application.DTOs;
 
 /// <summary>
 /// Represents a paginated response containing a collection of items with pagination metadata.

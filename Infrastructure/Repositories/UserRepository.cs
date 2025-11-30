@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using ProductApi.Data;
 using ProductApi.Domain.Entities;
 using ProductApi.Domain.Repositories;
+using ProductApi.Infrastructure.Persistence;
+using ProductApi.Infrastructure.Persistence.Models;
 
 namespace ProductApi.Infrastructure.Repositories;
 
@@ -61,7 +62,7 @@ public class UserRepository : IUserRepository
         return await _context.Users.AnyAsync(u => u.Username == username, cancellationToken);
     }
 
-    private static UserEntity MapToDomainEntity(Models.User model)
+    private static UserEntity MapToDomainEntity(User model)
     {
         // Use the Hydrate factory method to safely reconstruct the domain entity from persistence
         return UserEntity.Hydrate(
@@ -70,9 +71,9 @@ public class UserRepository : IUserRepository
             model.PasswordHash);
     }
 
-    private static Models.User MapToDataModel(UserEntity entity)
+    private static User MapToDataModel(UserEntity entity)
     {
-        return new Models.User
+        return new User
         {
             Id = entity.Id,
             Username = entity.Username,

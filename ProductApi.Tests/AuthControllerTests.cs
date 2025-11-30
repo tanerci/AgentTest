@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using ProductApi.Application.DTOs;
 using ProductApi.Controllers;
-using ProductApi.Data;
-using ProductApi.DTOs;
-using ProductApi.Models;
+using ProductApi.Infrastructure.Persistence;
+using ProductApi.Infrastructure.Persistence.Models;
 using System.Security.Claims;
 using Xunit;
 

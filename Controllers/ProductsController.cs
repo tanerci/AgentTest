@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using ProductApi.Application.DTOs;
 using ProductApi.Application.Services;
-using ProductApi.DTOs;
 using ProductApi.Extensions;
-using ProductApi.Models;
 using ProductApi.Resources;
 
 namespace ProductApi.Controllers;
@@ -48,14 +47,14 @@ public class ProductsController : ControllerBase
     /// Returns a paginated response with items, page, pageSize, totalCount, and totalPages.
     /// </remarks>
     [HttpGet]
-    [ProducesResponseType(typeof(PaginatedResponse<Product>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<ProductDto>), StatusCodes.Status200OK)]
     [ResponseCache(Duration = 60, VaryByQueryKeys = ["page", "pageSize"])]
-    public async Task<ActionResult<PaginatedResponse<Product>>> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<PaginatedResponse<ProductDto>>> GetProducts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         var result = await _productService.GetProductsAsync(page, pageSize);
         
         return result.Match(
-            response => Ok(MapToPaginatedProductResponse(response)),
+            response => Ok(response),
             error => error.ToProblemDetails());
     }
 
@@ -84,9 +83,9 @@ public class ProductsController : ControllerBase
     /// Search term performs case-insensitive partial matching on name and description.
     /// </remarks>
     [HttpGet("filter")]
-    [ProducesResponseType(typeof(PaginatedResponse<Product>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<ProductDto>), StatusCodes.Status200OK)]
     [ResponseCache(Duration = 30, VaryByQueryKeys = ["searchTerm", "minPrice", "maxPrice", "minStock", "maxStock", "page", "pageSize"])]
-    public async Task<ActionResult<PaginatedResponse<Product>>> FilterProducts(
+    public async Task<ActionResult<PaginatedResponse<ProductDto>>> FilterProducts(
         [FromQuery] string? searchTerm = null,
         [FromQuery] decimal? minPrice = null,
         [FromQuery] decimal? maxPrice = null,
@@ -99,7 +98,7 @@ public class ProductsController : ControllerBase
             searchTerm, minPrice, maxPrice, minStock, maxStock, page, pageSize);
 
         return result.Match(
-            response => Ok(MapToPaginatedProductResponse(response)),
+            response => Ok(response),
             error => error.ToProblemDetails());
     }
 
@@ -118,15 +117,15 @@ public class ProductsController : ControllerBase
     /// This endpoint is publicly accessible and does not require authentication.
     /// </remarks>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ResponseCache(Duration = 60)]
-    public async Task<ActionResult<Product>> GetProduct(int id)
+    public async Task<ActionResult<ProductDto>> GetProduct(int id)
     {
         var result = await _productService.GetProductByIdAsync(id);
 
         return result.Match(
-            product => Ok(MapToProduct(product)),
+            product => Ok(product),
             error => NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) }));
     }
 
@@ -153,10 +152,10 @@ public class ProductsController : ControllerBase
     /// </remarks>
     [Authorize]
     [HttpPost]
-    [ProducesResponseType(typeof(Product), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProductDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<Product>> CreateProduct([FromBody] ProductCreateDto productDto)
+    public async Task<ActionResult<ProductDto>> CreateProduct([FromBody] ProductCreateDto productDto)
     {
         if (!ModelState.IsValid)
         {
@@ -166,7 +165,7 @@ public class ProductsController : ControllerBase
         var result = await _productService.CreateProductAsync(productDto);
 
         return result.Match(
-            product => CreatedAtAction(nameof(GetProduct), new { id = product.Id }, MapToProduct(product)),
+            product => CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product),
             error => error.ToProblemDetails());
     }
 
@@ -194,7 +193,7 @@ public class ProductsController : ControllerBase
     /// </remarks>
     [Authorize]
     [HttpPut("{id}")]
-    [ProducesResponseType(typeof(Product), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProductDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -208,7 +207,7 @@ public class ProductsController : ControllerBase
         var result = await _productService.UpdateProductAsync(id, productDto);
 
         return result.Match(
-            product => Ok(MapToProduct(product)),
+            product => Ok(product),
             error => error.Type == Common.ErrorType.NotFound
                 ? NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) })
                 : error.ToProblemDetails());
@@ -244,34 +243,5 @@ public class ProductsController : ControllerBase
             error => error.Type == Common.ErrorType.NotFound
                 ? NotFound(new { message = string.Format(_localizer["ProductNotFound"], id) })
                 : error.ToProblemDetails());
-    }
-
-    /// <summary>
-    /// Maps ProductDto to Product model for API backward compatibility.
-    /// </summary>
-    private static Product MapToProduct(ProductDto dto)
-    {
-        return new Product
-        {
-            Id = dto.Id,
-            Name = dto.Name,
-            Description = dto.Description,
-            Price = dto.Price,
-            Stock = dto.Stock
-        };
-    }
-
-    /// <summary>
-    /// Maps PaginatedResponse of ProductDto to PaginatedResponse of Product for API backward compatibility.
-    /// </summary>
-    private static PaginatedResponse<Product> MapToPaginatedProductResponse(PaginatedResponse<ProductDto> response)
-    {
-        return new PaginatedResponse<Product>
-        {
-            Items = response.Items.Select(MapToProduct),
-            Page = response.Page,
-            PageSize = response.PageSize,
-            TotalCount = response.TotalCount
-        };
     }
 }

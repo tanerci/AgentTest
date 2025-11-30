@@ -1,5 +1,5 @@
+using ProductApi.Application.DTOs;
 using ProductApi.Common;
-using ProductApi.DTOs;
 
 namespace ProductApi.Application.Services;
 

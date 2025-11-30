@@ -1,9 +1,9 @@
-namespace ProductApi.Models;
+namespace ProductApi.Application.DTOs;
 
 /// <summary>
-/// Represents a product in the inventory.
+/// Data transfer object for returning product information.
 /// </summary>
-public class Product
+public class ProductDto
 {
     /// <summary>
     /// Gets or sets the unique identifier for the product.

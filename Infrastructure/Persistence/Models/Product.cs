@@ -1,9 +1,9 @@
-namespace ProductApi.DTOs;
+namespace ProductApi.Infrastructure.Persistence.Models;
 
 /// <summary>
-/// Data transfer object for returning product information.
+/// Represents a product in the inventory (persistence model).
 /// </summary>
-public class ProductDto
+public class Product
 {
     /// <summary>
     /// Gets or sets the unique identifier for the product.
