@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ProductApi.Application.Common;
 using ProductApi.Domain.Entities;
 using ProductApi.Domain.Repositories;
 using ProductApi.Infrastructure.Persistence.Models;
@@ -104,7 +105,7 @@ public class ProductRepository : IProductRepository
     public async Task UpdateAsync(ProductEntity product, CancellationToken cancellationToken = default)
     {
         var model = await _context.Products.FindAsync([product.Id], cancellationToken)
-            ?? throw new InvalidOperationException($"Product with ID {product.Id} not found");
+            ?? throw new InvalidOperationException(ErrorMessages.ProductNotFound(product.Id));
 
         model.Name = product.Name.Value;
         model.Description = product.Description;
@@ -117,7 +118,7 @@ public class ProductRepository : IProductRepository
     public async Task DeleteAsync(ProductEntity product, CancellationToken cancellationToken = default)
     {
         var model = await _context.Products.FindAsync([product.Id], cancellationToken)
-            ?? throw new InvalidOperationException($"Product with ID {product.Id} not found");
+            ?? throw new InvalidOperationException(ErrorMessages.ProductNotFound(product.Id));
 
         _context.Products.Remove(model);
         await _context.SaveChangesAsync(cancellationToken);

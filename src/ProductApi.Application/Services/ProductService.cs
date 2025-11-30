@@ -109,7 +109,7 @@ public class ProductService : IProductService
         if (product == null)
         {
             _logger.LogWarning("Product with ID {ProductId} not found", id);
-            return Result.Failure<ProductDto>(Error.NotFound($"Product with ID {id} not found"));
+            return Result.Failure<ProductDto>(Error.NotFound(ErrorMessages.ProductNotFound(id)));
         }
 
         _logger.LogInformation("Retrieved product: {ProductName} (ID: {ProductId})", product.Name.Value, product.Id);
@@ -146,7 +146,7 @@ public class ProductService : IProductService
         if (product == null)
         {
             _logger.LogWarning("Update failed: Product with ID {ProductId} not found", id);
-            return Result.Failure<ProductDto>(Error.NotFound($"Product with ID {id} not found"));
+            return Result.Failure<ProductDto>(Error.NotFound(ErrorMessages.ProductNotFound(id)));
         }
 
         try
@@ -184,7 +184,7 @@ public class ProductService : IProductService
         if (product == null)
         {
             _logger.LogWarning("Delete failed: Product with ID {ProductId} not found", id);
-            return Result.Failure(Error.NotFound($"Product with ID {id} not found"));
+            return Result.Failure(Error.NotFound(ErrorMessages.ProductNotFound(id)));
         }
 
         var productName = product.Name.Value;
